@@ -1,14 +1,14 @@
-import {DataStore} from "./data.js";
+import {DataStore} from "./data.js?v=2.1";
 import {
 	createEmptyCharacter,
 	recomputeCharacter,
 	STORAGE_KEY,
 	importPayload,
 	exportPayload,
-} from "./character.js";
-import {storageGet, storageSet, storageRemove, loadJsonFile, FILE_TYPE_2024} from "../../shared/file-io.js";
-import {mountWizard} from "./ui/wizard.js";
-import {mountSheet} from "./ui/sheet.js";
+} from "./character.js?v=2.1";
+import {storageGet, storageSet, storageRemove, loadJsonFile, FILE_TYPE_2024} from "../../shared/file-io.js?v=2.1";
+import {mountWizard} from "./ui/wizard.js?v=2.1";
+import {mountSheet} from "./ui/sheet.js?v=2.1";
 
 const app = document.getElementById("app");
 const statusEl = document.getElementById("status");
