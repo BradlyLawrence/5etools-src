@@ -585,9 +585,6 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 
 			detail.append(el("h4", {text: "Starting virtue"}));
 			detail.append(el("p", {class: "cc-muted", text: "Common virtues and your cultural virtues."}));
-			const selectedSub = char.culture.subraceUid
-				? data.subraces.find(s => toUid(s.name, s.source) === String(char.culture.subraceUid).toLowerCase())
-				: null;
 			const virtues = data.virtuesForRace(race, {subrace: selectedSub});
 			const vList = el("div", {class: "cc-picker-list cc-picker-list-compact"});
 			for (const feat of virtues) {
