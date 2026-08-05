@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="description" content="Loremaster Suite for The Lord of the Rings Roleplaying (Free League / 5e) - Journey Hex Map, Character Importer, Encounter Builder, Initiative Tracker, Patron Hub & Eye of Mordor.">
+	<title>Lord of the Rings Roleplaying — Loremaster Suite</title>
+	
+	<!-- Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	
+	<link rel="icon" type="image/png" href="../../character-creators/favicon.png">
+	<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+	<!-- Top Header & Global Status Bar -->
+	<header class="lm-header">
+		<div class="lm-brand">
+			<div class="lm-brand-icon">👁️</div>
+			<div>
+				<div class="lm-brand-title">Loremaster Suite</div>
+				<div class="lm-brand-sub">The Lord of the Rings Roleplaying (5e)</div>
+			</div>
+		</div>
+
+		<div class="lm-status-bar">
+			<div class="lm-status-item" id="hdrEyeItem">
+				<span class="label">Eye Awareness:</span>
+				<span class="val" id="hdrEyeVal">0</span>
+			</div>
+			<div style="color:var(--border-muted)">|</div>
+			<div class="lm-status-item">
+				<span class="label">Fellowship Pool:</span>
+				<span class="val" id="hdrFellowshipVal">4</span>
+			</div>
+			<div style="color:var(--border-muted)">|</div>
+			<div class="lm-status-item">
+				<span class="label">Active Patron:</span>
+				<span class="val" id="hdrPatronVal">Gandalf</span>
+			</div>
+		</div>
+
+		<div style="display:flex; gap:0.5rem; align-items:center;">
+			<label for="charFileInput" class="btn-lm primary btn-sm" style="cursor:pointer">
+				📥 Import Character JSON
+			</label>
+			<input type="file" id="charFileInput" accept=".json" style="display:none">
+			<a href="../../index.html" class="btn-lm btn-sm">← 5etools</a>
+		</div>
+	</header>
+
+	<!-- Navigation Tabs -->
+	<nav class="lm-nav-tabs">
+		<button class="lm-nav-btn active" data-tab="party">🛡️ Fellowship Party</button>
+		<button class="lm-nav-btn" data-tab="journey">🗺️ Hex Journey Engine</button>
+		<button class="lm-nav-btn" data-tab="encounter">⚔️ Encounter Builder</button>
+		<button class="lm-nav-btn" data-tab="initiative">🎲 Initiative Tracker</button>
+		<button class="lm-nav-btn" data-tab="patron">👑 Patron & Safe Haven</button>
+		<button class="lm-nav-btn" data-tab="eye">👁️ Eye of Mordor & Council</button>
+		<button class="lm-nav-btn" data-tab="ref">📜 Rules & Treasure</button>
+	</nav>
+
+	<!-- Main Workspace -->
+	<main class="lm-main">
+
+		<!-- TAB 1: Fellowship Party -->
+		<section id="tab-party" class="tab-pane active">
+			<div class="lm-card">
+				<div class="lm-card-header">
+					<div class="lm-card-title">🛡️ Active Fellowship Party</div>
+					<div style="font-size:0.85rem; color:var(--text-muted)">
+						Import character JSON exports from <strong>Character Creator</strong> or manage party resources in real-time.
+					</div>
+				</div>
+				<div class="grid-3" id="partyGridContainer">
+					<!-- Dynamically rendered by char-importer.js -->
+				</div>
+			</div>
+		</section>
+
+		<!-- TAB 2: Journey Engine -->
+		<section id="tab-journey" class="tab-pane">
+			<div class="map-viewport-wrapper">
+				<div id="mapHeaderToolbar">
+					<!-- Floating Toolbar rendered dynamically by journey-tracker.js -->
+				</div>
+
+				<div class="map-container" id="mapContainer">
+					<!-- SVG Hex Map rendered by journey-tracker.js -->
+				</div>
+
+				<!-- Floating Side HUD Panel -->
+				<div class="map-hud-panel" id="mapHudPanel">
+					<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-light); padding-bottom:0.4rem; margin-bottom:0.6rem;">
+						<div style="font-family:var(--font-title); font-size:0.95rem; color:var(--text-gold);">📜 Journey Route & HUD</div>
+						<button class="btn-lm btn-sm" onclick="window.toggleHudCollapse()" title="Minimize / Expand HUD">👁️ HUD</button>
+					</div>
+					<div id="hudBody">
+						<div id="journeyControls">
+							<!-- Journey path details rendered by journey-tracker.js -->
+						</div>
+
+						<div style="margin-top:0.8rem; border-top:1px solid var(--border-light); padding-top:0.6rem;">
+							<div style="font-family:var(--font-title); font-size:0.85rem; color:var(--text-gold); margin-bottom:0.4rem;">📜 Journey Event Log</div>
+							<div class="event-log" id="journeyLog">
+								<div style="color:var(--text-muted); font-size:0.85rem">No events rolled yet.</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- TAB 3: Encounter Builder -->
+		<section id="tab-encounter" class="tab-pane">
+			<div class="grid-2">
+				<div class="lm-card">
+					<div class="lm-card-header">
+						<div class="lm-card-title">🔍 Search Adversaries & Bestiary</div>
+					</div>
+					<div class="form-group">
+						<input type="text" class="form-control" id="monsterSearchInput" placeholder="Search Orc, Troll, Barrow-wight, Goblin..." onkeyup="window.onSearchMonsters(this.value)" />
+					</div>
+					<div id="monsterSearchResults" style="display:flex; flex-direction:column; gap:0.4rem; max-height:420px; overflow-y:auto">
+						<!-- Rendered by encounter-builder.js -->
+					</div>
+				</div>
+
+				<div class="lm-card">
+					<div class="lm-card-header">
+						<div class="lm-card-title">⚔️ Current Encounter Roster</div>
+					</div>
+					<div id="encounterList" style="display:flex; flex-direction:column; gap:0.5rem; min-height:150px">
+						<!-- Rendered by encounter-builder.js -->
+					</div>
+					<div id="encounterSummary" style="margin-top:1rem; border-top:1px solid var(--border-light); padding-top:0.75rem">
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- TAB 4: Initiative Tracker -->
+		<section id="tab-initiative" class="tab-pane">
+			<div class="lm-card">
+				<div class="lm-card-header" id="combatHeader">
+					<!-- Rendered by initiative-tracker.js -->
+				</div>
+				<div id="combatTableContainer">
+					<!-- Rendered by initiative-tracker.js -->
+				</div>
+			</div>
+		</section>
+
+		<!-- TAB 5: Patron & Safe Haven -->
+		<section id="tab-patron" class="tab-pane">
+			<div id="patronUIContainer">
+				<!-- Rendered by patron-manager.js -->
+			</div>
+		</section>
+
+		<!-- TAB 6: Eye of Mordor & Council -->
+		<section id="tab-eye" class="tab-pane">
+			<div id="eyeUIContainer" style="margin-bottom:1.25rem">
+				<!-- Rendered by eye-of-mordor.js -->
+			</div>
+			<div id="councilUIContainer">
+				<!-- Rendered by council-tracker.js -->
+			</div>
+		</section>
+
+		<!-- TAB 7: Quick Reference & Treasure -->
+		<section id="tab-ref" class="tab-pane">
+			<div id="treasureUIContainer" style="margin-bottom:1.25rem">
+				<!-- Rendered by treasure-gen.js -->
+			</div>
+			<div id="quickRefContainer">
+				<!-- Rendered by quick-ref.js -->
+			</div>
+		</section>
+
+	</main>
+
+	<!-- App Scripts -->
+	<script type="module" src="js/main.js"></script>
+</body>
+</html>

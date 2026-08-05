@@ -1,0 +1,451 @@
+{
+	"_meta": {
+		"sources": [
+			{
+				"json": "MECultures",
+				"abbreviation": "MEC",
+				"full": "Middle-earth Cultures (Homebrew)",
+				"authors": ["Local table"],
+				"convertedBy": ["Local table"],
+				"version": "1.1.0",
+				"color": "8B4513",
+				"dateReleased": "2026-08-04"
+			}
+		],
+		"dateAdded": 1754265600,
+		"dateLastModified": 1754265600,
+		"status": "ready",
+		"edition": "classic"
+	},
+	"race": [
+		{
+			"name": "Man of Gondor",
+			"source": "MECultures",
+			"edition": "one",
+			"size": ["M"],
+			"speed": 30,
+			"ability": [{"str": 1, "wis": 1}],
+			"feats": [{"anyFromCategory": {"category": ["VtGon", "VtCom", "VtNRg"]}}],
+			"traitTags": ["Language Proficiency", "Skill Proficiency", "Weapon Proficiency"],
+			"skillProficiencies": [{"history": true}],
+			"languageProficiencies": [{"westron|TLotRR": true, "adûnaic|TLotRR": true}],
+			"weaponProficiencies": [{"longsword|phb": true, "spear|phb": true}],
+			"entries": [
+				{
+					"type": "entries",
+					"name": "Adventuring Age",
+					"entries": ["Between 18–40 years of age. Men and women of Gondor often take up arms or wander the marches in their youth, returning to city or farm when duty to house and realm calls them home."]
+				},
+				{
+					"type": "entries",
+					"name": "Blood of Númenor",
+					"entries": ["You have proficiency in the {@skill History} skill (or {@skill Old Lore|TLotRR} if your table prefers Middle-earth skills for lore of the past)."]
+				},
+				{
+					"type": "entries",
+					"name": "Guardians of the West",
+					"entries": ["You have proficiency with the {@item longsword|PHB} and {@item spear|PHB}."]
+				},
+				{
+					"type": "entries",
+					"name": "Starting Virtue",
+					"entries": ["You gain one cultural virtue of your choice from the Men of Gondor list, or a common virtue (see Virtues)."]
+				},
+				{
+					"type": "entries",
+					"name": "Languages",
+					"entries": ["You can speak, read, and write {@language Westron|TLotRR} and {@language Adûnaic|TLotRR}, the ancient tongue of Númenor still preserved among the Dúnedain of the South."]
+				},
+				{
+					"type": "entries",
+					"name": "Standard of Living: Prosperous",
+					"entries": ["Though war presses upon the borders, Gondor remains a realm of stone cities, well-kept roads, and proud houses. Those who adventure often come from soldiery or lesser noble blood—still better provisioned than many folk of the North."]
+				},
+				{
+					"type": "entries",
+					"name": "Backgrounds",
+					"entries": [
+						"Suggested backgrounds from {@book The Lord of the Rings Roleplaying|TLotRR} (or invent your own):",
+						{
+							"type": "list",
+							"columns": 2,
+							"items": [
+								"{@background Tower Guard|TLotRR}",
+								"{@background Keeper of Lore|TLotRR}",
+								"{@background Watcher on the Border|TLotRR}",
+								"{@background Far-Reaching Herald|TLotRR}",
+								"{@background Protector of the Land|TLotRR}",
+								"{@background Counsellor|TLotRR}"
+							]
+						}
+					]
+				}
+			],
+			"hasFluff": true
+		},
+		{
+			"name": "Rider of Rohan",
+			"source": "MECultures",
+			"edition": "one",
+			"size": ["M"],
+			"speed": 35,
+			"ability": [{"str": 1, "dex": 1}],
+			"feats": [{"anyFromCategory": {"category": ["VtRoh", "VtCom", "VtBar"]}}],
+			"traitTags": ["Language Proficiency", "Skill Proficiency", "Weapon Proficiency"],
+			"skillProficiencies": [{"animal handling": true}],
+			"languageProficiencies": [{"westron|TLotRR": true}],
+			"weaponProficiencies": [{"spear|phb": true, "shortbow|phb": true}],
+			"entries": [
+				{
+					"type": "entries",
+					"name": "Adventuring Age",
+					"entries": ["Between 16–35 years of age. The Riders ride young and hard; many see their first skirmish before they are twenty, and few who love the open grass wait long to answer the call of the Mark."]
+				},
+				{
+					"type": "entries",
+					"name": "Horse-Lords",
+					"entries": ["You have proficiency in the {@skill Animal Handling} skill. When you make a Wisdom (Animal Handling) check related to horses or riding, you may treat a roll of 9 or lower on the d20 as a 10."]
+				},
+				{
+					"type": "entries",
+					"name": "Spears of the Mark",
+					"entries": ["You have proficiency with the {@item spear|PHB} and {@item shortbow|PHB}."]
+				},
+				{
+					"type": "entries",
+					"name": "Swift on the Grass",
+					"entries": ["Your walking speed is 35 feet."]
+				},
+				{
+					"type": "entries",
+					"name": "Starting Virtue",
+					"entries": ["You gain one cultural virtue of your choice from the Riders of Rohan list, or a common virtue."]
+				},
+				{
+					"type": "entries",
+					"name": "Languages",
+					"entries": ["You can speak, read, and write {@language Westron|TLotRR}. Many Riders also know the old songs and names of the Mark in their own tongue, though it is seldom written."]
+				},
+				{
+					"type": "entries",
+					"name": "Standard of Living: Common",
+					"entries": ["The people of Rohan are hardy and free. Wealth is measured more in horses and honour than in gold; a Rider on the road is well-mounted but seldom overburdened with coin."]
+				},
+				{
+					"type": "entries",
+					"name": "Backgrounds",
+					"entries": [
+						"Suggested backgrounds:",
+						{
+							"type": "list",
+							"columns": 2,
+							"items": [
+								"{@background On Patrol|TLotRR}",
+								"{@background A Patient Hunter|TLotRR}",
+								"{@background Protector of the Land|TLotRR}",
+								"{@background Watcher on the Border|TLotRR}",
+								"{@background Restless Farmer|TLotRR}",
+								"{@background Far Trader|TLotRR}"
+							]
+						}
+					]
+				}
+			],
+			"hasFluff": true
+		},
+		{
+			"name": "Beorning",
+			"source": "MECultures",
+			"edition": "one",
+			"size": ["M"],
+			"speed": 30,
+			"ability": [{"str": 2}],
+			"feats": [{"anyFromCategory": {"category": ["VtBeo", "VtCom", "VtBar"]}}],
+			"traitTags": ["Language Proficiency", "Skill Proficiency"],
+			"skillProficiencies": [{"intimidation": true}],
+			"languageProficiencies": [{"westron|TLotRR": true}],
+			"entries": [
+				{
+					"type": "entries",
+					"name": "Adventuring Age",
+					"entries": ["Between 18–45 years of age. Beornings come late to trust and early to anger; those who leave the Vales of Anduin often do so as scouts, guardians of fords, or hunters of Orcs."]
+				},
+				{
+					"type": "entries",
+					"name": "Mighty Frame",
+					"entries": ["You count as one size larger when determining your carrying capacity and the weight you can push, drag, or lift."]
+				},
+				{
+					"type": "entries",
+					"name": "Unnerving Presence",
+					"entries": ["You have proficiency in the {@skill Intimidation} skill."]
+				},
+				{
+					"type": "entries",
+					"name": "Vigilant Sleeper",
+					"entries": ["You have advantage on saving throws against being frightened, and magic cannot put you to sleep."]
+				},
+				{
+					"type": "entries",
+					"name": "Starting Virtue",
+					"entries": ["You gain one cultural virtue of your choice from the Beorning list, or a common virtue."]
+				},
+				{
+					"type": "entries",
+					"name": "Languages",
+					"entries": ["You can speak, read, and write {@language Westron|TLotRR}. Many Beornings know the speech of beasts in part, though this is a matter of virtue and lore, not a free language."]
+				},
+				{
+					"type": "entries",
+					"name": "Standard of Living: Frugal",
+					"entries": ["Beornings keep simple halls and free ranges. Adventurers among them travel with what they can carry and what the wild provides."]
+				},
+				{
+					"type": "entries",
+					"name": "Backgrounds",
+					"entries": [
+						"Suggested backgrounds:",
+						{
+							"type": "list",
+							"columns": 2,
+							"items": [
+								"{@background Forest-Dweller|TLotRR}",
+								"{@background Hunter of Orcs|TLotRR}",
+								"{@background A Patient Hunter|TLotRR}",
+								"{@background Protector of the Land|TLotRR}",
+								"{@background Bitter Exile|TLotRR}",
+								"{@background Watcher on the Border|TLotRR}"
+							]
+						}
+					]
+				}
+			],
+			"hasFluff": true
+		}
+	],
+	"subrace": [
+		{
+			"name": "Mirkwood",
+			"source": "MECultures",
+			"raceName": "Elf",
+			"raceSource": "TLotRR",
+			"ability": [{"dex": 1}],
+			"skillProficiencies": [{"stealth": true}],
+			"entries": [
+				{
+					"type": "entries",
+					"name": "Wood-elves of the Woodland Realm",
+					"entries": [
+						"You are one of the Silvan Elves of Mirkwood, under the rule of Thranduil. Less lofty than many of the High Elves of the West, you are keen of sense and fierce in defence of the shadowed forest."
+					]
+				},
+				{
+					"type": "entries",
+					"name": "Silent as Leaves",
+					"entries": ["You have proficiency in the {@skill Stealth} skill."]
+				},
+				{
+					"type": "entries",
+					"name": "Spider-haunted Paths",
+					"entries": ["You have advantage on saving throws against poison."]
+				},
+				{
+					"type": "entries",
+					"name": "Standard of Living: Common",
+					"entries": [
+						"The Woodland Realm is rich in craft and song, but wary of the world beyond its eaves. Wanderers travel lightly, trusting skill more than gold."
+					]
+				},
+				{
+					"type": "entries",
+					"name": "Cultural Virtues",
+					"entries": [
+						"In addition to common Elven virtues, Wood-elves of Mirkwood may take virtues such as {@feat Spider-Bane|MECultures} and {@feat Feast of the Woodland Realm|MECultures}."
+					]
+				}
+			]
+		}
+	],
+	"raceFluff": [
+		{
+			"name": "Man of Gondor",
+			"source": "MECultures",
+			"entries": [
+				{
+					"type": "section",
+					"entries": [
+						"{@i \"For the fashion of Minas Tirith was such that it was built on seven levels…\"}",
+						"The Men of Gondor are heirs of Númenor in the South—wardens of a long defeat and a stubborn hope. From Minas Tirith, Dol Amroth, and the fiefs of the coast and the White Mountains, they keep the memory of the West while Orcs multiply and the Shadow lengthens in Mordor.",
+						"Those who adventure may be soldiers of the Citadel, scouts of Ithilien, scholars of the Houses of Healing, or younger children of noble houses seeking renown before the storm breaks."
+					]
+				}
+			]
+		},
+		{
+			"name": "Rider of Rohan",
+			"source": "MECultures",
+			"entries": [
+				{
+					"type": "section",
+					"entries": [
+						"{@i \"Where now the horse and the rider? Where is the horn that was blowing?\"}",
+						"The Riders of Rohan—the Eorlingas—dwell upon the wide grasslands of the Riddermark. They love horses as kin, honour above ease, and open sky above stone walls. Their songs remember Eorl the Young and the gift of Calenardhon; their spears remember every raid from the East and every oath to Gondor.",
+						"A Rider who leaves the Mark may ride as messenger, éored-scout, or exile seeking a name worthy of the mead-hall."
+					]
+				}
+			]
+		},
+		{
+			"name": "Beorning",
+			"source": "MECultures",
+			"entries": [
+				{
+					"type": "section",
+					"entries": [
+						"{@i \"He is a skin-changer. He changes his skin: sometimes he is a huge black bear, sometimes he is a great strong black-haired man…\"}",
+						"The Beornings are the folk of Beorn and his kindred in the Vales of Anduin—stern, solitary, and terrible when roused. They hate Orcs and Wargs, keep the fords and passes, and ask little of the world save to be left in peace. Some among them share Beorn's gift of skin-changing; others are simply mighty men of the mountains and woods.",
+						"A Beorning abroad is often a guardian, a tracker of enemies, or a reluctant ally drawn into larger wars."
+					]
+				}
+			]
+		}
+	],
+	"feat": [
+		{
+			"name": "Tower-Guard's Resolve",
+			"source": "MECultures",
+			"category": "VtGon",
+			"prerequisite": [{"race": [{"name": "Man of Gondor", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["str", "con", "wis"], "amount": 1}}],
+			"entries": [
+				"Long watches on the walls of Gondor have steeled your body and mind.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Strength, Constitution, or Wisdom by 1, to a maximum of 20.",
+						"When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. Once you use this trait, you cannot use it again until you finish a long rest."
+					]
+				}
+			]
+		},
+		{
+			"name": "Heirs of the Sea-Kings",
+			"source": "MECultures",
+			"category": "VtGon",
+			"prerequisite": [{"race": [{"name": "Man of Gondor", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["int", "wis", "cha"], "amount": 1}}],
+			"entries": [
+				"The dignity of Númenor still runs in your house.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Intelligence, Wisdom, or Charisma by 1, to a maximum of 20.",
+						"You have advantage on saving throws against being frightened."
+					]
+				}
+			]
+		},
+		{
+			"name": "Ride to Ruin",
+			"source": "MECultures",
+			"category": "VtRoh",
+			"prerequisite": [{"race": [{"name": "Rider of Rohan", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["str", "dex", "cha"], "amount": 1}}],
+			"entries": [
+				"When the horns sound, your courage rises with the charge.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Strength, Dexterity, or Charisma by 1, to a maximum of 20.",
+						"When you take the Dash action, opportunity attacks against you are made with disadvantage until the start of your next turn."
+					]
+				}
+			]
+		},
+		{
+			"name": "Horse-Sense",
+			"source": "MECultures",
+			"category": "VtRoh",
+			"prerequisite": [{"race": [{"name": "Rider of Rohan", "source": "MECultures"}]}],
+			"ability": [{"wis": 1}],
+			"entries": [
+				"You and your mount understand one another as kin.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Wisdom by 1, to a maximum of 20.",
+						"You can cast the {@spell animal friendship|XPHB|animal friendship} spell once with this virtue, requiring no material components, and regain the ability to do so when you finish a long rest. Wisdom is your spellcasting ability for it. (If that spell is unavailable, treat this as the ability to calm a nonhostile beast with a successful DC 13 Wisdom (Animal Handling) check as an action.)"
+					]
+				}
+			]
+		},
+		{
+			"name": "Spider-Bane",
+			"source": "MECultures",
+			"category": "VtMir",
+			"prerequisite": [{"race": [{"name": "Elf", "source": "TLotRR", "displayEntry": "Elf (Mirkwood)"}]}],
+			"ability": [{"choose": {"from": ["dex", "wis"], "amount": 1}}],
+			"entries": [
+				"You have hunted the children of Ungoliant in the dark wood.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Dexterity or Wisdom by 1, to a maximum of 20.",
+						"You have resistance to poison damage."
+					]
+				}
+			]
+		},
+		{
+			"name": "Feast of the Woodland Realm",
+			"source": "MECultures",
+			"category": "VtMir",
+			"prerequisite": [{"race": [{"name": "Elf", "source": "TLotRR", "displayEntry": "Elf (Mirkwood)"}]}],
+			"ability": [{"cha": 1}],
+			"entries": [
+				"Song and starlight still answer you, even far from the halls of the king.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Charisma by 1, to a maximum of 20.",
+						"You gain proficiency in the {@skill Performance} skill. If you are already proficient, you instead gain expertise (double proficiency bonus) with Performance checks."
+					]
+				}
+			]
+		},
+		{
+			"name": "Skin-Changer's Endurance",
+			"source": "MECultures",
+			"category": "VtBeo",
+			"prerequisite": [{"race": [{"name": "Beorning", "source": "MECultures"}]}],
+			"ability": [{"con": 1}],
+			"entries": [
+				"Whether or not you share Beorn's full gift, your flesh is hard to lay low.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Constitution by 1, to a maximum of 20.",
+						"As a bonus action, you can gain temporary hit points equal to your level + your Constitution modifier. Once you use this trait, you cannot use it again until you finish a short or long rest."
+					]
+				}
+			]
+		},
+		{
+			"name": "Wrath of the Vale",
+			"source": "MECultures",
+			"category": "VtBeo",
+			"prerequisite": [{"race": [{"name": "Beorning", "source": "MECultures"}]}],
+			"ability": [{"str": 1}],
+			"entries": [
+				"When your anger is kindled, few stand before you.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Strength by 1, to a maximum of 20.",
+						"Once per turn when you hit a creature with a melee weapon attack, you can deal extra damage equal to your proficiency bonus. You can use this trait a number of times equal to your proficiency bonus, and you regain all expended uses when you finish a long rest."
+					]
+				}
+			]
+		}
+	]
+}
