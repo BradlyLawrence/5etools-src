@@ -77,6 +77,10 @@ class NavBar {
 		this._addElement_li({keyPath: [NavBar._CAT_RULES], page: "quickreference.html", aText: "Quick Reference (5e/2014)"});
 
 		this._addElement_dropdown({category: NavBar._CAT_PLAYER});
+		this._addElement_li({keyPath: [NavBar._CAT_PLAYER], page: "character-creators/index.html", aText: "⚔️ Character Creators Hub"});
+		this._addElement_li({keyPath: [NavBar._CAT_PLAYER], page: "character-creators/dnd-2024/index.html", aText: "⚡ D&D 2024 Character Creator"});
+		this._addElement_li({keyPath: [NavBar._CAT_PLAYER], page: "character-creators/lotr-rpg/index.html", aText: "💍 LOTR 5e Character Creator"});
+		this._addElement_divider({keyPath: [NavBar._CAT_PLAYER]});
 		this._addElement_li({keyPath: [NavBar._CAT_PLAYER], page: "classes.html", aText: "Classes"});
 		this._addElement_li({keyPath: [NavBar._CAT_PLAYER], page: "backgrounds.html", aText: "Backgrounds"});
 		this._addElement_li({keyPath: [NavBar._CAT_PLAYER], page: "feats.html", aText: "Feats"});
@@ -91,7 +95,7 @@ class NavBar {
 
 		this._addElement_dropdown({category: NavBar._CAT_DUNGEON_MASTER});
 		this._addElement_li({keyPath: [NavBar._CAT_DUNGEON_MASTER], page: "dmscreen.html", aText: "DM Screen"});
-		this._addElement_li({keyPath: [NavBar._CAT_DUNGEON_MASTER], page: "dmtools/tlotrr/index.html", aText: "LOTR RPG Loremaster Suite"});
+		this._addElement_li({keyPath: [NavBar._CAT_DUNGEON_MASTER], page: "dmtools/tlotrr/index.html", aText: "👁️ LOTR RPG Loremaster Suite"});
 		this._addElement_divider({keyPath: [NavBar._CAT_DUNGEON_MASTER]});
 		this._addElement_dropdown({keyPath: [NavBar._CAT_DUNGEON_MASTER], category: NavBar._CAT_ADVENTURES, isSide: true, page: "adventures.html"});
 		this._addElement_li({keyPath: [NavBar._CAT_DUNGEON_MASTER, NavBar._CAT_ADVENTURES], page: "adventures.html", aText: "View All/Homebrew"});

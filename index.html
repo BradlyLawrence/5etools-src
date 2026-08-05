@@ -13,6 +13,10 @@
 
 	<title>5etools</title>
 
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 	<link rel="stylesheet" href="css/bootstrap.css">
 	<link rel="stylesheet" href="css/fontawesome.css">
 	<link rel="stylesheet" href="css/main.css">
@@ -78,9 +82,6 @@
 
 	<div class="container">
 		<!--GITHUB_DISCLAIMER-->
-		<!--	<div class="alert alert-warning">-->
-		<!--		<p><strong>Discord update:</strong> A recent bot-hijack resulted in many accounts being banned from our Discord server, along with a general server reset. Besides bans, no user accounts were affected, and the server has largely been restored to its former state. <a class="alert-link" href="https://discord.gg/5etools" target="_blank" rel="noopener noreferrer">You can rejoin here.</a></p>-->
-		<!--	</div>-->
 	</div>
 
 	<div class="cancer__wrp-sidebar cancer__wrp-sidebar-lhs cancer__wrp-sidebar-lhs--scrolling-page cancer__anchor"><div class="cancer__disp-cancer"></div><div class="cancer__sidebar-inner cancer__sidebar-inner--top cancer__wrp-interactive"><!--5ETOOLS_AD_LEFT_1--></div><div class="cancer__sidebar-inner cancer__sidebar-inner--bottom cancer__wrp-interactive"><!--5ETOOLS_AD_LEFT_2--></div></div>
@@ -89,21 +90,25 @@
 	<div class="home__stripe">
 		<div class="home__split ve-relative">
 			<div class="home__stripe-header ve-text-right home__h-player"><div class="ve-w-100 ve-text-left ve-mobile-sm__text-center">Players</div></div>
-			<div class="ve-flex ve-flex-wrap ve-relative home__split-spaced home__split-spaced--gutter home__split-spaced--no-header home__wrp-buttons">
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-player" href="races.html">
+			<div class="ve-flex ve-flex-wrap ve-relative home__wrp-buttons">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-player home__btn-cc" href="character-creators/index.html" title="Standalone character builders &amp; live sheet tools for D&amp;D 2024 and LOTR RPG.">
+					<span class="home__badge-corner home__badge-corner--cc">2024</span>
+					<div class="fal fa-id-card home__icn-page"></div>
+					<h4 class="ve-text-center home__lbl-page">Character<br>Creators</h4>
+				</a>
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-player" href="races.html">
 					<div class="fal fa-users home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Species</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-player" href="classes.html" title="Quickly browse the official classes, and their associated subclasses.
-	Unearthed Arcana content can be accessed by cycling the &quot;All Sources&quot; button.">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-player" href="classes.html" title="Quickly browse the official classes, and their associated subclasses.">
 					<div class="fal fa-hat-wizard home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Classes</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-player" href="feats.html">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-player" href="feats.html">
 					<div class="fal fa-award home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Feats</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default home__btn-player" href="optionalfeatures.html" title="A searchable, filterable list of feature choices, including Eldritch Invocations for the Warlock Class, and Maneuvers for the Fighter's Battle Master subclass.">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-player" href="optionalfeatures.html" title="A searchable, filterable list of feature choices, including Eldritch Invocations for the Warlock Class.">
 					<div class="fal fa-drafting-compass home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Options<br>&amp; Features</h4>
 				</a>
@@ -128,15 +133,15 @@
 			</div>
 
 			<div class="ve-flex ve-flex-wrap home__wrp-buttons home__narrow-hidden">
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-player" href="backgrounds.html">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-player" href="backgrounds.html">
 					<div class="fal fa-portrait home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Backgrounds</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-player" href="items.html">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-player" href="items.html">
 					<div class="fal fa-helmet-battle home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Items</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-player" href="spells.html">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-player" href="spells.html">
 					<div class="fal fa-book-spells home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Spells</h4>
 				</a>
@@ -152,21 +157,21 @@
 		<div class="ve-my-4 home__mobile-hidden"></div>
 
 		<div class="home__split">
-			<div class="ve-flex ve-flex-wrap ve-relative home__split-spaced home__split-spaced--gutter home__wrp-buttons">
+			<div class="ve-flex ve-flex-wrap ve-relative home__wrp-buttons">
 				<div class="home__stripe-header home__h-rule"><div class="ve-w-100 ve-text-left ve-mobile-sm__text-center">Rules</div></div>
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-rule" href="adventures.html" title="All the official adventures published by Wizards of the Coast.">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-rule" href="adventures.html" title="All the official adventures published by Wizards of the Coast.">
 					<div class="fal fa-dungeon home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Adventures</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-rule" href="books.html" title="All the official sources published by Wizards of the Coast.">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-rule" href="books.html" title="All the official sources published by Wizards of the Coast.">
 					<div class="fal fa-books home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Books</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-rule" href="variantrules.html" title="A searchable selection of commonly used rules and tables.">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-rule" href="variantrules.html" title="A searchable selection of commonly used rules and tables.">
 					<div class="fal fa-info-square home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Rules<br>Glossary</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default home__btn-rule" href="conditionsdiseases.html" title="A searchable, filterable list of the conditions found in the Player's Handbook, and various diseases found in the Dungeon Master's Guide and beyond.">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-rule" href="conditionsdiseases.html" title="A searchable, filterable list of the conditions found in the Player's Handbook, and various diseases.">
 					<div class="fal fa-skull-crossbones home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Conditions</h4>
 				</a>
@@ -176,19 +181,24 @@
 
 			<div class="ve-flex ve-flex-wrap ve-relative home__wrp-buttons">
 				<div class="home__stripe-header home__h-dm"><div class="ve-w-100 ve-text-left ve-mobile-sm__text-center">Dungeon Masters</div></div>
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-dm" href="bestiary.html" title="A searchable, filterable list of the more than 1,000 stat blocks in D&amp;D 5e. An encounter builder is included, and creature Challenge Rating can be scaled according to the &quot;Creating Quick Monster Stats&quot; table in the Dungeon Master's Guide.">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-dm home__btn-lm" href="dmtools/tlotrr/index.html" title="Loremaster Suite for Lord of the Rings Roleplaying (5e): Journey Hex Map, Encounter Builder, Initiative Tracker, &amp; Eye of Mordor.">
+					<span class="home__badge-corner home__badge-corner--lm">LOTR</span>
+					<div class="fal fa-eye home__icn-page"></div>
+					<h4 class="ve-text-center home__lbl-page">Loremaster<br>Suite</h4>
+				</a>
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-dm" href="bestiary.html" title="A searchable, filterable list of stat blocks in D&amp;D 5e.">
 					<div class="fal fa-dragon home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Bestiary</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-dm" href="dmscreen.html" title="A fully-customizable Dungeon Master's screen, featuring an initiative tracker; a unit converter, embedded images, videos, and sites; and the majority of 5etools' content.">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-dm" href="dmscreen.html" title="A fully-customizable Dungeon Master's screen.">
 					<div class="fal fa-map home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">DM Screen</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default ve-mr-3 home__btn-dm" href="lootgen.html" title="A random loot generator for both individual and hoards of treasure.">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-dm" href="lootgen.html" title="A random loot generator for both individual and hoards of treasure.">
 					<div class="fal fa-treasure-chest home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">Loot<br>Generator</h4>
 				</a>
-				<a class="home__btn-page ve-btn ve-btn-default home__btn-dm" href="crcalculator.html" title="A verbose, in-depth Challenge Rating calculator, for determining the CR of homebrew creatures.">
+				<a class="home__btn-page ve-btn ve-btn-default home__btn-dm" href="crcalculator.html" title="A Challenge Rating calculator for determining CR of homebrew creatures.">
 					<div class="fal fa-abacus home__icn-page"></div>
 					<h4 class="ve-text-center home__lbl-page">CR<br>Calculator</h4>
 				</a>

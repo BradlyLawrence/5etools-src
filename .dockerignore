@@ -12,8 +12,12 @@
 !*.xml
 
 !audio
+!character-creators
+!character-creators/**
 !css
 !data
+!dmtools
+!dmtools/**
 !fonts
 !homebrew
 !icon
