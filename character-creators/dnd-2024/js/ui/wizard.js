@@ -62,8 +62,13 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 	};
 
 	const render = () => {
+		const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
 		clear(root);
 		root.append(renderChrome(), renderStep());
+		window.scrollTo({ top: scrollY, behavior: "instant" });
+		requestAnimationFrame(() => {
+			window.scrollTo({ top: scrollY, behavior: "instant" });
+		});
 	};
 
 	const openSourceModal = () => {
@@ -288,7 +293,7 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 		const box = el("div", {class: "cc-form"});
 		box.append(el("h2", {text: "Identity"}));
 
-		const nameGrid = el("div", {class: "cc-sheet-cols", style: "align-items: center;"});
+		const nameGrid = el("div", {class: "cc-identity-header-grid"});
 		const portraitFrame = el("div", {
 			class: "cc-portrait-frame",
 			title: "Click to set character portrait",
@@ -311,7 +316,7 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 		portraitFrame.append(el("div", {class: "cc-portrait-overlay", text: "📷 Portrait"}));
 		nameGrid.append(portraitFrame);
 
-		const fieldsBox = el("div", {style: "flex: 1;"});
+		const fieldsBox = el("div", {class: "cc-identity-fields"});
 		fieldsBox.append(field("Character name", el("input", {
 			class: "cc-input",
 			value: char.identity.name || "",
@@ -330,12 +335,6 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 			placeholder: "e.g. Chaotic Good",
 			onInput: (e) => patchChar(c => { c.identity.alignment = e.target.value; }),
 		})));
-		const notes = el("textarea", {
-			class: "cc-input cc-textarea",
-			onInput: (e) => patchChar(c => { c.identity.notes = e.target.value; }),
-		});
-		notes.value = char.identity.notes || "";
-		box.append(field("Notes", notes));
 		return box;
 	}
 

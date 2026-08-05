@@ -25,6 +25,7 @@ import {toUid} from "../data.js";
 import {el, clear, multiCheck} from "./pickers.js";
 import {mountSourceBanner, mountSourceSelectorModal} from "../../../shared/sources.js";
 import {openPortraitModal} from "../../../shared/portrait.js";
+import {showAlertModal} from "../../../shared/ui-modal.js";
 
 const STEPS = [
 	{id: "identity", title: "Identity"},
@@ -56,6 +57,8 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 	};
 
 	const render = () => {
+		const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+
 		clear(root);
 
 		const banner = mountSourceBanner({
@@ -98,17 +101,24 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 				if (err) { alert(err); return; }
 				if (step === STEPS.length - 1) {
 					try {
-						finalizeLevelOne(char, data);
-						onComplete?.(char);
-					} catch (e) { alert(e.message); }
-					return;
+						const finalChar = finalizeLevelOne(char, data);
+						onComplete?.(finalChar);
+					} catch (e) {
+						alert(`Error creating character: ${e.message}`);
+					}
+				} else {
+					step++;
+					render();
 				}
-				step++;
-				render();
 			},
 		}));
 		panel.append(footer);
 		root.append(panel);
+
+		window.scrollTo({ top: scrollY, behavior: "instant" });
+		requestAnimationFrame(() => {
+			window.scrollTo({ top: scrollY, behavior: "instant" });
+		});
 	};
 
 	function validateStep (id) {
@@ -282,7 +292,7 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 		box.append(el("h2", {text: "Identity & Physical Appearance"}));
 		box.append(el("p", {class: "cc-muted", text: "A hero of Middle-earth — Free League’s The Lord of the Rings Roleplaying (5e)."}));
 		
-		const nameGrid = el("div", {class: "cc-sheet-cols", style: "align-items: center;"});
+		const nameGrid = el("div", {class: "cc-identity-header-grid"});
 		const portraitFrame = el("div", {
 			class: "cc-portrait-frame",
 			title: "Click to set hero portrait",
@@ -305,7 +315,7 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 		portraitFrame.append(el("div", {class: "cc-portrait-overlay", text: "📷 Portrait"}));
 		nameGrid.append(portraitFrame);
 
-		const fieldsBox = el("div", {style: "flex: 1;"});
+		const fieldsBox = el("div", {class: "cc-identity-fields"});
 		fieldsBox.append(field("Hero name", el("input", {
 			class: "cc-input", value: char.identity.name || "",
 			placeholder: "e.g. Buddy, Aragorn, Gimli…",
@@ -347,36 +357,55 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 		})));
 		box.append(physGrid);
 
-		box.append(el("h3", {text: "Heir & Legacy System", style: "margin-top: 1rem;"}));
+		// Heir & Legacy System Header with Info Modal
+		const heirHeaderRow = el("div", {style: "display: flex; align-items: center; gap: 0.5rem; margin-top: 1.25rem;"});
+		heirHeaderRow.append(el("h3", {text: "Heir & Legacy System", style: "margin: 0;"}));
+		heirHeaderRow.append(el("button", {
+			type: "button",
+			class: "cc-btn-icon-subtle",
+			text: "❓",
+			title: "Info about Heir & Legacy System",
+			onClick: () => showAlertModal(
+				"👑 Heir & Legacy System",
+				"In Middle-earth, your hero can choose a designated Heir (a relative, friend, or ward) and invest treasure or heirlooms into a Legacy during Fellowship Phases. If your hero falls or retires, their Heir steps forward as your new player character with inherited standing and legacy equipment.\n\n💡 Note: Heir & Legacy can be left blank during character creation and added or updated later during your campaign fellowship phases!",
+				el
+			),
+		}));
+		box.append(heirHeaderRow);
+
 		const heirGrid = el("div", {class: "cc-sheet-cols"});
 		heirGrid.append(field("Heir Name", el("input", {
-			class: "cc-input", value: char.identity.heirName || "", placeholder: "Name of chosen heir",
+			class: "cc-input", value: char.identity.heirName || "", placeholder: "Name of chosen heir (optional)",
 			onInput: (e) => patchChar(c => { c.identity.heirName = e.target.value; }),
 		})));
 		heirGrid.append(field("Investment", el("input", {
-			class: "cc-input", value: char.identity.investment || "", placeholder: "Legacy investment / treasure",
+			class: "cc-input", value: char.identity.investment || "", placeholder: "Legacy investment / treasure (optional)",
 			onInput: (e) => patchChar(c => { c.identity.investment = e.target.value; }),
 		})));
 		box.append(heirGrid);
 
-		box.append(el("h3", {text: "Patron & Traits", style: "margin-top: 1rem;"}));
+		// Patron Header with Info Modal
+		const patronHeaderRow = el("div", {style: "display: flex; align-items: center; gap: 0.5rem; margin-top: 1.25rem;"});
+		patronHeaderRow.append(el("h3", {text: "Patron", style: "margin: 0;"}));
+		patronHeaderRow.append(el("button", {
+			type: "button",
+			class: "cc-btn-icon-subtle",
+			text: "❓",
+			title: "Info about Patrons",
+			onClick: () => showAlertModal(
+				"🏛️ Patrons of Middle-earth",
+				"Patrons are influential figures of the Free Peoples (such as Gandalf the Grey, Elrond of Rivendell, Bilbo Baggins, Círdan, or King Bard) who guide and support your Company. Choosing a Patron provides your company with Fellowship Phase benefits, refuge, and guidance.\n\n💡 Note: You can select a Patron now or leave it blank and choose one later when your Company forms during campaign play!",
+				el
+			),
+		}));
+		box.append(patronHeaderRow);
+
 		const traitGrid = el("div", {class: "cc-sheet-cols"});
-		traitGrid.append(field("Patron", el("input", {
-			class: "cc-input", value: char.identity.patron || "", placeholder: "e.g. Gandalf, Elrond, Bilbo…",
+		traitGrid.append(field("Patron Name", el("input", {
+			class: "cc-input", value: char.identity.patron || "", placeholder: "e.g. Gandalf, Elrond, Bilbo… (optional)",
 			onInput: (e) => patchChar(c => { c.identity.patron = e.target.value; }),
 		})));
-		traitGrid.append(field("Shadow Flaw", el("input", {
-			class: "cc-input", value: char.identity.flaw || "", placeholder: "e.g. Lure of Secrets, Haughty…",
-			onInput: (e) => patchChar(c => { c.identity.flaw = e.target.value; }),
-		})));
 		box.append(traitGrid);
-
-		const notes = el("textarea", {
-			class: "cc-input cc-textarea",
-			onInput: (e) => patchChar(c => { c.identity.notes = e.target.value; }),
-		});
-		notes.value = char.identity.notes || "";
-		box.append(field("Tale of Years / Journey Notes", notes));
 		return box;
 	}
 
@@ -496,6 +525,32 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 					subList.append(btn);
 				}
 				detail.append(subList);
+			}
+
+			const selectedSub = char.culture.subraceUid
+				? data.subraces.find(s => toUid(s.name, s.source) === String(char.culture.subraceUid).toLowerCase())
+				: null;
+
+			if (selectedSub?.ability?.some(b => b.choose)) {
+				detail.append(el("h4", {text: `${selectedSub.name} Bonus Choice`}));
+				detail.append(el("p", {
+					class: "cc-muted",
+					text: `Select your +1 flexible ability score bonus for ${selectedSub.name}:`,
+				}));
+				const chooseBlock = selectedSub.ability.find(b => b.choose).choose;
+				const fromStats = chooseBlock.from || ["str", "con", "int", "wis", "cha"];
+				const sel = el("select", {class: "cc-select"});
+				sel.append(el("option", {value: "", text: "-- Choose +1 Stat --"}));
+				for (const ab of fromStats) {
+					const opt = el("option", {value: ab, text: `+1 ${ab.toUpperCase()}`});
+					if (char.culture.abilityChoice?.[ab] === 1) opt.selected = true;
+					sel.append(opt);
+				}
+				sel.addEventListener("change", () => {
+					char.culture.abilityChoice = sel.value ? {[sel.value]: 1} : {};
+					setChar(char);
+				});
+				detail.append(sel);
 			}
 
 			// Ranger-style ability choice (simplified: use first weighted option if present)

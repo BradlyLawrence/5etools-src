@@ -229,7 +229,21 @@
 			"source": "MECultures",
 			"raceName": "Elf",
 			"raceSource": "TLotRR",
-			"ability": [{"dex": 1}],
+			"ability": [
+				{
+					"dex": 1,
+					"choose": {
+						"from": [
+							"str",
+							"con",
+							"int",
+							"wis",
+							"cha"
+						],
+						"count": 1
+					}
+				}
+			],
 			"skillProficiencies": [{"stealth": true}],
 			"entries": [
 				{
