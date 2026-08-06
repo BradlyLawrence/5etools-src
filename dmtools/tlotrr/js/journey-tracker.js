@@ -15,7 +15,7 @@ const MAP_HEIGHT = 1648;
 let hexRadius = 25.3;
 let offsetX = 3.5;
 let offsetY = 12.5;
-let gridOpacity = 0.85;
+let gridOpacity = 0.5;
 
 let isEditMode = false;
 let activePaintTool = "border"; // "border", "wild", "dark", "impassable", "perilous", "clear"
@@ -29,7 +29,7 @@ const DEFAULT_HEXMAP_DATA = {
     "hexRadius": 25.3,
     "offsetX": 3.5,
     "offsetY": 12.5,
-    "gridOpacity": 0.85
+    "gridOpacity": 0.5
   },
   "hexState": {
     "17_7": { "type": "wild", "perilous": 0 },
@@ -1713,11 +1713,12 @@ const DEFAULT_HEXMAP_DATA = {
   }
 };
 
-// Painted Hex State: Map of key "col_row" -> { type: "border"|"wild"|"dark"|"impassable", perilous: 0..5 }
+/// Painted Hex State: Map of key "col_row" -> { type: "border"|"wild"|"dark"|"impassable", perilous: 0..5 }
 let hexState = {};
 
-// Journey Path Waypoints (array of hex keys)
+// Journey Path Waypoints & Gameplay Progress
 let journeyPath = [];
+let currentStepIndex = 0;
 let journeyLogHistory = [];
 
 // Pan & Zoom ViewBox state
@@ -1841,6 +1842,7 @@ export function renderJourneyHeaderControls() {
 			`}
 
 			<div style="margin-left:auto; display:flex; gap:0.3rem;">
+				<button class="btn-lm btn-sm" onclick="window.exportPlayerMapPng()" title="Export Player Map PNG (Dotted Route, Clean Hexes)">🖼️ Player Map PNG</button>
 				<button class="btn-lm btn-sm" onclick="window.exportHexMap()" title="Export Map JSON">📥 Export</button>
 				<button class="btn-lm btn-sm" onclick="window.triggerMapImport()" title="Import Map JSON">📤 Import</button>
 				<button class="btn-lm btn-sm" onclick="window.mapZoom(0.8)">🔍 +</button>
@@ -1899,7 +1901,7 @@ window.updateGridSetting = function(key, val) {
 };
 
 window.clearAllHexes = function() {
-	if (confirm("Clear all painted hex terrain and perilous areas?")) {
+	if (confirm("Are you sure you want to clear ALL hex terrain paint data?")) {
 		hexState = {};
 		saveHexMapState();
 		renderMapSvg("mapContainer");
@@ -1907,46 +1909,77 @@ window.clearAllHexes = function() {
 	}
 };
 
-window.mapZoom = function(factor) {
-	const newW = viewBox.w * factor;
-	const newH = viewBox.h * factor;
-	viewBox.x += (viewBox.w - newW) / 2;
-	viewBox.y += (viewBox.h - newH) / 2;
-	viewBox.w = newW;
-	viewBox.h = newH;
-	renderMapSvg("mapContainer");
-};
-
 window.resetMapView = function() {
 	viewBox = { x: 0, y: 0, w: MAP_WIDTH, h: MAP_HEIGHT };
-	renderMapSvg("mapContainer");
+	const svg = document.getElementById("mapSvgElement");
+	if (svg) svg.setAttribute("viewBox", `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
+};
+
+window.mapZoom = function(factor) {
+	const svg = document.getElementById("mapSvgElement");
+	if (!svg) return;
+
+	let newW = viewBox.w * factor;
+	let newH = viewBox.h * factor;
+
+	const minW = MAP_WIDTH * 0.1;
+	const maxW = MAP_WIDTH * 3.0;
+
+	if (newW < minW) {
+		newW = minW;
+		newH = minW * (MAP_HEIGHT / MAP_WIDTH);
+	} else if (newW > maxW) {
+		newW = maxW;
+		newH = maxW * (MAP_HEIGHT / MAP_WIDTH);
+	}
+
+	const cx = viewBox.x + viewBox.w / 2;
+	const cy = viewBox.y + viewBox.h / 2;
+
+	viewBox.x = cx - newW / 2;
+	viewBox.y = cy - newH / 2;
+	viewBox.w = newW;
+	viewBox.h = newH;
+
+	svg.setAttribute("viewBox", `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
 };
 
 /**
- * Calculate Pointy-Topped Hex Grid Layout (Rotated 90 degrees)
+ * Generate 90° Rotated Hex Grid Center Points across map.png
  */
 function getHexGridPoints() {
+	const points = [];
 	const r = hexRadius;
 	const horizDist = Math.sqrt(3) * r;
 	const vertDist = 1.5 * r;
 
-	const cols = Math.ceil(MAP_WIDTH / horizDist) + 2;
-	const rows = Math.ceil(MAP_HEIGHT / vertDist) + 2;
+	const cols = Math.ceil(MAP_WIDTH / horizDist) + 3;
+	const rows = Math.ceil(MAP_HEIGHT / vertDist) + 3;
 
-	const grid = [];
-	for (let rIdx = -1; rIdx < rows; rIdx++) {
-		for (let c = -1; c < cols; c++) {
-			const cx = c * horizDist + (rIdx % 2 !== 0 ? horizDist / 2 : 0) + offsetX;
+	for (let rIdx = 0; rIdx < rows; rIdx++) {
+		const isOddRow = (rIdx % 2 !== 0);
+		const rowOffsetX = isOddRow ? horizDist / 2 : 0;
+
+		for (let cIdx = 0; cIdx < cols; cIdx++) {
+			const cx = cIdx * horizDist + rowOffsetX + offsetX;
 			const cy = rIdx * vertDist + offsetY;
-			const key = `${c}_${rIdx}`;
-			grid.push({ key, col: c, row: rIdx, cx, cy });
+
+			if (cx >= -r * 2 && cx <= MAP_WIDTH + r * 2 && cy >= -r * 2 && cy <= MAP_HEIGHT + r * 2) {
+				points.push({
+					key: `${cIdx}_${rIdx}`,
+					col: cIdx,
+					row: rIdx,
+					cx,
+					cy
+				});
+			}
 		}
 	}
-	return grid;
+	return points;
 }
 
 /**
- * Generate pointy-topped hex polygon points string (rotated 90 degrees)
+ * Generate SVG Polygon Points for 90° Rotated (Pointy-Topped) Hex
  */
 function getHexPolygonPoints(cx, cy, r) {
 	const points = [];
@@ -1998,6 +2031,75 @@ function renderMapSvg(containerId) {
 		`;
 	});
 
+	// Render Journey Route Overlays (Solid Traveled Line, Dashed Remaining Line, Start 🚩, End 🏁, Fellowship Token 🧙‍♂️)
+	let routeSvg = "";
+	if (journeyPath.length > 0) {
+		const pointsList = [];
+		journeyPath.forEach(key => {
+			const pt = grid.find(g => g.key === key);
+			if (pt) pointsList.push(pt);
+		});
+
+		if (pointsList.length > 0) {
+			// Clamp currentStepIndex
+			if (currentStepIndex >= pointsList.length) currentStepIndex = Math.max(0, pointsList.length - 1);
+
+			// Traveled points (0 to currentStepIndex)
+			const traveledPts = pointsList.slice(0, currentStepIndex + 1).map(p => `${p.cx.toFixed(1)},${p.cy.toFixed(1)}`).join(" ");
+			// Remaining points (currentStepIndex to end)
+			const remainingPts = pointsList.slice(currentStepIndex).map(p => `${p.cx.toFixed(1)},${p.cy.toFixed(1)}`).join(" ");
+
+			routeSvg += `
+				<!-- Traveled Path Line (Solid Gold Ink) -->
+				${traveledPts.length > 0 ? `<polyline points="${traveledPts}" fill="none" stroke="#d4af37" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none"/>` : ''}
+
+				<!-- Remaining Path Line (Dashed Blue Ink) -->
+				${remainingPts.length > 0 ? `<polyline points="${remainingPts}" fill="none" stroke="#409cff" stroke-width="3" stroke-dasharray="6,4" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none"/>` : ''}
+			`;
+
+			// Render Waypoint Markers & Fellowship Token
+			pointsList.forEach((pt, idx) => {
+				const isStart = (idx === 0);
+				const isEnd = (idx === pointsList.length - 1 && pointsList.length > 1);
+				const isCurrent = (idx === currentStepIndex);
+
+				if (isStart) {
+					// Departure / Start Location Marker (🚩 Flag Badge)
+					routeSvg += `
+						<g style="pointer-events:none">
+							<circle cx="${pt.cx}" cy="${pt.cy}" r="14" fill="#2d6a3f" stroke="#eedd99" stroke-width="2"/>
+							<text x="${pt.cx}" y="${pt.cy + 4}" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">🚩</text>
+						</g>
+					`;
+				} else if (isEnd && !isCurrent) {
+					// Destination Marker (🏁 End Badge)
+					routeSvg += `
+						<g style="pointer-events:none">
+							<circle cx="${pt.cx}" cy="${pt.cy}" r="14" fill="#8b1e24" stroke="#eedd99" stroke-width="2"/>
+							<text x="${pt.cx}" y="${pt.cy + 4}" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">🏁</text>
+						</g>
+					`;
+				} else if (!isCurrent) {
+					// Intermediate Waypoint Dot
+					routeSvg += `
+						<circle cx="${pt.cx}" cy="${pt.cy}" r="4" fill="#ffffff" stroke="#d4af37" stroke-width="1.5" style="pointer-events:none"/>
+					`;
+				}
+
+				// Active Fellowship Position Token (🧙‍♂️ Ring Badge)
+				if (isCurrent) {
+					routeSvg += `
+						<g class="fellowship-token" style="pointer-events:none">
+							<circle cx="${pt.cx}" cy="${pt.cy}" r="17" fill="rgba(212, 175, 55, 0.95)" stroke="#ffffff" stroke-width="2.5"/>
+							<circle cx="${pt.cx}" cy="${pt.cy}" r="22" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-dasharray="4,3"/>
+							<text x="${pt.cx}" y="${pt.cy + 5}" font-size="14" text-anchor="middle">🧙‍♂️</text>
+						</g>
+					`;
+				}
+			});
+		}
+	}
+
 	container.innerHTML = `
 		<svg class="map-svg" id="mapSvgElement" viewBox="${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}" preserveAspectRatio="xMidYMid meet">
 			<!-- Background Map Image -->
@@ -2006,6 +2108,11 @@ function renderMapSvg(containerId) {
 			<!-- Hex Overlay Layer -->
 			<g id="hexLayer">
 				${hexesSvg}
+			</g>
+
+			<!-- Journey Route Layer -->
+			<g id="routeLayer">
+				${routeSvg}
 			</g>
 		</svg>
 	`;
@@ -2215,13 +2322,17 @@ export function renderJourneyControls() {
 		return;
 	}
 
-	// Calculate travel metrics based on terrain
+	// Calculate travel metrics and progress
 	let totalHexes = journeyPath.length;
-	let travelDays = 0;
+	let totalDays = 0;
+	let traveledDays = 0;
 	let perilousCount = 0;
 	let highestPeril = 0;
 
-	journeyPath.forEach(key => {
+	// Clamp step index
+	if (currentStepIndex >= totalHexes) currentStepIndex = Math.max(0, totalHexes - 1);
+
+	journeyPath.forEach((key, idx) => {
 		const h = hexState[key] || {};
 		let dayCost = 2; // Default ~2 days per hex
 
@@ -2230,7 +2341,8 @@ export function renderJourneyControls() {
 		if (h.type === "dark") dayCost = 3;
 		if (h.type === "impassable") dayCost = 5;
 
-		travelDays += dayCost;
+		totalDays += dayCost;
+		if (idx <= currentStepIndex) traveledDays += dayCost;
 
 		if (h.perilous > 0) {
 			perilousCount++;
@@ -2243,29 +2355,48 @@ export function renderJourneyControls() {
 			<div style="display:flex; justify-content:space-between; align-items:center;">
 				<div>
 					<span class="badge badge-gold">JOURNEY ROUTE</span>
-					<h3 style="color:var(--text-gold); margin-top:0.2rem;">${totalHexes} Hexes Selected</h3>
+					<h3 style="color:var(--text-gold); margin-top:0.2rem;">${totalHexes} Hexes Charted</h3>
 				</div>
-				<button class="btn-lm danger btn-sm" onclick="window.clearJourneyPath()">Reset Path</button>
+				<div style="display:flex; gap:0.3rem;">
+					<button class="btn-lm btn-sm" onclick="window.exportPlayerMapPng()" title="Export clean Player Map PNG with dotted route line">🖼️ Player Map PNG</button>
+					<button class="btn-lm danger btn-sm" onclick="window.clearJourneyPath()">Reset Path</button>
+				</div>
 			</div>
 
-			<div class="grid-3" style="margin-top:0.4rem;">
+			<!-- Fellowship Progress Tracker Controls -->
+			<div style="padding:0.75rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-gold); border-radius:4px;">
+				<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+					<span style="font-size:0.8rem; font-family:var(--font-title); color:var(--text-gold)">🧙‍♂️ Fellowship Location:</span>
+					<span style="font-size:0.8rem; color:var(--text-primary); font-weight:bold;">
+						Hex ${currentStepIndex + 1} of ${totalHexes} (~${traveledDays} / ${totalDays} Days)
+					</span>
+				</div>
+
+				<div style="display:flex; gap:0.5rem; align-items:center;">
+					<button class="btn-lm btn-sm" onclick="window.stepJourneyPath(-1)" ${currentStepIndex === 0 ? 'disabled' : ''}>◀ Prev</button>
+					<input type="range" min="0" max="${totalHexes - 1}" step="1" value="${currentStepIndex}" oninput="window.setJourneyStep(this.value)" style="flex:1;" />
+					<button class="btn-lm btn-sm" onclick="window.stepJourneyPath(1)" ${currentStepIndex >= totalHexes - 1 ? 'disabled' : ''}>Next ▶</button>
+				</div>
+			</div>
+
+			<div class="grid-3" style="margin-top:0.1rem;">
 				<div class="resource-box">
-					<div style="font-size:0.7rem; font-family:var(--font-title); color:var(--text-muted)">DISTANCE</div>
-					<div style="font-size:1.2rem; font-family:var(--font-title); color:var(--text-gold); font-weight:bold;">${totalHexes} Hexes</div>
+					<div style="font-size:0.7rem; font-family:var(--font-title); color:var(--text-muted)">TOTAL DISTANCE</div>
+					<div style="font-size:1.1rem; font-family:var(--font-title); color:var(--text-gold); font-weight:bold;">${totalHexes} Hexes</div>
 				</div>
 				<div class="resource-box">
 					<div style="font-size:0.7rem; font-family:var(--font-title); color:var(--text-muted)">EST. DURATION</div>
-					<div style="font-size:1.2rem; font-family:var(--font-title); color:var(--text-heading); font-weight:bold;">~${travelDays} Days</div>
+					<div style="font-size:1.1rem; font-family:var(--font-title); color:var(--text-heading); font-weight:bold;">~${totalDays} Days</div>
 				</div>
 				<div class="resource-box ${perilousCount > 0 ? 'shadow-box' : ''}">
 					<div style="font-size:0.7rem; font-family:var(--font-title); color:${perilousCount > 0 ? 'var(--text-danger)' : 'var(--text-muted)'}">PERIL LEVEL</div>
-					<div style="font-size:1.1rem; font-family:var(--font-title); color:${perilousCount > 0 ? 'var(--text-danger)' : 'var(--text-success)'}; font-weight:bold;">
+					<div style="font-size:1.0rem; font-family:var(--font-title); color:${perilousCount > 0 ? 'var(--text-danger)' : 'var(--text-success)'}; font-weight:bold;">
 						${perilousCount > 0 ? `Rating ${highestPeril} (${perilousCount} Hexes)` : 'Safe'}
 					</div>
 				</div>
 			</div>
 
-			<div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+			<div style="display:flex; gap:0.5rem; margin-top:0.3rem;">
 				<button class="btn-lm primary" style="flex:1" onclick="window.rollJourneyEvent()">
 					🎲 Roll Journey Event (1d12)
 				</button>
@@ -2276,8 +2407,171 @@ export function renderJourneyControls() {
 
 window.clearJourneyPath = function() {
 	journeyPath = [];
+	currentStepIndex = 0;
 	renderMapSvg("mapContainer");
 	renderJourneyControls();
+};
+
+window.stepJourneyPath = function(dir) {
+	if (journeyPath.length === 0) return;
+	currentStepIndex = Math.max(0, Math.min(journeyPath.length - 1, currentStepIndex + dir));
+	renderMapSvg("mapContainer");
+	renderJourneyControls();
+};
+
+window.setJourneyStep = function(val) {
+	if (journeyPath.length === 0) return;
+	currentStepIndex = Math.max(0, Math.min(journeyPath.length - 1, parseInt(val, 10) || 0));
+	renderMapSvg("mapContainer");
+	renderJourneyControls();
+};
+
+window.exportPlayerMapPng = function() {
+	if (!journeyPath || journeyPath.length === 0) {
+		alert("Please chart a journey path on the map first!");
+		return;
+	}
+
+	const grid = getHexGridPoints();
+	const pointsList = [];
+	journeyPath.forEach(key => {
+		const pt = grid.find(g => g.key === key);
+		if (pt) pointsList.push(pt);
+	});
+
+	if (pointsList.length === 0) return;
+
+	// Calculate Bounding Box of Route with margin padding
+	const xs = pointsList.map(p => p.cx);
+	const ys = pointsList.map(p => p.cy);
+
+	const minX = Math.min(...xs);
+	const maxX = Math.max(...xs);
+	const minY = Math.min(...ys);
+	const maxY = Math.max(...ys);
+
+	// Add generous margin around the route
+	const padX = hexRadius * 8;
+	const padY = hexRadius * 8;
+
+	const cropX = Math.max(0, Math.floor(minX - padX));
+	const cropY = Math.max(0, Math.floor(minY - padY));
+	const cropW = Math.min(MAP_WIDTH - cropX, Math.ceil((maxX + padX) - cropX));
+	const cropH = Math.min(MAP_HEIGHT - cropY, Math.ceil((maxY + padY) - cropY));
+
+	// Load background map image
+	const mapImg = new Image();
+	mapImg.crossOrigin = "anonymous";
+	mapImg.onload = function() {
+		const canvas = document.createElement("canvas");
+		canvas.width = cropW;
+		canvas.height = cropH;
+		const ctx = canvas.getContext("2d");
+
+		// 1. Draw Cropped Background Map Image
+		ctx.drawImage(mapImg, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+		// 2. Draw Clean Hex Grid Outlines (Uncolored parchment style)
+		const visibleHexes = grid.filter(h => 
+			h.cx >= cropX - hexRadius * 2 && h.cx <= cropX + cropW + hexRadius * 2 &&
+			h.cy >= cropY - hexRadius * 2 && h.cy <= cropY + cropH + hexRadius * 2
+		);
+
+		ctx.strokeStyle = "rgba(100, 75, 30, 0.4)";
+		ctx.lineWidth = 1;
+
+		visibleHexes.forEach(h => {
+			ctx.beginPath();
+			for (let i = 0; i < 6; i++) {
+				const rad = ((i * 60 + 30) * Math.PI) / 180;
+				const px = (h.cx + hexRadius * Math.cos(rad)) - cropX;
+				const py = (h.cy + hexRadius * Math.sin(rad)) - cropY;
+				if (i === 0) ctx.moveTo(px, py);
+				else ctx.lineTo(px, py);
+			}
+			ctx.closePath();
+			ctx.stroke();
+		});
+
+		// 3. Draw Dotted Journey Route Line
+		if (pointsList.length > 1) {
+			ctx.save();
+			ctx.setLineDash([10, 6]);
+			ctx.strokeStyle = "#8b1e24"; // Rich Tolkien Red Ink
+			ctx.lineWidth = 4.5;
+			ctx.lineCap = "round";
+			ctx.lineJoin = "round";
+
+			ctx.beginPath();
+			pointsList.forEach((pt, i) => {
+				const px = pt.cx - cropX;
+				const py = pt.cy - cropY;
+				if (i === 0) ctx.moveTo(px, py);
+				else ctx.lineTo(px, py);
+			});
+			ctx.stroke();
+			ctx.restore();
+		}
+
+		// 4. Draw Waypoint Badges (Start 🚩 & Destination 🏁)
+		pointsList.forEach((pt, idx) => {
+			const px = pt.cx - cropX;
+			const py = pt.cy - cropY;
+			const isStart = (idx === 0);
+			const isEnd = (idx === pointsList.length - 1 && pointsList.length > 1);
+
+			if (isStart) {
+				// Departure / Start Location Badge
+				ctx.beginPath();
+				ctx.arc(px, py, 14, 0, Math.PI * 2);
+				ctx.fillStyle = "#2d6a3f";
+				ctx.fill();
+				ctx.lineWidth = 2;
+				ctx.strokeStyle = "#eedd99";
+				ctx.stroke();
+
+				ctx.fillStyle = "#ffffff";
+				ctx.font = "bold 12px serif";
+				ctx.textAlign = "center";
+				ctx.textBaseline = "middle";
+				ctx.fillText("🚩", px, py);
+			} else if (isEnd) {
+				// Destination Badge
+				ctx.beginPath();
+				ctx.arc(px, py, 14, 0, Math.PI * 2);
+				ctx.fillStyle = "#8b1e24";
+				ctx.fill();
+				ctx.lineWidth = 2;
+				ctx.strokeStyle = "#eedd99";
+				ctx.stroke();
+
+				ctx.fillStyle = "#ffffff";
+				ctx.font = "bold 12px serif";
+				ctx.textAlign = "center";
+				ctx.textBaseline = "middle";
+				ctx.fillText("🏁", px, py);
+			} else {
+				// Intermediate Waypoint Dot
+				ctx.beginPath();
+				ctx.arc(px, py, 4, 0, Math.PI * 2);
+				ctx.fillStyle = "#ffffff";
+				ctx.fill();
+				ctx.lineWidth = 1.5;
+				ctx.strokeStyle = "#8b1e24";
+				ctx.stroke();
+			}
+		});
+
+		// 5. Trigger PNG Download
+		const dataUrl = canvas.toDataURL("image/png");
+		const a = document.createElement("a");
+		a.href = dataUrl;
+		a.download = `player-journey-map-${new Date().toISOString().slice(0, 10)}.png`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	};
+	mapImg.src = "map.png";
 };
 
 window.rollJourneyEvent = function() {
