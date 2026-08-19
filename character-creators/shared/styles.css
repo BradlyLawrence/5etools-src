@@ -1162,6 +1162,101 @@ a:hover {
 	margin-top: 0.5rem;
 }
 
+/* ==========================================================================
+   CHARACTER ROSTER & SWITCHER COMPONENT
+   ========================================================================== */
+
+.cc-character-switcher {
+	position: relative;
+}
+.cc-btn-switcher {
+	background: var(--cc-bg-elevated);
+	border: 1px solid var(--cc-border);
+	padding: 0.4rem 0.8rem;
+	border-radius: var(--cc-radius);
+	cursor: pointer;
+	color: var(--cc-fg);
+	transition: border-color 0.2s, background 0.2s;
+}
+.cc-btn-switcher:hover {
+	border-color: var(--cc-accent);
+	background: var(--cc-bg);
+}
+.cc-roster-card {
+	transition: all 0.2s ease;
+}
+.cc-roster-card:hover {
+	border-color: var(--cc-accent) !important;
+	transform: translateY(-1px);
+}
+.cc-roster-card.is-active {
+	box-shadow: 0 0 0 1px var(--cc-accent);
+}
+
+/* ==========================================================================
+   CLASS RESOURCE TRACKERS
+   ========================================================================== */
+
+.cc-resource-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 0.75rem;
+	margin-top: 0.75rem;
+}
+.cc-resource-card {
+	background: var(--cc-bg-elevated);
+	border: 1px solid var(--cc-border);
+	border-radius: var(--cc-radius);
+	padding: 0.6rem 0.8rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+.cc-resource-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+.cc-resource-name {
+	font-weight: 600;
+	font-size: 0.88rem;
+	color: var(--cc-accent);
+}
+.cc-resource-recovery {
+	font-size: 0.72rem;
+	color: var(--cc-text-muted);
+}
+.cc-resource-counter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.4rem;
+}
+.cc-resource-val {
+	font-size: 1.15rem;
+	font-weight: 700;
+	min-width: 45px;
+	text-align: center;
+}
+.cc-badge-stealth-disadv {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	background: rgba(220, 53, 69, 0.15);
+	color: #ff6b6b;
+	border: 1px solid rgba(220, 53, 69, 0.4);
+	font-size: 0.75rem;
+	font-weight: 600;
+	padding: 0.15rem 0.45rem;
+	border-radius: 4px;
+}
+.cc-ac-detail {
+	font-size: 0.78rem;
+	color: var(--cc-text-muted);
+	margin-top: 0.2rem;
+}
+
+
 @media print {
 	*, *::before, *::after {
 		-webkit-print-color-adjust: exact !important;

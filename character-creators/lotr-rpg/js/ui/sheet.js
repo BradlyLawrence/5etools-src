@@ -212,12 +212,13 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			if (sub) b.append(el("div", {class: "cc-stat-sub", text: sub}));
 			return b;
 		};
-		const acBox = stat("AC", d.ac, char.combat?.acOverride != null ? "(Override)" : null);
-		acBox.title = "Double-click to set custom AC override (for situational bonuses)";
+		const acSub = d.acInfo?.armorName ? (d.acInfo.armorName.length > 14 ? d.acInfo.armorName.slice(0, 12) + "…" : d.acInfo.armorName) : null;
+		const acBox = stat("AC", d.ac, char.combat?.acOverride != null ? "(Override)" : acSub);
+		acBox.title = `${d.acInfo?.acBreakdown || "Armor Class"}\nDouble-click to set custom AC override`;
 		acBox.style.cursor = "pointer";
 		acBox.addEventListener("dblclick", async () => {
 			const current = char.combat?.acOverride ?? "";
-			const val = await showPromptModal("Set AC Override", `Set custom Armor Class override for situational bonuses:\n(Calculated base AC: ${10 + d.mods.dex})\nLeave blank to reset to auto calculation.`, {
+			const val = await showPromptModal("Set AC Override", `Set custom Armor Class override for situational bonuses:\n(Calculated: ${d.acInfo?.acBreakdown || `${10 + d.mods.dex} AC`})\nLeave blank to reset to auto calculation.`, {
 				defaultValue: current,
 				placeholder: "Custom AC number (or leave blank)",
 				inputType: "number",
@@ -506,6 +507,51 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 
 			ammoBox.append(el("span", {class: "cc-muted", style: "font-size: 0.8rem; margin-left: 0.3rem;", text: "(arrows / bolts)"}));
 			sec.append(ammoBox);
+
+			// Calling Powers & Resources Widget
+			if (d.classResources?.length) {
+				const resBox = el("div", {style: "margin-top: 1rem;"});
+				resBox.append(el("strong", {text: `${d.className} Calling Powers & Resources:`, style: "font-size: 0.88rem; color: var(--cc-accent); display: block; margin-bottom: 0.5rem;"}));
+				const resGrid = el("div", {class: "cc-resource-grid"});
+
+				for (const res of d.classResources) {
+					const card = el("div", {class: "cc-resource-card"});
+					const head = el("div", {class: "cc-resource-header"});
+					head.append(el("span", {class: "cc-resource-name", text: res.name}));
+					head.append(el("span", {class: "cc-resource-recovery", text: `⏳ ${res.recovery}`}));
+					card.append(head);
+
+					const counter = el("div", {class: "cc-resource-counter"});
+					const decBtn = el("button", {
+						type: "button", class: "cc-btn cc-btn-xs cc-btn-danger", text: "-1",
+						disabled: res.current <= 0,
+						onClick: () => {
+							char.classResources = char.classResources || {};
+							char.classResources[res.id] = Math.max(0, res.current - 1);
+							setChar(char);
+						},
+					});
+
+					const valSpan = el("span", {class: "cc-resource-val", text: `${res.current} / ${res.max}`});
+
+					const incBtn = el("button", {
+						type: "button", class: "cc-btn cc-btn-xs cc-btn-primary", text: "+1",
+						disabled: res.current >= res.max,
+						onClick: () => {
+							char.classResources = char.classResources || {};
+							char.classResources[res.id] = Math.min(res.max, res.current + 1);
+							setChar(char);
+						},
+					});
+
+					counter.append(decBtn, valSpan, incBtn);
+					card.append(counter);
+					resGrid.append(card);
+				}
+				resBox.append(resGrid);
+				sec.append(resBox);
+			}
+
 			return sec;
 		}
 
@@ -770,9 +816,11 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			const ul = el("ul", {class: "cc-skill-list"});
 			for (const sk of d.skills) {
 				const isMeSkill = ["Explore", "Hunting", "Old Lore", "Riddle", "Travel"].includes(sk.name);
+				const isStealth = sk.id === "stealth";
+				const stealthBadge = isStealth && d.stealthDisadvantage ? ` <span class="cc-badge-stealth-disadv" title="Disadvantage on Stealth checks from wearing noisy armor">⚠ Disadv</span>` : "";
 				ul.append(el("li", {
 					class: sk.proficient ? "is-proficient" : "",
-					html: `<span>${sk.proficient ? "●" : "○"} ${esc(sk.name)}${isMeSkill ? " ★" : ""}</span><span>${formatMod(sk.bonus)}</span>`,
+					html: `<span>${sk.proficient ? "●" : "○"} ${esc(sk.name)}${isMeSkill ? " ★" : ""}${stealthBadge}</span><span>${formatMod(sk.bonus)}</span>`,
 				}));
 			}
 			skillCol.append(ul);

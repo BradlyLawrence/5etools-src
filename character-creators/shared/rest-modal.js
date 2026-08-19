@@ -100,7 +100,24 @@ export function openShortRestModal ({
 		type: "button",
 		class: "cc-btn cc-btn-primary",
 		text: "Finish Short Rest",
-		onClick: () => backdrop.remove(),
+		onClick: () => {
+			// Restore Short Rest class resources
+			if (d.classResources?.length) {
+				char.classResources = char.classResources || {};
+				for (const res of d.classResources) {
+					if (res.resetOn === "short") {
+						char.classResources[res.id] = res.max;
+					}
+				}
+				setChar(char);
+			}
+			// Restore Warlock Pact Magic slots if any
+			if (char.spells?.pactSlots) {
+				delete char.spells.pactSlots;
+				setChar(char);
+			}
+			backdrop.remove();
+		},
 	}));
 	modal.append(footer);
 
@@ -119,7 +136,7 @@ export async function handleLongRest ({
 }) {
 	const confirmed = await showConfirmModal(
 		"🌙 Long Rest",
-		`Take a Long Rest?\n\nThis will:\n• Restore Hit Points to Max (${d.hpMax})\n• Regain up to ${Math.max(1, Math.floor(d.hitDiceTotal / 2))} spent Hit Dice\n• Reset Hope / Spell Slots & clear Temp HP`,
+		`Take a Long Rest?\n\nThis will:\n• Restore Hit Points to Max (${d.hpMax})\n• Regain up to ${Math.max(1, Math.floor(d.hitDiceTotal / 2))} spent Hit Dice\n• Reset Class Resources, Hope, & Spell Slots\n• Clear Temp HP`,
 		{confirmText: "Take Long Rest", cancelText: "Cancel", el}
 	);
 
@@ -133,17 +150,28 @@ export async function handleLongRest ({
 	char.combat.hitDiceSpent = Math.max(0, currentSpent - regained);
 	char.combat.tempHp = 0;
 
+	// Reset all class resources
+	if (d.classResources?.length) {
+		char.classResources = char.classResources || {};
+		for (const res of d.classResources) {
+			char.classResources[res.id] = res.max;
+		}
+	}
+
 	if (char.hope) {
 		char.hope.current = d.hopeMax || 10;
 	}
 	if (char.spells?.slots) {
 		delete char.spells.slots;
 	}
+	if (char.spells?.pactSlots) {
+		delete char.spells.pactSlots;
+	}
 
 	setChar(char);
 	showAlertModal(
 		"Long Rest Complete",
-		`Restored to ${d.hpMax} HP!\nRegained ${regained} Hit Dice.\nHope & Spell slots reset.`,
+		`Restored to ${d.hpMax} HP!\nRegained ${regained} Hit Dice.\nClass Resources, Hope & Spell slots reset.`,
 		el
 	);
 }

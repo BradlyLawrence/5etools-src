@@ -21,16 +21,52 @@
 		{
 			"name": "Man of Gondor",
 			"source": "MECultures",
+			"page": 40,
 			"edition": "one",
 			"size": ["M"],
 			"speed": 30,
 			"ability": [{"str": 1, "wis": 1}],
 			"feats": [{"anyFromCategory": {"category": ["VtGon", "VtCom", "VtNRg"]}}],
-			"traitTags": ["Language Proficiency", "Skill Proficiency", "Weapon Proficiency"],
+			"traitTags": ["Language Proficiency", "Skill Proficiency", "Tool Proficiency", "Weapon Proficiency"],
 			"skillProficiencies": [{"history": true}],
 			"languageProficiencies": [{"westron|TLotRR": true, "adûnaic|TLotRR": true}],
+			"toolProficiencies": [{"pipe|tlotrr": true}],
 			"weaponProficiencies": [{"longsword|phb": true, "spear|phb": true}],
+			"startingEquipment": [
+				{
+					"_": [
+						"backpack|PHB",
+						"bedroll|PHB",
+						"mess kit|PHB",
+						"tinderbox|PHB",
+						"hooded lantern|PHB",
+						{
+							"quantity": 3,
+							"item": "Oil (flask)|PHB"
+						},
+						{
+							"quantity": 10,
+							"item": "Rations (1 day)|PHB"
+						},
+						"waterskin|PHB",
+						"Silk Rope (50 feet)|PHB",
+						{
+							"item": "two-person tent|PHB",
+							"displayName": "tent"
+						},
+						{
+							"item": "pouch|PHB",
+							"containsValue": 250
+						}
+					]
+				}
+			],
 			"entries": [
+				{
+					"type": "entries",
+					"name": "Ability Score Increase",
+					"entries": ["Your Strength score increases by 1, and your Wisdom score increases by 1."]
+				},
 				{
 					"type": "entries",
 					"name": "Adventuring Age",
@@ -48,8 +84,13 @@
 				},
 				{
 					"type": "entries",
+					"name": "Pipe-Weed Lore",
+					"entries": ["You have proficiency with {@item pipe|TLotRR|pipes}."]
+				},
+				{
+					"type": "entries",
 					"name": "Starting Virtue",
-					"entries": ["You gain one cultural virtue of your choice from the Men of Gondor list, or a common virtue (see Virtues)."]
+					"entries": ["You gain one cultural virtue of your choice from the Men of Gondor list, or a common virtue (see {@book Chapter 4|TLotRR|3|Virtues})."]
 				},
 				{
 					"type": "entries",
@@ -59,16 +100,26 @@
 				{
 					"type": "entries",
 					"name": "Standard of Living: Prosperous",
-					"entries": ["Though war presses upon the borders, Gondor remains a realm of stone cities, well-kept roads, and proud houses. Those who adventure often come from soldiery or lesser noble blood—still better provisioned than many folk of the North."]
+					"entries": [
+						"Though war presses upon the borders, Gondor remains a realm of stone cities, well-kept roads, and proud houses. Those who adventure often come from soldiery or lesser noble blood—still better provisioned than many folk of the North.",
+						{
+							"type": "statblock",
+							"tag": "table",
+							"source": "TLotRR",
+							"name": "Starting Gear",
+							"page": 70,
+							"collapsed": true
+						}
+					]
 				},
 				{
 					"type": "entries",
 					"name": "Backgrounds",
 					"entries": [
-						"Suggested backgrounds from {@book The Lord of the Rings Roleplaying|TLotRR} (or invent your own):",
+						"Players choosing a background receive a brief personal history, two skill proficiencies, a tool proficiency and two distinctive features:",
 						{
 							"type": "list",
-							"columns": 2,
+							"columns": 3,
 							"items": [
 								"{@background Tower Guard|TLotRR}",
 								"{@background Keeper of Lore|TLotRR}",
@@ -86,16 +137,47 @@
 		{
 			"name": "Rider of Rohan",
 			"source": "MECultures",
+			"page": 40,
 			"edition": "one",
 			"size": ["M"],
 			"speed": 35,
 			"ability": [{"str": 1, "dex": 1}],
 			"feats": [{"anyFromCategory": {"category": ["VtRoh", "VtCom", "VtBar"]}}],
-			"traitTags": ["Language Proficiency", "Skill Proficiency", "Weapon Proficiency"],
+			"traitTags": ["Language Proficiency", "Skill Proficiency", "Tool Proficiency", "Weapon Proficiency"],
 			"skillProficiencies": [{"animal handling": true}],
 			"languageProficiencies": [{"westron|TLotRR": true}],
-			"weaponProficiencies": [{"spear|phb": true, "shortbow|phb": true}],
+			"toolProficiencies": [{"pipe|tlotrr": true}],
+			"weaponProficiencies": [{"spear|phb": true, "shortbow|phb": true, "longsword|phb": true}],
+			"startingEquipment": [
+				{
+					"_": [
+						"backpack|PHB",
+						"bedroll|PHB",
+						"mess kit|PHB",
+						"tinderbox|PHB",
+						{
+							"quantity": 10,
+							"item": "torch|PHB"
+						},
+						{
+							"quantity": 10,
+							"item": "Rations (1 day)|PHB"
+						},
+						"waterskin|PHB",
+						"Hempen Rope (50 feet)|PHB",
+						{
+							"item": "pouch|PHB",
+							"containsValue": 150
+						}
+					]
+				}
+			],
 			"entries": [
+				{
+					"type": "entries",
+					"name": "Ability Score Increase",
+					"entries": ["Your Strength score increases by 1, and your Dexterity score increases by 1."]
+				},
 				{
 					"type": "entries",
 					"name": "Adventuring Age",
@@ -109,7 +191,12 @@
 				{
 					"type": "entries",
 					"name": "Spears of the Mark",
-					"entries": ["You have proficiency with the {@item spear|PHB} and {@item shortbow|PHB}."]
+					"entries": ["You have proficiency with the {@item spear|PHB}, {@item shortbow|PHB}, and {@item longsword|PHB}."]
+				},
+				{
+					"type": "entries",
+					"name": "Pipe-Weed Lore",
+					"entries": ["You have proficiency with {@item pipe|TLotRR|pipes}."]
 				},
 				{
 					"type": "entries",
@@ -119,7 +206,7 @@
 				{
 					"type": "entries",
 					"name": "Starting Virtue",
-					"entries": ["You gain one cultural virtue of your choice from the Riders of Rohan list, or a common virtue."]
+					"entries": ["You gain one cultural virtue of your choice from the Riders of Rohan list, or a common virtue (see {@book Chapter 4|TLotRR|3|Virtues})."]
 				},
 				{
 					"type": "entries",
@@ -129,16 +216,26 @@
 				{
 					"type": "entries",
 					"name": "Standard of Living: Common",
-					"entries": ["The people of Rohan are hardy and free. Wealth is measured more in horses and honour than in gold; a Rider on the road is well-mounted but seldom overburdened with coin."]
+					"entries": [
+						"The people of Rohan are hardy and free. Wealth is measured more in horses and honour than in gold; a Rider on the road is well-mounted but seldom overburdened with coin.",
+						{
+							"type": "statblock",
+							"tag": "table",
+							"source": "TLotRR",
+							"name": "Starting Gear",
+							"page": 70,
+							"collapsed": true
+						}
+					]
 				},
 				{
 					"type": "entries",
 					"name": "Backgrounds",
 					"entries": [
-						"Suggested backgrounds:",
+						"Players choosing a background receive a brief personal history, two skill proficiencies, a tool proficiency and two distinctive features:",
 						{
 							"type": "list",
-							"columns": 2,
+							"columns": 3,
 							"items": [
 								"{@background On Patrol|TLotRR}",
 								"{@background A Patient Hunter|TLotRR}",
@@ -156,15 +253,46 @@
 		{
 			"name": "Beorning",
 			"source": "MECultures",
+			"page": 40,
 			"edition": "one",
 			"size": ["M"],
 			"speed": 30,
 			"ability": [{"str": 2}],
 			"feats": [{"anyFromCategory": {"category": ["VtBeo", "VtCom", "VtBar"]}}],
-			"traitTags": ["Language Proficiency", "Skill Proficiency"],
+			"traitTags": ["Language Proficiency", "Skill Proficiency", "Tool Proficiency"],
 			"skillProficiencies": [{"intimidation": true}],
 			"languageProficiencies": [{"westron|TLotRR": true}],
+			"toolProficiencies": [{"pipe|tlotrr": true}],
+			"startingEquipment": [
+				{
+					"_": [
+						"backpack|PHB",
+						"bedroll|PHB",
+						"mess kit|PHB",
+						"tinderbox|PHB",
+						{
+							"quantity": 10,
+							"item": "torch|PHB"
+						},
+						{
+							"quantity": 10,
+							"item": "Rations (1 day)|PHB"
+						},
+						"waterskin|PHB",
+						"Hempen Rope (50 feet)|PHB",
+						{
+							"item": "pouch|PHB",
+							"containsValue": 100
+						}
+					]
+				}
+			],
 			"entries": [
+				{
+					"type": "entries",
+					"name": "Ability Score Increase",
+					"entries": ["Your Strength score increases by 2."]
+				},
 				{
 					"type": "entries",
 					"name": "Adventuring Age",
@@ -187,8 +315,13 @@
 				},
 				{
 					"type": "entries",
+					"name": "Pipe-Weed Lore",
+					"entries": ["You have proficiency with {@item pipe|TLotRR|pipes}."]
+				},
+				{
+					"type": "entries",
 					"name": "Starting Virtue",
-					"entries": ["You gain one cultural virtue of your choice from the Beorning list, or a common virtue."]
+					"entries": ["You gain one cultural virtue of your choice from the Beorning list, or a common virtue (see {@book Chapter 4|TLotRR|3|Virtues})."]
 				},
 				{
 					"type": "entries",
@@ -198,16 +331,26 @@
 				{
 					"type": "entries",
 					"name": "Standard of Living: Frugal",
-					"entries": ["Beornings keep simple halls and free ranges. Adventurers among them travel with what they can carry and what the wild provides."]
+					"entries": [
+						"Beornings keep simple halls and free ranges. Adventurers among them travel with what they can carry and what the wild provides.",
+						{
+							"type": "statblock",
+							"tag": "table",
+							"source": "TLotRR",
+							"name": "Starting Gear",
+							"page": 70,
+							"collapsed": true
+						}
+					]
 				},
 				{
 					"type": "entries",
 					"name": "Backgrounds",
 					"entries": [
-						"Suggested backgrounds:",
+						"Players choosing a background receive a brief personal history, two skill proficiencies, a tool proficiency and two distinctive features:",
 						{
 							"type": "list",
-							"columns": 2,
+							"columns": 3,
 							"items": [
 								"{@background Forest-Dweller|TLotRR}",
 								"{@background Hunter of Orcs|TLotRR}",
@@ -229,53 +372,23 @@
 			"source": "MECultures",
 			"raceName": "Elf",
 			"raceSource": "TLotRR",
-			"ability": [
-				{
-					"dex": 1,
-					"choose": {
-						"from": [
-							"str",
-							"con",
-							"int",
-							"wis",
-							"cha"
-						],
-						"count": 1
-					}
-				}
-			],
+			"ability": [{"dex": 1, "choose": {"from": ["str", "con", "int", "wis", "cha"], "count": 1}}],
 			"skillProficiencies": [{"stealth": true}],
 			"entries": [
 				{
 					"type": "entries",
-					"name": "Wood-elves of the Woodland Realm",
-					"entries": [
-						"You are one of the Silvan Elves of Mirkwood, under the rule of Thranduil. Less lofty than many of the High Elves of the West, you are keen of sense and fierce in defence of the shadowed forest."
-					]
+					"name": "Ability Score Increase",
+					"entries": ["Your Dexterity score increases by 1, and one other ability score of your choice increases by 1."]
 				},
 				{
 					"type": "entries",
-					"name": "Silent as Leaves",
-					"entries": ["You have proficiency in the {@skill Stealth} skill."]
+					"name": "Shadow of the Forest",
+					"entries": ["You have proficiency in the {@skill Stealth} skill. In addition, you can attempt to hide even when you are only lightly obscured by foliage, heavy rain, falling snow, mist, and other natural phenomena."]
 				},
 				{
 					"type": "entries",
-					"name": "Spider-haunted Paths",
-					"entries": ["You have advantage on saving throws against poison."]
-				},
-				{
-					"type": "entries",
-					"name": "Standard of Living: Common",
-					"entries": [
-						"The Woodland Realm is rich in craft and song, but wary of the world beyond its eaves. Wanderers travel lightly, trusting skill more than gold."
-					]
-				},
-				{
-					"type": "entries",
-					"name": "Cultural Virtues",
-					"entries": [
-						"In addition to common Elven virtues, Wood-elves of Mirkwood may take virtues such as {@feat Spider-Bane|MECultures} and {@feat Feast of the Woodland Realm|MECultures}."
-					]
+					"name": "Wood-Elf Weapons",
+					"entries": ["You have proficiency with the {@item shortbow|PHB}, {@item longbow|PHB}, and {@item spear|PHB}."]
 				}
 			]
 		}
@@ -360,6 +473,74 @@
 			]
 		},
 		{
+			"name": "Stern Perception",
+			"source": "MECultures",
+			"category": "VtGon",
+			"prerequisite": [{"race": [{"name": "Man of Gondor", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["wis", "int"], "amount": 1}}],
+			"entries": [
+				"Your eyes are accustomed to piercing deceit and falsehood.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Wisdom or Intelligence by 1, to a maximum of 20.",
+						"You gain proficiency in {@skill Insight} or {@skill Perception}. In addition, you have advantage on Wisdom (Insight) checks to perceive lies and deceit."
+					]
+				}
+			]
+		},
+		{
+			"name": "Armour of the Citadel",
+			"source": "MECultures",
+			"category": "VtGon",
+			"prerequisite": [{"race": [{"name": "Man of Gondor", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["str", "con"], "amount": 1}}],
+			"entries": [
+				"You fight with the discipline of the guards of the White Tree.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Strength or Constitution by 1, to a maximum of 20.",
+						"While wearing medium or heavy armour, bludgeoning, piercing, and slashing damage that you take from non-magical weapons is reduced by 2."
+					]
+				}
+			]
+		},
+		{
+			"name": "Proud and Bold",
+			"source": "MECultures",
+			"category": "VtGon",
+			"prerequisite": [{"race": [{"name": "Man of Gondor", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["str", "cha"], "amount": 1}}],
+			"entries": [
+				"The renown of your ancestors emboldens your heart in battle.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Strength or Charisma by 1, to a maximum of 20.",
+						"Once per turn when you hit a creature with a melee weapon attack, you can add your Charisma modifier (minimum of +1) to the damage roll."
+					]
+				}
+			]
+		},
+		{
+			"name": "Horn of the South",
+			"source": "MECultures",
+			"category": "VtGon",
+			"prerequisite": [{"race": [{"name": "Man of Gondor", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["cha", "wis"], "amount": 1}}],
+			"entries": [
+				"Your battle-cry echoes like the ancient silver trumpets of the Tower of Ecthelion.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Charisma or Wisdom by 1, to a maximum of 20.",
+						"As a bonus action, you can shout a rallying command to one friendly creature within 30 feet who can hear you. That creature gains advantage on the next attack roll or ability check it makes before the start of your next turn. You can use this trait a number of times equal to your proficiency bonus, regaining all expended uses upon completing a long rest."
+					]
+				}
+			]
+		},
+		{
 			"name": "Ride to Ruin",
 			"source": "MECultures",
 			"category": "VtRoh",
@@ -371,7 +552,7 @@
 					"type": "list",
 					"items": [
 						"Increase your Strength, Dexterity, or Charisma by 1, to a maximum of 20.",
-						"When you take the Dash action, opportunity attacks against you are made with disadvantage until the start of your next turn."
+						"When you take the Dash action, opportunity attacks against you and your mount are made with disadvantage until the start of your next turn."
 					]
 				}
 			]
@@ -388,7 +569,75 @@
 					"type": "list",
 					"items": [
 						"Increase your Wisdom by 1, to a maximum of 20.",
-						"You can cast the {@spell animal friendship|XPHB|animal friendship} spell once with this virtue, requiring no material components, and regain the ability to do so when you finish a long rest. Wisdom is your spellcasting ability for it. (If that spell is unavailable, treat this as the ability to calm a nonhostile beast with a successful DC 13 Wisdom (Animal Handling) check as an action.)"
+						"You can calm a frightened or startled beast as an action with a successful DC 10 Wisdom (Animal Handling) check. In addition, any mount you ride has its walking speed increased by 10 feet."
+					]
+				}
+			]
+		},
+		{
+			"name": "Fierce as Fire",
+			"source": "MECultures",
+			"category": "VtRoh",
+			"prerequisite": [{"race": [{"name": "Rider of Rohan", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["str", "con"], "amount": 1}}],
+			"entries": [
+				"The wrath of the Eorlingas burns fiercely in your blood.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Strength or Constitution by 1, to a maximum of 20.",
+						"When wielding a spear or sword with two hands, or when attacking while mounted, you deal additional damage equal to your proficiency bonus on hit."
+					]
+				}
+			]
+		},
+		{
+			"name": "Steadfast in the Saddle",
+			"source": "MECultures",
+			"category": "VtRoh",
+			"prerequisite": [{"race": [{"name": "Rider of Rohan", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["dex", "str"], "amount": 1}}],
+			"entries": [
+				"You ride with seamless balance and instinctive grace.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Dexterity or Strength by 1, to a maximum of 20.",
+						"You have advantage on saving throws and ability checks made to avoid falling off your mount or being knocked prone. In addition, mounting or dismounting a creature costs you only 5 feet of movement, rather than half your speed."
+					]
+				}
+			]
+		},
+		{
+			"name": "Songs of the Mark",
+			"source": "MECultures",
+			"category": "VtRoh",
+			"prerequisite": [{"race": [{"name": "Rider of Rohan", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["cha", "wis"], "amount": 1}}],
+			"entries": [
+				"The heroic lays of Eorl the Young and Helm Hammerhand ring out in your voice.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Charisma or Wisdom by 1, to a maximum of 20.",
+						"You gain proficiency in {@skill Performance} (or {@skill Old Lore|TLotRR}). When you and your companions complete a short rest where you sing of ancient deeds, each companion regains 1 additional expended Hit Die (up to their maximum)."
+					]
+				}
+			]
+		},
+		{
+			"name": "Nomad of the Riddermark",
+			"source": "MECultures",
+			"category": "VtRoh",
+			"prerequisite": [{"race": [{"name": "Rider of Rohan", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["con", "wis"], "amount": 1}}],
+			"entries": [
+				"You know the wide plains, rivers, and hill-folds of the Mark intimately.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Constitution or Wisdom by 1, to a maximum of 20.",
+						"You gain proficiency in {@skill Survival} (or {@skill Travel|TLotRR}). In addition, moving through non-magical difficult terrain costs you and your mount no extra movement when traversing plains, grassland, or hills."
 					]
 				}
 			]
@@ -405,7 +654,7 @@
 					"type": "list",
 					"items": [
 						"Increase your Dexterity or Wisdom by 1, to a maximum of 20.",
-						"You have resistance to poison damage."
+						"You have resistance to poison damage and advantage on saving throws against poison."
 					]
 				}
 			]
@@ -457,6 +706,74 @@
 					"items": [
 						"Increase your Strength by 1, to a maximum of 20.",
 						"Once per turn when you hit a creature with a melee weapon attack, you can deal extra damage equal to your proficiency bonus. You can use this trait a number of times equal to your proficiency bonus, and you regain all expended uses when you finish a long rest."
+					]
+				}
+			]
+		},
+		{
+			"name": "Brother to Bears",
+			"source": "MECultures",
+			"category": "VtBeo",
+			"prerequisite": [{"race": [{"name": "Beorning", "source": "MECultures"}]}],
+			"ability": [{"wis": 1}],
+			"entries": [
+				"You understand the ways and speech of four-footed beasts.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Wisdom by 1, to a maximum of 20.",
+						"You can communicate simple ideas with beasts of the wild, especially bears, horses, and hounds. You have advantage on Wisdom (Animal Handling) checks to interact with them."
+					]
+				}
+			]
+		},
+		{
+			"name": "Great Stature",
+			"source": "MECultures",
+			"category": "VtBeo",
+			"prerequisite": [{"race": [{"name": "Beorning", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["str", "con"], "amount": 1}}],
+			"entries": [
+				"Your towering height and broad shoulders grant formidable power.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Strength or Constitution by 1, to a maximum of 20.",
+						"Your maximum Hit Points increase by 1 per character level."
+					]
+				}
+			]
+		},
+		{
+			"name": "Night-Sight",
+			"source": "MECultures",
+			"category": "VtBeo",
+			"prerequisite": [{"race": [{"name": "Beorning", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["wis", "con"], "amount": 1}}],
+			"entries": [
+				"Your eyes pierce the shadow and gloom of the mountain vales.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Wisdom or Constitution by 1, to a maximum of 20.",
+						"You have darkvision out to a range of 60 feet. Within that range, you can see in dim light as if it were bright light, and in darkness as if it were dim light."
+					]
+				}
+			]
+		},
+		{
+			"name": "Terrible Voice",
+			"source": "MECultures",
+			"category": "VtBeo",
+			"prerequisite": [{"race": [{"name": "Beorning", "source": "MECultures"}]}],
+			"ability": [{"choose": {"from": ["str", "cha"], "amount": 1}}],
+			"entries": [
+				"Your battle roar mimics the bellow of the great bears of the Misty Mountains.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Strength or Charisma by 1, to a maximum of 20.",
+						"As a bonus action, you can let out a terrifying roar. Each enemy within 20 feet of you that can hear you must succeed on a Wisdom saving throw (DC 8 + your proficiency bonus + your Strength modifier) or become frightened of you until the end of your next turn. Once you use this feature, you cannot use it again until you finish a short or long rest."
 					]
 				}
 			]

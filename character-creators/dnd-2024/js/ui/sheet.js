@@ -253,12 +253,13 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			if (sub) b.append(el("div", {class: "cc-stat-sub", text: sub}));
 			return b;
 		};
-		const acBox = stat("AC", d.ac, char.combat?.acOverride != null ? "(Override)" : null);
-		acBox.title = "Double-click to set custom AC override (for situational bonuses)";
+		const acSub = d.acInfo?.armorName ? (d.acInfo.armorName.length > 14 ? d.acInfo.armorName.slice(0, 12) + "…" : d.acInfo.armorName) : null;
+		const acBox = stat("AC", d.ac, char.combat?.acOverride != null ? "(Override)" : acSub);
+		acBox.title = `${d.acInfo?.acBreakdown || "Armor Class"}\nDouble-click to set custom AC override`;
 		acBox.style.cursor = "pointer";
 		acBox.addEventListener("dblclick", async () => {
 			const current = char.combat?.acOverride ?? "";
-			const val = await showPromptModal("Set AC Override", `Set custom Armor Class override for situational bonuses:\nLeave blank to reset to auto calculation.`, {
+			const val = await showPromptModal("Set AC Override", `Set custom Armor Class override for situational bonuses:\n(Calculated: ${d.acInfo?.acBreakdown || `${10 + d.mods.dex} AC`})\nLeave blank to reset to auto calculation.`, {
 				defaultValue: current,
 				placeholder: "Custom AC number (or leave blank)",
 				inputType: "number",
@@ -593,34 +594,14 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 				type: "button",
 				class: "cc-btn cc-btn-xs cc-btn-primary",
 				text: "⛺ Short Rest",
-				onClick: () => {
-					showAlertModal("⛺ Short Rest", "You can spend Hit Dice above to recover lost HP during your Short Rest!", el);
-				},
+				onClick: () => openShortRestModal({char, d, setChar, el}),
 			}));
 
 			restRow.append(el("button", {
 				type: "button",
 				class: "cc-btn cc-btn-xs cc-btn-primary",
 				text: "🌙 Long Rest",
-				onClick: async () => {
-					const confirmed = await showConfirmModal(
-						"🌙 Take a Long Rest?",
-						"Fully restores HP to max, regains up to half max Hit Dice, and refreshes spell slots and class features.",
-						{confirmText: "Take Long Rest", cancelText: "Cancel", el},
-					);
-					if (confirmed) {
-						char.class = char.class || {};
-						char.class.hpCurrent = d.hpMax;
-						
-						const regainHd = Math.max(1, Math.floor(d.hitDiceTotal / 2));
-						char.combat = char.combat || {};
-						char.combat.hitDiceSpent = Math.max(0, (d.hitDiceSpent || 0) - regainHd);
-						char.combat.tempHp = 0;
-
-						await showAlertModal("🌙 Long Rest Complete", `HP fully restored (${d.hpMax}/${d.hpMax}).\nRegained ${regainHd} Hit Dice.\nSpell slots & class features refreshed!`, el);
-						setChar(char);
-					}
-				},
+				onClick: () => handleLongRest({char, d, setChar, el}),
 			}));
 
 			sec.append(restRow);
@@ -706,6 +687,51 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 
 			ammoBox.append(el("span", {class: "cc-muted", style: "font-size: 0.8rem; margin-left: 0.3rem;", text: "(arrows / bolts)"}));
 			attackSec.append(ammoBox);
+
+			// 2024 Class Powers & Resources Widget
+			if (d.classResources?.length) {
+				const resBox = el("div", {style: "margin-top: 1rem;"});
+				resBox.append(el("strong", {text: `${d.className} Class Resources:`, style: "font-size: 0.88rem; color: var(--cc-accent); display: block; margin-bottom: 0.5rem;"}));
+				const resGrid = el("div", {class: "cc-resource-grid"});
+
+				for (const res of d.classResources) {
+					const card = el("div", {class: "cc-resource-card"});
+					const head = el("div", {class: "cc-resource-header"});
+					head.append(el("span", {class: "cc-resource-name", text: res.name}));
+					head.append(el("span", {class: "cc-resource-recovery", text: `⏳ ${res.recovery}`}));
+					card.append(head);
+
+					const counter = el("div", {class: "cc-resource-counter"});
+					const decBtn = el("button", {
+						type: "button", class: "cc-btn cc-btn-xs cc-btn-danger", text: "-1",
+						disabled: res.current <= 0,
+						onClick: () => {
+							char.classResources = char.classResources || {};
+							char.classResources[res.id] = Math.max(0, res.current - 1);
+							setChar(char);
+						},
+					});
+
+					const valSpan = el("span", {class: "cc-resource-val", text: `${res.current} / ${res.max}`});
+
+					const incBtn = el("button", {
+						type: "button", class: "cc-btn cc-btn-xs cc-btn-primary", text: "+1",
+						disabled: res.current >= res.max,
+						onClick: () => {
+							char.classResources = char.classResources || {};
+							char.classResources[res.id] = Math.min(res.max, res.current + 1);
+							setChar(char);
+						},
+					});
+
+					counter.append(decBtn, valSpan, incBtn);
+					card.append(counter);
+					resGrid.append(card);
+				}
+				resBox.append(resGrid);
+				attackSec.append(resBox);
+			}
+
 			return attackSec;
 		}
 
@@ -719,9 +745,11 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			skillCol.append(el("h4", {text: "Skills", style: "margin-top: 0;"}));
 			const ul = el("ul", {class: "cc-skill-list"});
 			for (const sk of d.skills) {
+				const isStealth = sk.id === "stealth";
+				const stealthBadge = isStealth && d.stealthDisadvantage ? ` <span class="cc-badge-stealth-disadv" title="Disadvantage on Stealth checks from wearing noisy armor">⚠ Disadv</span>` : "";
 				const li = el("li", {
 					class: sk.proficient ? "is-proficient" : "",
-					html: `<span>${sk.proficient ? "●" : "○"}${sk.expertise ? "●" : ""} ${esc(sk.name)}</span><span>${formatMod(sk.bonus)}</span>`,
+					html: `<span>${sk.proficient ? "●" : "○"}${sk.expertise ? "●" : ""} ${esc(sk.name)}${stealthBadge}</span><span>${formatMod(sk.bonus)}</span>`,
 				});
 				ul.append(li);
 			}

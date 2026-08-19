@@ -236,10 +236,33 @@ export function recomputeCharacter (character, data) {
 	for (const sk of character.class.skillChoices || []) mark(sk);
 	character.proficiencies.skills = skills;
 
-	if (cls) {
-		character.proficiencies.armor = cls.startingProficiencies?.armor || [];
-		character.proficiencies.weapons = cls.startingProficiencies?.weapons || [];
+	const tools = {...(character.proficiencies.tools || {})};
+	if (race?.toolProficiencies) {
+		for (const block of race.toolProficiencies) {
+			for (const [k, v] of Object.entries(block)) {
+				if (v === true) tools[k.split("|")[0]] = true;
+			}
+		}
 	}
+	if (bg?.toolProficiencies) {
+		for (const block of bg.toolProficiencies) {
+			for (const [k, v] of Object.entries(block)) {
+				if (v === true) tools[k.split("|")[0]] = true;
+			}
+		}
+	}
+	character.proficiencies.tools = tools;
+
+	const wpSet = new Set(cls?.startingProficiencies?.weapons || []);
+	if (race?.weaponProficiencies) {
+		for (const block of race.weaponProficiencies) {
+			for (const [k, v] of Object.entries(block)) {
+				if (v === true) wpSet.add(k.split("|")[0]);
+			}
+		}
+	}
+	character.proficiencies.weapons = [...wpSet];
+	character.proficiencies.armor = cls?.startingProficiencies?.armor || [];
 
 	if (race?.size?.length && !character.culture.size) {
 		character.culture.size = race.size[0];
@@ -499,19 +522,15 @@ export function derive (character, data) {
 		return {...sk, proficient: prof, bonus};
 	});
 
-	const speed = character.combat.speedOverride
+	const acInfo = computeAc(character, data, mods);
+	const classResources = computeCallingResources(character, data, mods, pb);
+
+	let baseSpeed = character.combat.speedOverride
 		?? (typeof race?.speed === "number" ? race.speed : race?.speed?.walk)
 		?? 30;
-
-	let ac = character.combat.acOverride != null
-		? Number(character.combat.acOverride)
-		: 10 + mods.dex;
-	// Unarmoured defence (Messenger/Scholar)
-	const name = cls?.name;
-	if (name === "Messenger" || name === "Scholar") {
-		ac = Math.max(ac, 10 + mods.dex + mods.wis);
+	if (acInfo.strPenalty) {
+		baseSpeed = Math.max(5, baseSpeed - 10);
 	}
-	if (character.combat.shield) ac += 2;
 
 	const attacks = computeEquippedAttacks(character, data, mods, pb);
 	const weightInfo = computeInventoryWeight(character, data);
@@ -592,8 +611,11 @@ export function derive (character, data) {
 		tempHp: Math.max(0, Number(character.combat?.tempHp) || 0),
 		hpMax: character.class.hpMaxOverride != null ? Number(character.class.hpMaxOverride) : (character.class.hpMax || computeHpMax(character, data)),
 		hpCurrent: character.class.hpCurrent ?? (character.class.hpMaxOverride != null ? Number(character.class.hpMaxOverride) : (character.class.hpMax || computeHpMax(character, data))),
-		speed,
-		ac,
+		speed: baseSpeed,
+		ac: acInfo.ac,
+		acInfo,
+		stealthDisadvantage: acInfo.stealthDisadvantage,
+		classResources,
 		initiative: mods.dex,
 		passivePerception: 10 + (skillRows.find(s => s.id === "perception")?.bonus ?? mods.wis),
 		features: [
@@ -632,6 +654,9 @@ export function derive (character, data) {
 		heirName: character.identity?.heirName || "",
 		investment: character.identity?.investment || "",
 		currency: character.currency || {silver: 0, copper: 0, gold: 0},
+		proficiencyArmor: character.proficiencies.armor || [],
+		proficiencyWeapons: character.proficiencies.weapons || [],
+		tools: Object.keys(character.proficiencies.tools || {}),
 		attacks,
 		weightInfo,
 	};
@@ -823,4 +848,223 @@ export function finalizeLevelOne (character, data) {
 	}];
 	recomputeCharacter(character, data);
 	return character;
+}
+
+export function computeAc (character, data, mods) {
+	if (character.combat.acOverride != null) {
+		return {
+			ac: Number(character.combat.acOverride),
+			armorName: "Manual Override",
+			shieldName: null,
+			hasArmor: false,
+			hasShield: false,
+			isUnarmoredDef: false,
+			stealthDisadvantage: false,
+			strPenalty: false,
+			acBreakdown: `Manual Override (${character.combat.acOverride})`,
+		};
+	}
+
+	const cls = data.getClass(character.class.uid);
+	const race = data.getRace(character.culture.raceUid);
+	const strScore = character.abilities.str || 10;
+	const isDwarf = race?.name?.toLowerCase().includes("dwarf");
+
+	let baseAc = 10;
+	let dexBonus = mods.dex;
+	let armorName = null;
+	let shieldName = null;
+	let hasArmor = false;
+	let hasShield = false;
+	let isUnarmoredDef = false;
+	let stealthDisadvantage = false;
+	let strPenalty = false;
+	let shieldBonus = 0;
+
+	// Check equipped items in inventory
+	const eqLines = character.equipment || [];
+	for (const line of eqLines) {
+		const isEquipped = /\[E\]\s*$/i.test(line);
+		if (!isEquipped) continue;
+		const cleanName = line.replace(/\s*\[E\]\s*$/i, "").replace(/^\d+[×x]\s*/i, "").trim();
+		const nameLower = cleanName.toLowerCase();
+		const itemData = data.itemByUid.get(nameLower)
+			|| data.itemByUid.get(nameLower.split("|")[0])
+			|| data.items?.find(it => it.name?.toLowerCase() === nameLower);
+
+		if (!itemData) continue;
+
+		const type = String(itemData.type || "").split("|")[0];
+
+		// Check Armor (LA, MA, HA)
+		if ((type === "LA" || type === "MA" || type === "HA" || itemData.armor) && itemData.ac && !hasArmor) {
+			hasArmor = true;
+			armorName = itemData.name;
+			baseAc = Number(itemData.ac);
+			if (itemData.stealth) stealthDisadvantage = true;
+
+			if (type === "LA") {
+				const maxDex = itemData.dexterityMax != null ? Number(itemData.dexterityMax) : Infinity;
+				dexBonus = Math.min(maxDex, mods.dex);
+			} else if (type === "MA") {
+				const maxDex = itemData.dexterityMax != null ? Number(itemData.dexterityMax) : 2;
+				dexBonus = Math.min(maxDex, mods.dex);
+			} else if (type === "HA") {
+				dexBonus = 0;
+				const strReq = itemData.strength ? Number(itemData.strength) : 0;
+				if (strReq > 0 && strScore < strReq && !isDwarf) {
+					strPenalty = true;
+				}
+			}
+		}
+
+		// Check Shield
+		if ((type === "S" || itemData.shield || nameLower.includes("shield")) && !hasShield) {
+			hasShield = true;
+			shieldName = itemData.name;
+			shieldBonus = itemData.ac ? Number(itemData.ac) : 2;
+		}
+	}
+
+	// Unarmored Defense (Messenger / Scholar: 10 + DEX + WIS)
+	if (!hasArmor) {
+		const calling = cls?.name;
+		if (calling === "Messenger" || calling === "Scholar") {
+			isUnarmoredDef = true;
+			baseAc = 10;
+			dexBonus = mods.dex + mods.wis;
+			armorName = `${calling} Unarmoured Defence (10 + DEX + WIS)`;
+		} else {
+			armorName = "Unarmoured (10 + DEX)";
+		}
+	}
+
+	// Manual toggle for shield in combat stats if toggled directly
+	if (character.combat.shield && !hasShield) {
+		hasShield = true;
+		shieldName = "Shield";
+		shieldBonus = 2;
+	}
+
+	const totalAc = baseAc + dexBonus + shieldBonus;
+	const parts = [`Base ${baseAc}`];
+	if (dexBonus !== 0) parts.push(`DEX/Ability ${dexBonus >= 0 ? `+${dexBonus}` : dexBonus}`);
+	if (shieldBonus > 0) parts.push(`Shield +${shieldBonus}`);
+	const acBreakdown = `${armorName ? `${armorName}: ` : ""}${parts.join(" + ")} = ${totalAc} AC`;
+
+	return {
+		ac: totalAc,
+		baseAc,
+		dexBonus,
+		shieldBonus,
+		armorName,
+		shieldName,
+		hasArmor,
+		hasShield,
+		isUnarmoredDef,
+		stealthDisadvantage,
+		strPenalty,
+		acBreakdown,
+	};
+}
+
+export function computeCallingResources (character, data, mods, pb) {
+	const cls = data.getClass(character.class.uid);
+	const level = character.level || 1;
+	const calling = cls?.name || "";
+	const savedRes = character.classResources || {};
+	const resources = [];
+
+	if (calling === "Captain") {
+		const dieSize = level >= 10 ? "d10" : level >= 5 ? "d8" : "d6";
+		const maxDice = Math.max(1, mods.cha || 1) + (level >= 7 ? 1 : 0);
+		const current = savedRes.leadershipDice ?? maxDice;
+		resources.push({
+			id: "leadershipDice",
+			name: `Leadership Dice (${dieSize})`,
+			current: Math.max(0, Math.min(maxDice, Number(current))),
+			max: maxDice,
+			recovery: "Short / Long Rest",
+			resetOn: "short",
+		});
+		const rallyMax = 1;
+		resources.push({
+			id: "rallyingCry",
+			name: "Rallying Cry",
+			current: Math.max(0, Math.min(rallyMax, Number(savedRes.rallyingCry ?? rallyMax))),
+			max: rallyMax,
+			recovery: "Short / Long Rest",
+			resetOn: "short",
+		});
+	} else if (calling === "Champion") {
+		const surgeMax = level >= 17 ? 2 : 1;
+		resources.push({
+			id: "surge",
+			name: "Surge (Second Wind)",
+			current: Math.max(0, Math.min(surgeMax, Number(savedRes.surge ?? surgeMax))),
+			max: surgeMax,
+			recovery: "Short / Long Rest",
+			resetOn: "short",
+		});
+	} else if (calling === "Messenger") {
+		const maxWis = Math.max(1, mods.wis || 1);
+		resources.push({
+			id: "wordsOfWisdom",
+			name: "Words of Wisdom",
+			current: Math.max(0, Math.min(maxWis, Number(savedRes.wordsOfWisdom ?? maxWis))),
+			max: maxWis,
+			recovery: "Long Rest",
+			resetOn: "long",
+		});
+	} else if (calling === "Scholar") {
+		const maxHealPool = 5 * level;
+		resources.push({
+			id: "handsOfHealer",
+			name: "Hands of a Healer Pool",
+			current: Math.max(0, Math.min(maxHealPool, Number(savedRes.handsOfHealer ?? maxHealPool))),
+			max: maxHealPool,
+			recovery: "Long Rest",
+			resetOn: "long",
+		});
+		const maxLore = Math.max(1, mods.int || 1);
+		resources.push({
+			id: "rhymesOfLore",
+			name: "Rhymes of Lore",
+			current: Math.max(0, Math.min(maxLore, Number(savedRes.rhymesOfLore ?? maxLore))),
+			max: maxLore,
+			recovery: "Short / Long Rest",
+			resetOn: "short",
+		});
+	} else if (calling === "Treasure Hunter") {
+		const maxLuck = 3;
+		resources.push({
+			id: "luckPoints",
+			name: "Luck Points",
+			current: Math.max(0, Math.min(maxLuck, Number(savedRes.luckPoints ?? maxLuck))),
+			max: maxLuck,
+			recovery: "Long Rest",
+			resetOn: "long",
+		});
+	} else if (calling === "Warden") {
+		const maxSongs = Math.max(1, mods.wis || 1);
+		resources.push({
+			id: "songsOfSlaying",
+			name: "Songs of Slaying",
+			current: Math.max(0, Math.min(maxSongs, Number(savedRes.songsOfSlaying ?? maxSongs))),
+			max: maxSongs,
+			recovery: "Short / Long Rest",
+			resetOn: "short",
+		});
+		const wardMax = 1;
+		resources.push({
+			id: "wardenWard",
+			name: "Warden's Ward",
+			current: Math.max(0, Math.min(wardMax, Number(savedRes.wardenWard ?? wardMax))),
+			max: wardMax,
+			recovery: "Short / Long Rest",
+			resetOn: "short",
+		});
+	}
+
+	return resources;
 }

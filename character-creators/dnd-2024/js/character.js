@@ -357,7 +357,16 @@ export function derive (character, data) {
 		?? (typeof species?.speed === "number" ? species.speed : species?.speed?.walk)
 		?? 30;
 
-	const ac = computeAc(character, data, mods);
+	const acInfo = computeAc(character, data, mods);
+	const classResources = computeClassResources2024(character, data, mods, pb);
+
+	let baseSpeed = character.combat.speedOverride
+		?? (typeof species?.speed === "number" ? species.speed : species?.speed?.walk)
+		?? 30;
+	if (acInfo.strPenalty) {
+		baseSpeed = Math.max(5, baseSpeed - 10);
+	}
+
 	const initiative = character.combat.initiativeOverride ?? mods.dex;
 
 	const spellAbility = character.spells.ability || cls?.spellcastingAbility || null;
@@ -408,8 +417,11 @@ export function derive (character, data) {
 		tempHp: Math.max(0, Number(character.combat?.tempHp) || 0),
 		hpMax: character.class.hpMaxOverride != null ? Number(character.class.hpMaxOverride) : (character.class.hpMax || computeHpMax(character, data)),
 		hpCurrent: character.class.hpCurrent ?? (character.class.hpMaxOverride != null ? Number(character.class.hpMaxOverride) : (character.class.hpMax || computeHpMax(character, data))),
-		speed,
-		ac,
+		speed: baseSpeed,
+		ac: acInfo.ac,
+		acInfo,
+		stealthDisadvantage: acInfo.stealthDisadvantage,
+		classResources,
 		initiative,
 		passivePerception: 10 + (skillRows.find(s => s.id === "perception")?.bonus ?? mods.wis),
 		features: [
@@ -442,45 +454,283 @@ export function derive (character, data) {
 	};
 }
 
-function computeAc (character, data, mods) {
-	if (character.combat.acOverride != null) return Number(character.combat.acOverride);
-	const cls = data.getClass(character.class.uid);
-	let base = 10 + mods.dex;
-	let hasEquippedArmor = false;
+export function computeAc (character, data, mods) {
+	if (character.combat.acOverride != null) {
+		return {
+			ac: Number(character.combat.acOverride),
+			armorName: "Manual Override",
+			shieldName: null,
+			hasArmor: false,
+			hasShield: false,
+			isUnarmoredDef: false,
+			stealthDisadvantage: false,
+			strPenalty: false,
+			acBreakdown: `Manual Override (${character.combat.acOverride})`,
+		};
+	}
 
-	// Check equipped items in inventory for armor/shield
+	const cls = data.getClass(character.class.uid);
+	const species = data.getSpecies(character.species.uid);
+	const strScore = character.abilities.str || 10;
+	const isDwarf = species?.name?.toLowerCase().includes("dwarf");
+
+	let baseAc = 10;
+	let dexBonus = mods.dex;
+	let armorName = null;
+	let shieldName = null;
+	let hasArmor = false;
+	let hasShield = false;
+	let isUnarmoredDef = false;
+	let stealthDisadvantage = false;
+	let strPenalty = false;
+	let shieldBonus = 0;
+
+	// Check equipped items in inventory
 	const eqLines = character.equipment || [];
 	for (const line of eqLines) {
 		const isEquipped = /\[E\]\s*$/i.test(line);
 		if (!isEquipped) continue;
 		const name = line.replace(/\s*\[E\]\s*$/i, "").replace(/^\d+[×x]\s*/i, "").trim().toLowerCase();
-		const itemData = data.itemByUid.get(name) || data.items?.find(it => it.name?.toLowerCase() === name);
+		const itemData = data.itemByUid.get(name) || data.itemByUid.get(name.split("|")[0]) || data.items?.find(it => it.name?.toLowerCase() === name);
 		if (!itemData) continue;
 
 		const type = String(itemData.type || "").split("|")[0];
-		if (type === "LA" && itemData.ac) {
-			base = itemData.ac + mods.dex;
-			hasEquippedArmor = true;
-		} else if (type === "MA" && itemData.ac) {
-			base = itemData.ac + Math.min(2, mods.dex);
-			hasEquippedArmor = true;
-		} else if (type === "HA" && itemData.ac) {
-			base = itemData.ac;
-			hasEquippedArmor = true;
-		} else if (type === "S") {
-			base += 2;
+		if ((type === "LA" || type === "MA" || type === "HA" || itemData.armor) && itemData.ac && !hasArmor) {
+			hasArmor = true;
+			armorName = itemData.name;
+			baseAc = Number(itemData.ac);
+			if (itemData.stealth) stealthDisadvantage = true;
+
+			if (type === "LA") {
+				const maxDex = itemData.dexterityMax != null ? Number(itemData.dexterityMax) : Infinity;
+				dexBonus = Math.min(maxDex, mods.dex);
+			} else if (type === "MA") {
+				const maxDex = itemData.dexterityMax != null ? Number(itemData.dexterityMax) : 2;
+				dexBonus = Math.min(maxDex, mods.dex);
+			} else if (type === "HA") {
+				dexBonus = 0;
+				const strReq = itemData.strength ? Number(itemData.strength) : 0;
+				if (strReq > 0 && strScore < strReq && !isDwarf) {
+					strPenalty = true;
+				}
+			}
+		} else if (type === "S" || itemData.shield || name.includes("shield")) {
+			if (!hasShield) {
+				hasShield = true;
+				shieldName = itemData.name;
+				shieldBonus = itemData.ac ? Number(itemData.ac) : 2;
+			}
 		}
 	}
 
-	if (!hasEquippedArmor) {
-		// Unarmored defense shortcuts
+	if (!hasArmor) {
 		const name = cls?.name;
-		if (name === "Barbarian") base = 10 + mods.dex + mods.con;
-		if (name === "Monk") base = 10 + mods.dex + mods.wis;
+		if (name === "Barbarian") {
+			isUnarmoredDef = true;
+			baseAc = 10;
+			dexBonus = mods.dex + mods.con;
+			armorName = "Barbarian Unarmored Defense (10 + DEX + CON)";
+		} else if (name === "Monk") {
+			isUnarmoredDef = true;
+			baseAc = 10;
+			dexBonus = mods.dex + mods.wis;
+			armorName = "Monk Unarmored Defense (10 + DEX + WIS)";
+			if (hasShield) {
+				shieldBonus = 0;
+				hasShield = false;
+			}
+		} else if (name === "Sorcerer" && character.class.subclassName?.toLowerCase().includes("draconic")) {
+			isUnarmoredDef = true;
+			baseAc = 13;
+			dexBonus = mods.dex;
+			armorName = "Draconic Resilience (13 + DEX)";
+		} else {
+			armorName = "Unarmored (10 + DEX)";
+		}
 	}
 
-	if (character.combat.shield && !hasEquippedArmor) base += 2;
-	return base;
+	if (character.combat.shield && !hasShield) {
+		hasShield = true;
+		shieldName = "Shield";
+		shieldBonus = 2;
+	}
+
+	const totalAc = baseAc + dexBonus + shieldBonus;
+	const parts = [`Base ${baseAc}`];
+	if (dexBonus !== 0) parts.push(`DEX/Ability ${dexBonus >= 0 ? `+${dexBonus}` : dexBonus}`);
+	if (shieldBonus > 0) parts.push(`Shield +${shieldBonus}`);
+	const acBreakdown = `${armorName ? `${armorName}: ` : ""}${parts.join(" + ")} = ${totalAc} AC`;
+
+	return {
+		ac: totalAc,
+		baseAc,
+		dexBonus,
+		shieldBonus,
+		armorName,
+		shieldName,
+		hasArmor,
+		hasShield,
+		isUnarmoredDef,
+		stealthDisadvantage,
+		strPenalty,
+		acBreakdown,
+	};
+}
+
+export function computeClassResources2024 (character, data, mods, pb) {
+	const cls = data.getClass(character.class.uid);
+	const level = character.level || 1;
+	const className = cls?.name || "";
+	const savedRes = character.classResources || {};
+	const resources = [];
+
+	if (className === "Barbarian") {
+		const maxRage = level < 3 ? 2 : level < 6 ? 3 : level < 12 ? 4 : level < 17 ? 5 : 6;
+		resources.push({
+			id: "rage",
+			name: "Rage Uses",
+			current: Math.max(0, Math.min(maxRage, Number(savedRes.rage ?? maxRage))),
+			max: maxRage,
+			recovery: "Long Rest",
+			resetOn: "long",
+		});
+	} else if (className === "Bard") {
+		const maxInsp = Math.max(1, mods.cha || 1);
+		const die = level < 5 ? "d6" : level < 10 ? "d8" : level < 15 ? "d10" : "d12";
+		resources.push({
+			id: "bardicInspiration",
+			name: `Bardic Inspiration (${die})`,
+			current: Math.max(0, Math.min(maxInsp, Number(savedRes.bardicInspiration ?? maxInsp))),
+			max: maxInsp,
+			recovery: level >= 5 ? "Short / Long Rest" : "Long Rest",
+			resetOn: level >= 5 ? "short" : "long",
+			die,
+		});
+	} else if (className === "Cleric" && level >= 2) {
+		const maxCd = level < 6 ? 2 : level < 18 ? 3 : 4;
+		resources.push({
+			id: "channelDivinity",
+			name: "Channel Divinity",
+			current: Math.max(0, Math.min(maxCd, Number(savedRes.channelDivinity ?? maxCd))),
+			max: maxCd,
+			recovery: "Short / Long Rest",
+			resetOn: "short",
+		});
+	} else if (className === "Druid" && level >= 2) {
+		const maxWs = level < 6 ? 2 : level < 17 ? 3 : 4;
+		resources.push({
+			id: "wildShape",
+			name: "Wild Shape",
+			current: Math.max(0, Math.min(maxWs, Number(savedRes.wildShape ?? maxWs))),
+			max: maxWs,
+			recovery: "Short / Long Rest",
+			resetOn: "short",
+		});
+	} else if (className === "Fighter") {
+		const maxSw = level < 4 ? 2 : level < 10 ? 3 : 4;
+		resources.push({
+			id: "secondWind",
+			name: "Second Wind",
+			current: Math.max(0, Math.min(maxSw, Number(savedRes.secondWind ?? maxSw))),
+			max: maxSw,
+			recovery: "Short / Long Rest",
+			resetOn: "short",
+		});
+		if (level >= 2) {
+			const maxAs = level >= 17 ? 2 : 1;
+			resources.push({
+				id: "actionSurge",
+				name: "Action Surge",
+				current: Math.max(0, Math.min(maxAs, Number(savedRes.actionSurge ?? maxAs))),
+				max: maxAs,
+				recovery: "Short / Long Rest",
+				resetOn: "short",
+			});
+		}
+		if (level >= 9) {
+			const maxIndom = level < 13 ? 1 : level < 17 ? 2 : 3;
+			resources.push({
+				id: "indomitable",
+				name: "Indomitable",
+				current: Math.max(0, Math.min(maxIndom, Number(savedRes.indomitable ?? maxIndom))),
+				max: maxIndom,
+				recovery: "Long Rest",
+				resetOn: "long",
+			});
+		}
+	} else if (className === "Monk" && level >= 2) {
+		const maxKi = level;
+		resources.push({
+			id: "focusPoints",
+			name: "Focus / Ki Points",
+			current: Math.max(0, Math.min(maxKi, Number(savedRes.focusPoints ?? maxKi))),
+			max: maxKi,
+			recovery: "Short / Long Rest",
+			resetOn: "short",
+		});
+	} else if (className === "Paladin") {
+		const maxLoh = 5 * level;
+		resources.push({
+			id: "layOnHands",
+			name: "Lay on Hands Pool",
+			current: Math.max(0, Math.min(maxLoh, Number(savedRes.layOnHands ?? maxLoh))),
+			max: maxLoh,
+			recovery: "Long Rest",
+			resetOn: "long",
+		});
+		if (level >= 3) {
+			const maxCd = level < 11 ? 2 : 3;
+			resources.push({
+				id: "channelDivinity",
+				name: "Channel Divinity",
+				current: Math.max(0, Math.min(maxCd, Number(savedRes.channelDivinity ?? maxCd))),
+				max: maxCd,
+				recovery: "Short / Long Rest",
+				resetOn: "short",
+			});
+		}
+	} else if (className === "Ranger") {
+		const maxFav = Math.max(2, pb);
+		resources.push({
+			id: "favoredEnemy",
+			name: "Favored Enemy (Hunter's Mark)",
+			current: Math.max(0, Math.min(maxFav, Number(savedRes.favoredEnemy ?? maxFav))),
+			max: maxFav,
+			recovery: "Long Rest",
+			resetOn: "long",
+		});
+	} else if (className === "Sorcerer") {
+		if (level >= 2) {
+			const maxSp = level;
+			resources.push({
+				id: "sorceryPoints",
+				name: "Sorcery Points",
+				current: Math.max(0, Math.min(maxSp, Number(savedRes.sorceryPoints ?? maxSp))),
+				max: maxSp,
+				recovery: "Long Rest",
+				resetOn: "long",
+			});
+		}
+		resources.push({
+			id: "innateSorcery",
+			name: "Innate Sorcery",
+			current: Math.max(0, Math.min(2, Number(savedRes.innateSorcery ?? 2))),
+			max: 2,
+			recovery: "Long Rest",
+			resetOn: "long",
+		});
+	} else if (className === "Wizard") {
+		resources.push({
+			id: "arcaneRecovery",
+			name: "Arcane Recovery",
+			current: Math.max(0, Math.min(1, Number(savedRes.arcaneRecovery ?? 1))),
+			max: 1,
+			recovery: "Long Rest",
+			resetOn: "long",
+		});
+	}
+
+	return resources;
 }
 
 function computeEquippedAttacks (character, data, mods, pb) {
