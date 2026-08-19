@@ -457,40 +457,71 @@ export function listFeaturesUpToLevel (character, data, level) {
 }
 
 export const DISTINCTIVE_FEATURE_DESCRIPTIONS = {
-	"Fair-spoken": "You speak with eloquence, charm, and polite grace. In Councils and social encounters, invoking Fair-spoken can grant Advantage on Persuasion, Traditions, and social interaction checks.",
-	"Merry": "You carry a light heart, ready with a laugh or song to brighten dark places. Invoking Merry helps lift companions' spirits during arduous journeys and fellowship phases.",
-	"Eager": "You approach challenges with enthusiasm and keen energy, ready to take initiative and leap into action.",
-	"Faithful": "You are steadfast in your allegiances and promises, earning deep trust and loyalty from companions.",
-	"Secretive": "You keep your counsel, speak cautiously, and move without attracting unwanted attention.",
-	"Wilful": "You possess a stubborn resolve that resists intimidation, fear, and corruption.",
-	"Lordly": "You carry yourself with nobility and authority, commanding respect in halls and on the battlefield.",
-	"Patient": "You endure delay and frustration with calm composure, waiting for the ideal moment to strike.",
-	"Proud": "You hold high standards for your heritage and deeds, taking pride in your folk and honor.",
-	"True-hearted": "Your motives are pure and noble, untainted by deceit or malice.",
-	"Inquisitive": "You are naturally curious, asking probing questions and uncovering hidden details.",
-	"Fierce": "Your demeanor in battle and conflict is intimidating and unyielding.",
-	"Generous": "You share your food, shelter, and treasure freely with companions and strangers in need.",
-	"Tall": "Your striking physical height and posture lend you natural presence and authority.",
+	"Bold": "Daring and courageous in the face of peril, you are quick to step forward for dangerous tasks and refuse to be cowed by threats.",
+	"Cunning": "Clever, resourceful, and shrewd, you quickly assess complications, notice angles others miss, and turn difficult situations to your advantage.",
+	"Eager": "Enthusiastic, energetic, and swift to act, you throw yourself into tasks with great zeal and rarely hesitate when a decision is needed.",
+	"Fair-spoken": "Polite, articulate, and charming in speech, you know the right courtesies and words to put others at ease and earn trust in Councils and social encounters.",
+	"Faithful": "Loyal, trustworthy, and steadfast to your oaths, companions, and loved ones, you never break a promise or abandon an ally in need.",
+	"Fierce": "Intense, formidable, and uncompromising in conflict, your sharp gaze and grim resolve can intimidate foes and inspire allies in battle.",
+	"Generous": "Open-handed, hospitable, and charitable, you share your food, shelter, and wealth freely without demanding recompense.",
+	"Honourable": "Guided by a strict code of integrity, nobility, and justice, you treat allies and defeated enemies with fairness and respect.",
+	"Honorable": "Guided by a strict code of integrity, nobility, and justice, you treat allies and defeated enemies with fairness and respect.",
+	"Inquisitive": "Curious, observant, and keen-eyed, you notice subtle details, investigate anomalies, and seek to uncover forgotten lore or hidden truths.",
+	"Lordly": "Imposing, regal, and authoritative, your noble bearing and commanding presence earn deference and respect in royal courts, halls, and among soldiers.",
+	"Merry": "Joyful, high-spirited, and light-hearted, you lift the gloom from heavy hearts with cheerful songs, jokes, and enduring optimism even in dark places.",
+	"Patient": "Calm, enduring, and deliberate, you can wait out hardships, track long journeys without complaint, and bide your time for the opportune moment.",
+	"Proud": "Dignified and mindful of your folk's heritage and glory, you hold yourself to high standards and fiercely defend your reputation and lineage.",
+	"Rustic": "Down-to-earth, unassuming, and in tune with common folk and simple crafts, your plain honesty makes you approachable and grounded.",
+	"Secretive": "Guarded, quiet, and discreet, you keep your own counsel, reveal nothing unnecessary, and move without drawing undue notice.",
+	"Stern": "Resolute, unyielding, and serious of mind, you do not tolerate foolishness, see through falsehoods, and face grim realities without flinching.",
+	"Subtle": "Quiet, nuanced, and unobtrusive, you achieve your aims through finesse, careful timing, and unspoken understandings rather than blunt force.",
+	"Tall": "Your striking physical height and broad posture lend you natural presence, imposing stature, and reach.",
+	"True-hearted": "Sincere, genuine, and incorruptible of spirit, your intentions are pure, untainted by hidden malice or selfish ambition.",
+	"Wary": "Alert, cautious, and vigilant against deceit or sudden ambushes, you rarely let your guard down in unfamiliar territory or among strangers.",
+	"Wilful": "Determined, resolute, and stubbornly unbending, your strong willpower helps you resist charm, coercion, despair, and corruption.",
 	"Steadfast": "Unwavering under stress or danger, standing your ground when others falter.",
-	"Cunning": "Quick-witted and sharp, adept at turning tricky situations to your advantage.",
 	"Absent-minded": "Deeply absorbed in lore or observation, often uncovering subtle truths while appearing distracted.",
 	"Cautious": "Methodical and careful, weighing risks before acting to avoid traps and ambushes.",
-	"Bold": "Daring and courageous, willing to take heroic risks when others hesitate.",
 };
 
 export const SHADOW_FLAW_DESCRIPTIONS = {
-	"Resentful": "You hold grudges and feel envy toward those who possess wealth, status, or praise that you feel you deserve.",
-	"Arrogant": "You believe your judgment and wisdom superior to others, dismissing advice or warnings from allies.",
-	"Overconfident": "You underestimate dangers and enemies, recklessly taking risks that put yourself and your companions in peril.",
-	"Tyrannical": "You demand total obedience and compliance, using fear and coercion to bend others to your will.",
-	"Grasping": "You are driven by a desperate desire to acquire and hoard treasure, knowledge, or power.",
-	"Thievish": "You take what is not yours when temptation arises, justifying your actions through greed or necessity.",
-	"Traitorous": "Your loyalty turns fragile under pressure; you consider betraying companions to save yourself.",
-	"Cruel": "You take pleasure or satisfaction in inflicting pain or emotional suffering on enemies or subordinates.",
-	"Scornful": "You mock the weakness or idealism of others, viewing sympathy as a fatal flaw.",
-	"Cowardly": "Fear dominates your choices when danger looms, tempting you to flee or abandon companions.",
-	"Spiteful": "You seek revenge for minor slights, prioritizing vengeance over mission goals.",
-	"Deceitful": "Lies and manipulation become your default tools for dealing with companions and strangers alike.",
+	// Curse of Vengeance (Champion)
+	"Spiteful": "You often repay real or imagined wrongs with vicious rudeness. Depending on the provocation, you may simply be very impolite, or downright insulting.",
+	"Brutal": "You react violently to provocations and show little restraint under most circumstances.",
+	"Cruel": "You don't care if your actions cause pain and suffering to others, and are needlessly savage with your enemies.",
+	"Murderous": "You become murderous when you start to consider killing as a perfectly natural way to achieve a goal or simply to make things go your way.",
+
+	// Dragon-sickness (Treasure Hunter)
+	"Grasping": "If you become grasping, you seek to accumulate gold and precious items above all else, just for the sake of possessing them.",
+	"Mistrustful": "When your prized possessions start to weigh you down and become a treasure to be guarded, even the good advice of friends appears to mask dubious intentions.",
+	"Deceitful": "You feel no shame in misleading others with lies and stratagems, as long as your machinations further your ends and corrupted needs.",
+	"Thieving": "You have discovered that anything you desire can be yours—you just have to take it. You have earned the right to take all you want when you sacrificed the love of your peers and your own self-respect.",
+	"Thievish": "You have discovered that anything you desire can be yours—you just have to take it. You have earned the right to take all you want when you sacrificed the love of your peers and your own self-respect.",
+
+	// Lure of Power (Captain)
+	"Resentful": "You risk becoming bitter and angry with the people you ought to lead. You often feel that you risk your life for individuals that fail to see the wisdom of your words.",
+	"Arrogant": "You don't miss an opportunity to underline your own importance, often belittling your peers and companions.",
+	"Overconfident": "Overconfidence denotes overweening pride, a sentiment that blinds you to your own limits and weaknesses. You endeavour to do anything you set your mind upon, regardless of the consequences that might befall others.",
+	"Tyrannical": "You escalate your actions and desires to the level of a just cause. Your disregard for the lives of others is so profound that you go to any lengths to achieve your ends, regardless of the cost or methods employed to accomplish them. Any dissenting opinion is considered as utter betrayal.",
+
+	// Lure of Secrets (Scholar)
+	"Haughty": "You don't easily recognise the wisdom found in the words and actions of others, and tend to turn aside all advice and offers of help.",
+	"Scornful": "You treat the propositions of others with disdain, making use of every opportunity to mock them for their presumed inadequacy.",
+	"Scheming": "You keep your thoughts and intentions to yourself at all times, never giving advice and heeding only your own judgement. You might sometimes agree with the propositions of others, but only to be free to follow your own choices later.",
+	"Traitorous": "When you become traitorous you cannot be trusted to keep your word. You are ready to betray your own friends and allies, if it would turn to your advantage.",
+
+	// Path of Despair / Fear of the Shadow (Warden)
+	"Troubled": "You feel a sense of disquiet that makes it hard for you to read a situation clearly and offer counsel to others.",
+	"Wavering": "Caution can be the enemy of action, and when you become wavering you cannot set your mind upon a choice quickly and effectively. You vacillate between the various options you see before you.",
+	"Guilt-ridden": "The curse of those who defend others is to feel remorse when their actions go amiss, pushing you to refuse any daring course of action.",
+	"Guilt-Ridden": "The curse of those who defend others is to feel remorse when their actions go amiss, pushing you to refuse any daring course of action.",
+	"Fearful": "When you become fearful you are so beset by worries and concerns that you cannot force yourself to risk doing anything that will potentially endanger yourself and those you care for.",
+
+	// Wandering Madness (Messenger)
+	"Idle": "It takes a lot to stir idle adventurers into action. You are easily distracted, and must be cajoled to fully participate in endeavours.",
+	"Forgetful": "Being forgetful indicates that you are often daydreaming and absent-minded, and find it difficult to remember even important things.",
+	"Uncaring": "When you become uncaring you lose touch with the world outside of yourself. You cannot bring yourself to feel compassion, and quickly lose interest in matters that do not concern you directly.",
+	"Cowardly": "You care only for your own safety under any circumstances, and will go to any lengths to save yourself when a threat arises.",
 };
 
 export function derive (character, data) {
@@ -554,12 +585,14 @@ export function derive (character, data) {
 	const activeShadowFlaws = shadowPathStages
 		.filter(s => s.active)
 		.map(s => {
-			const flawDesc = SHADOW_FLAW_DESCRIPTIONS[s.name] || "When a hero's Shadow score reaches their Hope, or when they succumb to despair, they gain this progressive Shadow Flaw.";
+			const flawDesc = SHADOW_FLAW_DESCRIPTIONS[s.name]
+				|| SHADOW_FLAW_DESCRIPTIONS[s.name?.trim()]
+				|| "When a hero's Shadow score reaches their Hope, or when they succumb to despair, they gain this progressive Shadow Flaw.";
 			return {
 				level: s.stage,
 				name: `Shadow Flaw (Stage ${s.stage}): ${s.name}`,
 				source: "shadow-flaw",
-				text: `Calling Shadow Path (${shadowPath}) — Stage ${s.stage} Flaw.\n\n${flawDesc}`,
+				text: `Calling Shadow Path (${shadowPath}) — Stage ${s.stage} Flaw: ${s.name}\n\n${flawDesc}\n\nEffect: If you make an ability check that can plausibly be affected by this flaw, the check has disadvantage.`,
 			};
 		});
 
@@ -569,12 +602,14 @@ export function derive (character, data) {
 		.filter(Boolean);
 
 	const bgDistinctiveFeaturesList = distinctiveList.map(tName => {
-		const desc = DISTINCTIVE_FEATURE_DESCRIPTIONS[tName] || `Distinctive Feature trait of your background (${bg?.name || "Background"}). Invoking this trait during roleplaying or Councils can grant Advantage or Inspiration.`;
+		const desc = DISTINCTIVE_FEATURE_DESCRIPTIONS[tName]
+			|| DISTINCTIVE_FEATURE_DESCRIPTIONS[tName.trim()]
+			|| `Distinctive Feature trait of your background (${bg?.name || "Background"}). Invoking this trait during roleplaying or Councils can grant Advantage or Inspiration.`;
 		return {
 			level: 1,
 			name: `Distinctive Feature: ${tName}`,
 			source: "background",
-			text: desc,
+			text: `Background (${bg?.name || "Background"}) — Distinctive Feature: ${tName}\n\n${desc}\n\nUsage: In Councils, social encounters, or relevant ability checks, invoking this distinctive feature can grant Advantage on your check or Inspiration when roleplayed faithfully.`,
 		};
 	});
 
