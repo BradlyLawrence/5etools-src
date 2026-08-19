@@ -37,6 +37,18 @@
 
 	<script src="../dnd-2024/lib/html2canvas.min.js"></script>
 	<script src="../dnd-2024/lib/jspdf.umd.min.js"></script>
-	<script type="module" src="js/main.js?v=2.5"></script>
+	<script type="module">
+		const t = Date.now();
+		document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+			const u = new URL(link.href, location.href);
+			u.searchParams.set("t", t);
+			link.href = u.toString();
+		});
+		import(`./js/main.js?t=${t}`).catch(err => {
+			console.error("Failed to load application:", err);
+			const st = document.getElementById("status");
+			if (st) st.textContent = `Error loading app: ${err.message}`;
+		});
+	</script>
 </body>
 </html>

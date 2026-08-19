@@ -141,7 +141,7 @@ export class DataStore {
 	}
 
 	async load () {
-		const res = await fetch(BREW_URL);
+		const res = await fetch(`${BREW_URL}?t=${Date.now()}`, {cache: "no-store"});
 		if (!res.ok) throw new Error(`Failed to load LOTR brew (${res.status}). Expected file at character-creators/lotr-rpg/data/`);
 		const raw = await res.json();
 		this.raw = raw;
@@ -149,7 +149,7 @@ export class DataStore {
 		// Optional local table cultures (also installed under homebrew/ for the main site)
 		let custom = null;
 		try {
-			const cres = await fetch(CUSTOM_BREW_URL);
+			const cres = await fetch(`${CUSTOM_BREW_URL}?t=${Date.now()}`, {cache: "no-store"});
 			if (cres.ok) custom = await cres.json();
 		} catch (e) {
 			console.warn("Custom Middle-earth cultures not loaded", e);
