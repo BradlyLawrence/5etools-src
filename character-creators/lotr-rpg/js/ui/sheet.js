@@ -11,19 +11,19 @@ import {
 	importPayload,
 	subclassUnlockLevel,
 	entriesToText,
-} from "../character.js";
-import {previewLevelUp, applyLevelUp} from "../level-up.js";
-import {el, clear} from "./pickers.js";
-import {buildPdfSheet} from "../pdf-sheet.js";
-import {exportElementToPdf} from "../../../shared/pdf-export.js";
-import {downloadJson, loadJsonFile} from "../../../shared/file-io.js";
-import {openPortraitModal} from "../../../shared/portrait.js";
-import {showAlertModal, showConfirmModal, showPromptModal} from "../../../shared/ui-modal.js";
-import {openShortRestModal, handleLongRest} from "../../../shared/rest-modal.js";
-import {openAddFeatureModal} from "../../../shared/feature-modal.js";
-import {FILE_TYPE} from "../character.js";
-import {mountEquipmentEditor, buildItemCatalog} from "../../../shared/equipment-editor.js";
-import {mountSourceSelectorModal} from "../../../shared/sources.js";
+	FILE_TYPE,
+} from "../character.js?v=2.5";
+import {previewLevelUp, applyLevelUp} from "../level-up.js?v=2.5";
+import {el, clear} from "./pickers.js?v=2.5";
+import {buildPdfSheet} from "../pdf-sheet.js?v=2.5";
+import {exportElementToPdf} from "../../../shared/pdf-export.js?v=2.5";
+import {downloadJson, loadJsonFile} from "../../../shared/file-io.js?v=2.5";
+import {openPortraitModal} from "../../../shared/portrait.js?v=2.5";
+import {showAlertModal, showConfirmModal, showPromptModal} from "../../../shared/ui-modal.js?v=2.5";
+import {openShortRestModal, handleLongRest} from "../../../shared/rest-modal.js?v=2.5";
+import {openAddFeatureModal} from "../../../shared/feature-modal.js?v=2.5";
+import {mountEquipmentEditor, buildItemCatalog} from "../../../shared/equipment-editor.js?v=2.5";
+import {mountSourceSelectorModal} from "../../../shared/sources.js?v=2.5";
 
 export function mountSheet (root, {data, character, onChange, onNew}) {
 	let char = character;

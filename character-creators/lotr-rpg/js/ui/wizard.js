@@ -8,7 +8,7 @@ import {
 	formatMod,
 	abilityMod,
 	formatAbilityBonus,
-} from "../rules.js";
+} from "../rules.js?v=2.5";
 import {
 	createEmptyCharacter,
 	recomputeCharacter,
@@ -20,12 +20,12 @@ import {
 	missingEquipmentTypePicks,
 	CALLING_SHADOW_PATHS,
 	backgroundDistinctiveFeatures,
-} from "../character.js";
-import {toUid} from "../data.js";
-import {el, clear, multiCheck} from "./pickers.js";
-import {mountSourceBanner, mountSourceSelectorModal} from "../../../shared/sources.js";
-import {openPortraitModal} from "../../../shared/portrait.js";
-import {showAlertModal} from "../../../shared/ui-modal.js";
+} from "../character.js?v=2.5";
+import {toUid} from "../data.js?v=2.5";
+import {el, clear, multiCheck} from "./pickers.js?v=2.5";
+import {mountSourceBanner, mountSourceSelectorModal} from "../../../shared/sources.js?v=2.5";
+import {openPortraitModal} from "../../../shared/portrait.js?v=2.5";
+import {showAlertModal} from "../../../shared/ui-modal.js?v=2.5";
 
 const STEPS = [
 	{id: "identity", title: "Identity"},

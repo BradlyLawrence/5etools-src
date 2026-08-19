@@ -1,4 +1,4 @@
-import {DataStore} from "./data.js?v=2.1";
+import {DataStore} from "./data.js?v=2.5";
 import {
 	createEmptyCharacter,
 	recomputeCharacter,
@@ -7,17 +7,17 @@ import {
 	importPayload,
 	exportPayload,
 	FILE_TYPE,
-} from "./character.js?v=2.1";
-import {loadJsonFile} from "../../shared/file-io.js?v=2.1";
+} from "./character.js?v=2.5";
+import {loadJsonFile} from "../../shared/file-io.js?v=2.5";
 import {
 	migrateLegacyRoster,
 	getActiveCharacter,
 	upsertCharacter,
 	generateCharacterId,
-} from "../../shared/roster.js?v=2.1";
-import {mountCharacterSwitcher} from "../../shared/roster-modal.js?v=2.1";
-import {mountWizard} from "./ui/wizard.js?v=2.1";
-import {mountSheet} from "./ui/sheet.js?v=2.1";
+} from "../../shared/roster.js?v=2.5";
+import {mountCharacterSwitcher} from "../../shared/roster-modal.js?v=2.5";
+import {mountWizard} from "./ui/wizard.js?v=2.5";
+import {mountSheet} from "./ui/sheet.js?v=2.5";
 
 export const ROSTER_KEY = "character-creators/lotr-rpg/roster";
 
