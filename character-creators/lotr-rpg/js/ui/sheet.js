@@ -36,6 +36,7 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 	};
 
 	const render = () => {
+		const scrollY = window.scrollY;
 		clear(root);
 		const d = derive(char, data);
 		const cls = data.getClass(char.class.uid);
@@ -969,6 +970,11 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 		if (!document.getElementById("cc-pdf-host")) {
 			document.body.append(el("div", {id: "cc-pdf-host", class: "cc-pdf-host", "aria-hidden": "true"}));
 		}
+
+		window.scrollTo({ top: scrollY, behavior: "instant" });
+		requestAnimationFrame(() => {
+			window.scrollTo({ top: scrollY, behavior: "instant" });
+		});
 	};
 
 	function openSubclassPicker () {

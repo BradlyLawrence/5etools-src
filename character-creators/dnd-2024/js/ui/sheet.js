@@ -46,6 +46,7 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 	};
 
 	const render = () => {
+		const scrollY = window.scrollY;
 		clear(root);
 		const d = derive(char, data);
 
@@ -953,6 +954,11 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			pdfHost = el("div", {id: "cc-pdf-host", class: "cc-pdf-host", "aria-hidden": "true"});
 			document.body.append(pdfHost);
 		}
+
+		window.scrollTo({ top: scrollY, behavior: "instant" });
+		requestAnimationFrame(() => {
+			window.scrollTo({ top: scrollY, behavior: "instant" });
+		});
 	};
 
 	function spellList (title, uids, dataStore) {
