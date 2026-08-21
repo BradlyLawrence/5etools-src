@@ -1,4 +1,4 @@
-import {abilityMod, averageHitDie, featureLevelFromUid, featureNameFromUid} from "./rules.js?v=3.2";
+import {abilityMod, averageHitDie, featureLevelFromUid, featureNameFromUid} from "./rules.js?v=3.4";
 import {
 	subclassUnlockLevel,
 	virtueLevelsForClass,
@@ -7,7 +7,7 @@ import {
 	touch,
 	FIGHTING_STYLES,
 	CLASS_FIGHTING_STYLES,
-} from "./character.js?v=3.2";
+} from "./character.js?v=3.4";
 
 export function previewLevelUp (character, data) {
 	const from = character.level || 1;
