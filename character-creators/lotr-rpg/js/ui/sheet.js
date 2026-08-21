@@ -13,18 +13,18 @@ import {
 	entriesToText,
 	FILE_TYPE,
 	CLASS_FIGHTING_STYLES,
-} from "../character.js?v=3.5";
-import {previewLevelUp, applyLevelUp} from "../level-up.js?v=3.5";
-import {el, clear} from "./pickers.js?v=3.5";
-import {buildPdfSheet} from "../pdf-sheet.js?v=3.5";
-import {exportElementToPdf} from "../../../shared/pdf-export.js?v=3.5";
-import {downloadJson, loadJsonFile} from "../../../shared/file-io.js?v=3.5";
-import {openPortraitModal} from "../../../shared/portrait.js?v=3.5";
-import {showAlertModal, showConfirmModal, showPromptModal} from "../../../shared/ui-modal.js?v=3.5";
-import {openShortRestModal, handleLongRest} from "../../../shared/rest-modal.js?v=3.5";
-import {openAddFeatureModal} from "../../../shared/feature-modal.js?v=3.5";
-import {mountEquipmentEditor, buildItemCatalog} from "../../../shared/equipment-editor.js?v=3.5";
-import {mountSourceSelectorModal} from "../../../shared/sources.js?v=3.5";
+} from "../character.js?v=3.6";
+import {previewLevelUp, applyLevelUp} from "../level-up.js?v=3.6";
+import {el, clear} from "./pickers.js?v=3.6";
+import {buildPdfSheet} from "../pdf-sheet.js?v=3.6";
+import {exportElementToPdf} from "../../../shared/pdf-export.js?v=3.6";
+import {downloadJson, loadJsonFile} from "../../../shared/file-io.js?v=3.6";
+import {openPortraitModal} from "../../../shared/portrait.js?v=3.6";
+import {showAlertModal, showConfirmModal, showPromptModal} from "../../../shared/ui-modal.js?v=3.6";
+import {openShortRestModal, handleLongRest} from "../../../shared/rest-modal.js?v=3.6";
+import {openAddFeatureModal} from "../../../shared/feature-modal.js?v=3.6";
+import {mountEquipmentEditor, buildItemCatalog} from "../../../shared/equipment-editor.js?v=3.6";
+import {mountSourceSelectorModal} from "../../../shared/sources.js?v=3.6";
 
 export function mountSheet (root, {data, character, onChange, onNew}) {
 	let char = character;
@@ -946,12 +946,12 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 						char.proficiencies = char.proficiencies || {};
 						char.proficiencies.skills = char.proficiencies.skills || {};
 						const cur = char.proficiencies.skills[sk.id];
-						if (!cur) {
+						if (!cur || cur === "none" || cur === false) {
 							char.proficiencies.skills[sk.id] = "proficient";
-						} else if (cur === "proficient") {
+						} else if (cur === "proficient" || cur === true || cur === 1) {
 							char.proficiencies.skills[sk.id] = "expert";
 						} else {
-							delete char.proficiencies.skills[sk.id];
+							char.proficiencies.skills[sk.id] = "none";
 						}
 						setChar(char);
 					} : null,

@@ -8,7 +8,7 @@ import {
 	formatMod,
 	abilityMod,
 	formatAbilityBonus,
-} from "../rules.js?v=3.5";
+} from "../rules.js?v=3.6";
 import {
 	createEmptyCharacter,
 	recomputeCharacter,
@@ -23,12 +23,12 @@ import {
 	backgroundDistinctiveFeatures,
 	FIGHTING_STYLES,
 	CLASS_FIGHTING_STYLES,
-} from "../character.js?v=3.5";
-import {toUid} from "../data.js?v=3.5";
-import {el, clear, multiCheck} from "./pickers.js?v=3.5";
-import {mountSourceBanner, mountSourceSelectorModal} from "../../../shared/sources.js?v=3.5";
-import {openPortraitModal} from "../../../shared/portrait.js?v=3.5";
-import {showAlertModal} from "../../../shared/ui-modal.js?v=3.5";
+} from "../character.js?v=3.6";
+import {toUid} from "../data.js?v=3.6";
+import {el, clear, multiCheck} from "./pickers.js?v=3.6";
+import {mountSourceBanner, mountSourceSelectorModal} from "../../../shared/sources.js?v=3.6";
+import {openPortraitModal} from "../../../shared/portrait.js?v=3.6";
+import {showAlertModal} from "../../../shared/ui-modal.js?v=3.6";
 
 const STEPS = [
 	{id: "identity", title: "Identity"},

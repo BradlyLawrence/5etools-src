@@ -9,14 +9,14 @@ import {
 	featureLevelFromUid,
 	featureNameFromUid,
 	normalizeSkillId,
-} from "./rules.js?v=3.5";
+} from "./rules.js?v=3.6";
 import {
 	entityUid,
 	subclassUid,
 	entriesToText,
 	toUid,
 	cleanTags,
-} from "./data.js?v=3.5";
+} from "./data.js?v=3.6";
 
 export {
 	ABILITIES,
@@ -278,31 +278,38 @@ export function recomputeCharacter (character, data) {
 	const race = data.getRace(character.culture.raceUid);
 	const bg = data.getBackground(character.background.uid);
 
-	const saves = {};
-	for (const ab of (cls?.proficiency || [])) saves[ab] = true;
-	character.proficiencies.saves = Object.keys(saves);
+	character.proficiencies = character.proficiencies || {};
 
-	const skills = {...(character.proficiencies.skills || {})};
-	const mark = (id) => {
-		const k = normalizeSkillId(id);
-		if (k) {
-			if (skills[k] !== "expert" && skills[k] !== "expertise") {
-				skills[k] = "proficient";
+	// Saves: if uninitialized, populate from class; otherwise preserve player customizations
+	if (!Array.isArray(character.proficiencies.saves)) {
+		const saves = {};
+		for (const ab of (cls?.proficiency || [])) saves[ab] = true;
+		character.proficiencies.saves = Object.keys(saves);
+	}
+
+	// Skills: only populate defaults from race/bg/class if skills map is uninitialized.
+	// If skills have already been populated or customized, preserve all player choices!
+	character.proficiencies.skills = character.proficiencies.skills || {};
+	const hasSkills = Object.keys(character.proficiencies.skills).length > 0;
+	if (!hasSkills) {
+		const skills = {};
+		const mark = (id) => {
+			const k = normalizeSkillId(id);
+			if (k) skills[k] = "proficient";
+		};
+		if (race?.skillProficiencies) {
+			for (const block of race.skillProficiencies) {
+				for (const [k, v] of Object.entries(block)) if (v === true) mark(k);
 			}
 		}
-	};
-	if (race?.skillProficiencies) {
-		for (const block of race.skillProficiencies) {
-			for (const [k, v] of Object.entries(block)) if (v === true) mark(k);
+		if (bg?.skillProficiencies) {
+			for (const block of bg.skillProficiencies) {
+				for (const [k, v] of Object.entries(block)) if (v === true) mark(k);
+			}
 		}
+		for (const sk of character.class?.skillChoices || []) mark(sk);
+		character.proficiencies.skills = skills;
 	}
-	if (bg?.skillProficiencies) {
-		for (const block of bg.skillProficiencies) {
-			for (const [k, v] of Object.entries(block)) if (v === true) mark(k);
-		}
-	}
-	for (const sk of character.class.skillChoices || []) mark(sk);
-	character.proficiencies.skills = skills;
 
 	const tools = {...(character.proficiencies.tools || {})};
 	if (race?.toolProficiencies) {
@@ -639,7 +646,7 @@ export function derive (character, data) {
 	const skillRows = SKILLS.map(sk => {
 		const mode = character.proficiencies.skills?.[sk.id];
 		const isExpert = mode === "expert" || mode === "expertise" || mode === 2;
-		const isProf = isExpert || !!mode;
+		const isProf = isExpert || mode === "proficient" || mode === true || mode === 1;
 		const multiplier = isExpert ? 2 : (isProf ? 1 : 0);
 		const bonus = mods[sk.ability] + (multiplier * pb);
 		return {
