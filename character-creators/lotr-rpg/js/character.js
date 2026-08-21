@@ -53,6 +53,50 @@ export const SHADOW_PATH_STAGES = {
 	"Fear of the Shadow": ["Troubled", "Wavering", "Guilt-ridden", "Fearful"],
 };
 
+export const FIGHTING_STYLES = {
+	"Archery": {
+		name: "Archery",
+		desc: "You gain a +2 bonus to attack rolls you make with ranged weapons.",
+	},
+	"Defense": {
+		name: "Defense",
+		desc: "While you are wearing armor, you gain a +1 bonus to AC.",
+	},
+	"Dueling": {
+		name: "Dueling",
+		desc: "When you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.",
+	},
+	"Great Weapon Fighting": {
+		name: "Great Weapon Fighting",
+		desc: "When you roll damage for an attack you make with a melee weapon that you are wielding with two hands, you can treat any roll of 4 or less on a damage die as a 5. The weapon must have the two-handed or versatile property for you to gain this benefit.",
+	},
+	"Protection": {
+		name: "Protection",
+		desc: "When a creature you can see hits you or a target other than you that is within 5 feet of you with a melee attack, you can use your reaction to add your proficiency bonus to the target's AC for that attack, potentially causing the attack to miss. You must be wielding a shield or a finesse weapon.",
+	},
+	"Two-Weapon Fighting": {
+		name: "Two-Weapon Fighting",
+		desc: "When you engage in two-weapon fighting, you can add your ability modifier to the damage of the second attack.",
+	},
+};
+
+export const CLASS_FIGHTING_STYLES = {
+	"champion": ["Archery", "Defense", "Dueling", "Great Weapon Fighting", "Protection", "Two-Weapon Fighting"],
+	"captain": ["Defense", "Dueling", "Great Weapon Fighting", "Protection", "Two-Weapon Fighting"],
+	"warden": ["Archery", "Defense", "Dueling", "Protection", "Two-Weapon Fighting"],
+	"herald": ["Archery", "Defense", "Dueling", "Two-Weapon Fighting"],
+	"messenger": ["Archery", "Defense", "Dueling", "Two-Weapon Fighting"],
+};
+
+export function fightingStyleUnlockLevel (cls) {
+	if (!cls) return null;
+	const name = (cls.name || "").toLowerCase();
+	if (name === "champion") return 1;
+	if (name === "captain") return 2;
+	if (name === "warden") return 2;
+	return null;
+}
+
 export function createEmptyCharacter () {
 	const now = new Date().toISOString();
 	return {
@@ -417,11 +461,20 @@ export function listFeaturesUpToLevel (character, data, level) {
 		const key = `${lvl}:${name}`;
 		if (seen.has(key)) continue;
 		seen.add(key);
+		let featName = ent?.name || name;
+		let featText = ent ? entriesToText(ent.entries) : "";
+		if (name.toLowerCase().includes("fighting style")) {
+			if (character.class?.fightingStyle) {
+				featName = `Fighting Style: ${character.class.fightingStyle}`;
+				const styleInfo = FIGHTING_STYLES[character.class.fightingStyle];
+				if (styleInfo) featText = `${styleInfo.desc}\n\n${featText}`.trim();
+			}
+		}
 		out.push({
 			level: lvl,
-			name: ent?.name || name,
+			name: featName,
 			source: "class",
-			text: ent ? entriesToText(ent.entries) : "",
+			text: featText,
 		});
 	}
 
@@ -795,10 +848,16 @@ function computeEquippedAttacks (character, data, mods, pb) {
 			if (isFinesse) statMod = Math.max(mods.str, mods.dex);
 			else if (isRanged) statMod = mods.dex;
 
-			const toHit = pb + statMod;
+			let toHit = pb + statMod;
+			if (isRanged && character.class?.fightingStyle === "Archery") {
+				toHit += 2;
+			}
 			const dmgDice = item?.dmg1 || (k.includes("greatsword") || k.includes("maul") ? "2d6" : k.includes("greataxe") ? "1d12" : k.includes("longsword") || k.includes("battleaxe") || k.includes("rapier") ? "1d8" : k.includes("shortsword") || k.includes("mace") ? "1d6" : "1d4");
 			const dmgType = item?.dmgType ? ` ${item.dmgType}` : "";
-			const dmgModStr = statMod >= 0 ? `+${statMod}` : `${statMod}`;
+			let dmgModStr = statMod >= 0 ? `+${statMod}` : `${statMod}`;
+			if (!isRanged && character.class?.fightingStyle === "Dueling") {
+				dmgModStr += " (+2 Dueling)";
+			}
 			const damage = `${dmgDice}${dmgModStr}${dmgType}`;
 
 			let range = "Melee (5 ft.)";
@@ -1061,10 +1120,16 @@ export function computeAc (character, data, mods) {
 		}
 	}
 
-	const totalAc = baseAc + dexBonus + shieldBonus;
+	let styleBonus = 0;
+	if (character.class?.fightingStyle === "Defense" && hasArmor) {
+		styleBonus = 1;
+	}
+
+	const totalAc = baseAc + dexBonus + shieldBonus + styleBonus;
 	const parts = [`Base ${baseAc}`];
 	if (dexBonus !== 0) parts.push(`DEX/Ability ${dexBonus >= 0 ? `+${dexBonus}` : dexBonus}`);
 	if (shieldBonus > 0) parts.push(`Shield +${shieldBonus}`);
+	if (styleBonus > 0) parts.push(`Defense Style +1`);
 	const acBreakdown = `${armorName ? `${armorName}: ` : ""}${parts.join(" + ")} = ${totalAc} AC`;
 
 	return {

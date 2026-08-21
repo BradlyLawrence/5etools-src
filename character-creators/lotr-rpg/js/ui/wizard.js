@@ -21,6 +21,8 @@ import {
 	missingEquipmentTypePicks,
 	CALLING_SHADOW_PATHS,
 	backgroundDistinctiveFeatures,
+	FIGHTING_STYLES,
+	CLASS_FIGHTING_STYLES,
 } from "../character.js?v=2.5";
 import {toUid} from "../data.js?v=2.5";
 import {el, clear, multiCheck} from "./pickers.js?v=2.5";
@@ -730,6 +732,29 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 					const craftFeat = data.getFeat(selectedCraftUid);
 					if (craftFeat) detail.append(el("pre", {class: "cc-prose", text: entriesToText(craftFeat.entries)}));
 				}
+			}
+
+			if (cls.name === "Champion") {
+				detail.append(el("h4", {text: "Fighting Style (choose 1)"}));
+				detail.append(el("p", {class: "cc-muted", text: "Champions adopt a speciality fighting style at 1st level."}));
+				const styleNames = CLASS_FIGHTING_STYLES["champion"] || [];
+				const sList = el("div", {class: "cc-picker-list cc-picker-list-compact"});
+				for (const sName of styleNames) {
+					const st = FIGHTING_STYLES[sName];
+					if (!st) continue;
+					const btn = el("button", {
+						type: "button",
+						class: `cc-pick ${char.class.fightingStyle === sName ? "is-selected" : ""}`,
+						onClick: () => {
+							char.class.fightingStyle = sName;
+							setChar(char);
+						},
+					});
+					btn.append(el("div", {class: "cc-pick-title", text: st.name}));
+					btn.append(el("div", {class: "cc-pick-meta", text: st.desc}));
+					sList.append(btn);
+				}
+				detail.append(sList);
 			}
 
 			detail.append(renderEquipmentUi(cls));

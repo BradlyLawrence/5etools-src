@@ -5,6 +5,8 @@ import {
 	computeHpMax,
 	recomputeCharacter,
 	touch,
+	FIGHTING_STYLES,
+	CLASS_FIGHTING_STYLES,
 } from "./character.js";
 
 export function previewLevelUp (character, data) {
@@ -48,6 +50,23 @@ export function previewLevelUp (character, data) {
 		)
 		: null;
 
+	// Detect if character unlocks a Fighting Style
+	let needFightingStyle = false;
+	let fightingStyles = [];
+	const callingLower = (cls.name || "").toLowerCase();
+	if (!character.class.fightingStyle) {
+		if (callingLower === "champion" && to >= 1) {
+			needFightingStyle = true;
+			fightingStyles = (CLASS_FIGHTING_STYLES["champion"] || []).map(k => ({name: k, ...(FIGHTING_STYLES[k] || {})}));
+		} else if ((callingLower === "captain" || callingLower === "warden") && to >= 2) {
+			needFightingStyle = true;
+			fightingStyles = (CLASS_FIGHTING_STYLES[callingLower] || []).map(k => ({name: k, ...(FIGHTING_STYLES[k] || {})}));
+		} else if (callingLower === "messenger" && to >= 3) {
+			needFightingStyle = true;
+			fightingStyles = (CLASS_FIGHTING_STYLES["messenger"] || []).map(k => ({name: k, ...(FIGHTING_STYLES[k] || {})}));
+		}
+	}
+
 	return {
 		ok: true,
 		from,
@@ -58,6 +77,8 @@ export function previewLevelUp (character, data) {
 		needSubclass,
 		needVirtue,
 		virtueMode,
+		needFightingStyle,
+		fightingStyles,
 		subclasses: needSubclass ? data.subclassesForClass(cls) : [],
 		virtues: needVirtue && virtueMode !== "craft" ? data.virtuesForRace(race, {subrace}) : [],
 		crafts: needVirtue && (virtueMode === "craft" || virtueMode === "craft-or-virtue") ? data.crafts() : [],
@@ -96,6 +117,11 @@ export function applyLevelUp (character, data, choices = {}) {
 		} else {
 			throw new Error("Choose a virtue or craft.");
 		}
+	}
+
+	if (preview.needFightingStyle) {
+		if (!choices.fightingStyle) throw new Error("Choose a Fighting Style.");
+		character.class.fightingStyle = choices.fightingStyle;
 	}
 
 	const faces = cls.hd?.faces || 8;

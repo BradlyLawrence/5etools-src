@@ -12,6 +12,7 @@ import {
 	subclassUnlockLevel,
 	entriesToText,
 	FILE_TYPE,
+	CLASS_FIGHTING_STYLES,
 } from "../character.js?v=2.5";
 import {previewLevelUp, applyLevelUp} from "../level-up.js?v=2.5";
 import {el, clear} from "./pickers.js?v=2.5";
@@ -932,6 +933,27 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			}));
 			featCol.append(featHead);
 
+			const callingKey = (d.className || "").toLowerCase();
+			const stylesAvail = CLASS_FIGHTING_STYLES[callingKey] || [];
+			if (stylesAvail.length > 0 && isEditMode) {
+				const fsRow = el("div", {style: "display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; padding: 0.4rem 0.6rem; background: var(--cc-bg-subtle, rgba(0,0,0,0.03)); border: 1px solid var(--cc-border); border-radius: 4px;"});
+				fsRow.append(el("span", {style: "font-weight: 600; font-size: 0.85rem; white-space: nowrap;", text: "⚔️ Fighting Style:"}));
+				const fsSelect = el("select", {class: "cc-select cc-select-sm", style: "flex: 1;"});
+				fsSelect.append(el("option", {value: "", text: "— None / Unchosen —"}));
+				for (const sName of stylesAvail) {
+					const opt = el("option", {value: sName, text: sName});
+					if (char.class?.fightingStyle === sName) opt.selected = true;
+					fsSelect.append(opt);
+				}
+				fsSelect.addEventListener("change", (e) => {
+					char.class = char.class || {};
+					char.class.fightingStyle = e.target.value || null;
+					setChar(char);
+				});
+				fsRow.append(fsSelect);
+				featCol.append(fsRow);
+			}
+
 			if (!d.features?.length) {
 				featCol.append(el("p", {class: "cc-muted", text: "No features unlocked yet. Click “➕ Add Feature / Virtue” to add custom or rules features."}));
 			} else {
@@ -1147,8 +1169,25 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 		});
 		hpRow.append(hpInput);
 		modal.append(hpRow);
-		const hpNote = el("p", {class: "cc-muted", text: "Defaults to average if blank."});
-		modal.append(hpNote);
+		if (preview.needFightingStyle) {
+			modal.append(el("h3", {text: "Fighting Style"}));
+			modal.append(el("p", {class: "cc-muted", text: "Adopt a speciality fighting style for your Calling."}));
+			const fsList = el("div", {class: "cc-picker-list cc-picker-list-compact"});
+			for (const st of preview.fightingStyles) {
+				const btn = el("button", {
+					type: "button", class: `cc-pick ${state.fightingStyle === st.name ? "is-selected" : ""}`,
+					onClick: () => {
+						state.fightingStyle = st.name;
+						fsList.querySelectorAll(".cc-pick").forEach(n => n.classList.remove("is-selected"));
+						btn.classList.add("is-selected");
+					},
+				});
+				btn.append(el("div", {class: "cc-pick-title", text: st.name}));
+				if (st.desc) btn.append(el("div", {class: "cc-pick-meta", text: st.desc}));
+				fsList.append(btn);
+			}
+			modal.append(fsList);
+		}
 
 		if (preview.needSubclass) {
 			modal.append(el("h3", {text: preview.subclassTitle}));
