@@ -383,28 +383,75 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			cell.append(el("div", {class: "cc-ability-name", text: fullName}));
 
 			if (isEditMode) {
-				const bonus = d.abilityBonuses?.[ab] || 0;
-				const scoreIn = el("input", {
+				const details = d.abilityDetails || {cultural: {}, custom: {}, totalBonuses: {}};
+				const cBonus = details.cultural[ab] || 0;
+				const curCustomBonus = Number(char.abilities.customBonuses?.[ab] || 0);
+				const curBase = Number(char.abilities.base?.[ab] ?? 10);
+				const finalScore = Number(char.abilities[ab] ?? (curBase + cBonus + curCustomBonus));
+
+				const editRow = el("div", {class: "cc-ability-edit-row"});
+
+				// Base score input
+				const baseGroup = el("div", {class: "cc-ability-input-group"});
+				baseGroup.append(el("label", {text: "Base"}));
+				const baseIn = el("input", {
 					class: "cc-input cc-input-num",
 					type: "number",
 					min: "1",
 					max: "30",
-					value: String(char.abilities[ab] || 10),
-					style: "width: 55px; text-align: center; font-weight: bold; font-size: 1.1rem; margin: 2px auto;",
-					title: bonus > 0 ? `Total: ${char.abilities[ab] || 10} (Base ${char.abilities.base?.[ab] || 10} + Culture/Virtue ${bonus})` : `Score: ${char.abilities[ab] || 10}`,
+					value: String(curBase),
+					title: `Base ${fullName} score`,
 					onChange: (e) => {
 						const num = Math.max(1, Math.min(30, Number(e.target.value) || 10));
 						char.abilities = char.abilities || {};
 						char.abilities.base = char.abilities.base || {};
-						char.abilities.base[ab] = Math.max(1, num - bonus);
-						char.abilities[ab] = num;
+						char.abilities.base[ab] = num;
 						setChar(char);
 					},
 				});
-				cell.append(scoreIn);
+				baseGroup.append(baseIn);
+				editRow.append(baseGroup);
+
+				// Custom bonus input (+bonus from magic items / custom modifiers / boons)
+				const bonusGroup = el("div", {class: "cc-ability-input-group"});
+				bonusGroup.append(el("label", {text: "Bonus"}));
+				const bonusIn = el("input", {
+					class: "cc-input cc-input-num",
+					type: "number",
+					min: "-20",
+					max: "30",
+					value: curCustomBonus !== 0 ? (curCustomBonus > 0 ? `+${curCustomBonus}` : String(curCustomBonus)) : "0",
+					placeholder: "+0",
+					title: `Custom / magic item / miscellaneous bonus to ${fullName}`,
+					onChange: (e) => {
+						const num = Number(e.target.value) || 0;
+						char.abilities = char.abilities || {};
+						char.abilities.customBonuses = char.abilities.customBonuses || {};
+						char.abilities.customBonuses[ab] = num;
+						setChar(char);
+					},
+				});
+				bonusGroup.append(bonusIn);
+				editRow.append(bonusGroup);
+
+				cell.append(editRow);
+
+				const parts = [];
+				if (cBonus > 0) parts.push(`Culture +${cBonus}`);
+				parts.push(`Total: <strong>${finalScore}</strong>`);
+				cell.append(el("div", {class: "cc-ability-subtext", html: parts.join(" · ")}));
 			} else {
+				const details = d.abilityDetails || {cultural: {}, custom: {}, totalBonuses: {}};
+				const cBonus = details.cultural[ab] || 0;
+				const curCustomBonus = Number(char.abilities.customBonuses?.[ab] || 0);
+				const curBase = Number(char.abilities.base?.[ab] ?? 10);
+				const scoreParts = [`Base ${curBase}`];
+				if (cBonus > 0) scoreParts.push(`Culture +${cBonus}`);
+				if (curCustomBonus !== 0) scoreParts.push(`Bonus ${curCustomBonus > 0 ? `+${curCustomBonus}` : curCustomBonus}`);
+
 				const scoreDiv = el("div", {
 					class: "cc-ability-score",
+					title: scoreParts.length > 1 ? `${scoreParts.join(" + ")} = ${char.abilities[ab] || 10}` : `Score: ${char.abilities[ab] || 10}`,
 					text: String(char.abilities[ab] || 10),
 				});
 				cell.append(scoreDiv);

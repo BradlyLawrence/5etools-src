@@ -199,9 +199,9 @@ export function cloneCharacter (c) {
 	return JSON.parse(JSON.stringify(c));
 }
 
-export function getAbilityBonuses (character, data) {
-	const bonuses = {str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0};
-	if (!character || !data) return bonuses;
+export function getAbilityBreakdown (character, data) {
+	const cultural = {str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0};
+	if (!character || !data) return {cultural, custom: {}, totalBonuses: cultural};
 
 	const race = data.getRace(character.culture?.raceUid);
 	const sub = character.culture?.subraceUid
@@ -211,7 +211,7 @@ export function getAbilityBonuses (character, data) {
 	const applyBlock = (block) => {
 		if (!block) return;
 		for (const ab of ABILITIES) {
-			if (typeof block[ab] === "number") bonuses[ab] += block[ab];
+			if (typeof block[ab] === "number") cultural[ab] += block[ab];
 		}
 	};
 
@@ -224,7 +224,7 @@ export function getAbilityBonuses (character, data) {
 
 	const assigns = character.culture?.abilityChoice || {};
 	for (const [ab, n] of Object.entries(assigns)) {
-		if (ABILITIES.includes(ab)) bonuses[ab] += Number(n || 0);
+		if (ABILITIES.includes(ab)) cultural[ab] += Number(n || 0);
 	}
 
 	const virtueUids = [
@@ -236,31 +236,35 @@ export function getAbilityBonuses (character, data) {
 		if (!feat?.ability) continue;
 		for (const block of feat.ability) {
 			for (const ab of ABILITIES) {
-				if (typeof block[ab] === "number") bonuses[ab] += block[ab];
+				if (typeof block[ab] === "number") cultural[ab] += block[ab];
 			}
 		}
 	}
 
-	return bonuses;
+	const custom = character.abilities?.customBonuses || {};
+	const totalBonuses = {};
+	for (const ab of ABILITIES) {
+		totalBonuses[ab] = (cultural[ab] || 0) + Number(custom[ab] || 0);
+	}
+
+	return {cultural, custom, totalBonuses};
+}
+
+export function getAbilityBonuses (character, data) {
+	return getAbilityBreakdown(character, data).totalBonuses;
 }
 
 export function recomputeAbilityScores (character, data) {
 	character.abilities = character.abilities || {};
 	character.abilities.base = character.abilities.base || {};
+	character.abilities.customBonuses = character.abilities.customBonuses || {};
 
-	const bonuses = getAbilityBonuses(character, data);
+	const {cultural, custom, totalBonuses} = getAbilityBreakdown(character, data);
 
 	for (const ab of ABILITIES) {
-		if (character.abilities.base[ab] != null) {
-			character.abilities[ab] = Math.min(30, Math.max(1, Number(character.abilities.base[ab]) + (bonuses[ab] || 0)));
-		} else if (character.abilities[ab] != null) {
-			const finalVal = Number(character.abilities[ab]) || 10;
-			character.abilities.base[ab] = Math.max(1, finalVal - (bonuses[ab] || 0));
-			character.abilities[ab] = finalVal;
-		} else {
-			character.abilities.base[ab] = 10;
-			character.abilities[ab] = 10 + (bonuses[ab] || 0);
-		}
+		const baseVal = Number(character.abilities.base[ab] ?? 10);
+		character.abilities.base[ab] = baseVal;
+		character.abilities[ab] = Math.min(30, Math.max(1, baseVal + (totalBonuses[ab] || 0)));
 	}
 	return character;
 }
@@ -725,6 +729,7 @@ export function derive (character, data) {
 		skills: skillRows,
 		abilities: character.abilities,
 		abilityBonuses: getAbilityBonuses(character, data),
+		abilityDetails: getAbilityBreakdown(character, data),
 		mods,
 		saves,
 		pb,
