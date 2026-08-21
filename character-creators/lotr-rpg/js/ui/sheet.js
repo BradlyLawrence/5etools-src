@@ -399,22 +399,7 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			} else {
 				const scoreDiv = el("div", {
 					class: "cc-ability-score",
-					style: "cursor: pointer;",
-					title: `Double-click to set ${ab.toUpperCase()} score`,
 					text: String(char.abilities[ab] || 10),
-				});
-				scoreDiv.addEventListener("dblclick", async () => {
-					const current = char.abilities[ab] || 10;
-					const val = await showPromptModal(`Set Base ${fullName}`, `Enter new base score for ${fullName} (${ab.toUpperCase()}):`, {
-						defaultValue: String(current),
-						placeholder: "Score (1-30)",
-						inputType: "number",
-						el,
-					});
-					if (val === null) return;
-					const num = Math.max(1, Math.min(30, Number(val) || 10));
-					char.abilities[ab] = num;
-					setChar(char);
 				});
 				cell.append(scoreDiv);
 			}
@@ -423,10 +408,10 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			const save = d.saves[ab];
 			const saveDiv = el("div", {
 				class: `cc-ability-save ${save.proficient ? "is-proficient" : ""}`,
-				style: "cursor: pointer; user-select: none;",
-				title: `Click to toggle ${ab.toUpperCase()} saving throw proficiency`,
+				style: isEditMode ? "cursor: pointer; user-select: none;" : "user-select: none;",
+				title: isEditMode ? `Click to toggle ${ab.toUpperCase()} saving throw proficiency` : "",
 				html: `Save ${formatMod(save.value)} <strong>${save.proficient ? "●" : "○"}</strong>`,
-				onClick: () => {
+				onClick: isEditMode ? () => {
 					char.proficiencies = char.proficiencies || {};
 					let curSaves = Array.isArray(char.proficiencies.saves) ? [...char.proficiencies.saves] : [];
 					if (curSaves.includes(ab)) {
@@ -436,7 +421,7 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 					}
 					char.proficiencies.saves = curSaves;
 					setChar(char);
-				},
+				} : null,
 			});
 			cell.append(saveDiv);
 			abGrid.append(cell);
@@ -900,11 +885,11 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 				const profLabel = sk.isExpert ? " [Expertise]" : (sk.proficient ? " [Proficient]" : "");
 
 				const li = el("li", {
-					class: `${stateClass} cc-skill-row`,
-					style: "cursor: pointer; user-select: none; transition: background 0.15s ease;",
-					title: `Click to cycle proficiency (None → Proficient → Expertise)\nCurrent: ${sk.isExpert ? "Expertise (2× PB)" : (sk.proficient ? "Proficient (+PB)" : "None")}`,
+					class: `${stateClass} ${isEditMode ? "cc-skill-row is-editable" : ""}`,
+					style: isEditMode ? "cursor: pointer; user-select: none; transition: background 0.15s ease;" : "user-select: none;",
+					title: isEditMode ? `Click to cycle proficiency (None → Proficient → Expertise)\nCurrent: ${sk.isExpert ? "Expertise (2× PB)" : (sk.proficient ? "Proficient (+PB)" : "None")}` : "",
 					html: `<span><strong style="color: ${sk.isExpert ? "var(--cc-accent, #c99c47)" : "inherit"}; font-size: 1.1em;">${icon}</strong> ${esc(sk.name)}${isMeSkill ? " ★" : ""}${stealthBadge}<span class="cc-muted" style="font-size: 0.75rem;">${profLabel}</span></span><span style="font-weight: ${sk.proficient ? "bold" : "normal"};">${formatMod(sk.bonus)}</span>`,
-					onClick: () => {
+					onClick: isEditMode ? () => {
 						char.proficiencies = char.proficiencies || {};
 						char.proficiencies.skills = char.proficiencies.skills || {};
 						const cur = char.proficiencies.skills[sk.id];
@@ -916,12 +901,16 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 							delete char.proficiencies.skills[sk.id];
 						}
 						setChar(char);
-					},
+					} : null,
 				});
 				ul.append(li);
 			}
 			skillCol.append(ul);
-			skillCol.append(el("p", {class: "cc-muted", text: "● Proficient (+PB) · ✪ Expertise (2× PB) · Click skill to cycle"}));
+			if (isEditMode) {
+				skillCol.append(el("p", {class: "cc-tip", style: "font-size: 0.8rem; margin-top: 0.5rem;", text: "✏️ Edit Mode Active: Click any skill to cycle None (○) → Proficient (●) → Expertise (✪)"}));
+			} else {
+				skillCol.append(el("p", {class: "cc-muted", text: "● Proficient (+PB) · ✪ Expertise (2× PB)"}));
+			}
 			skillCol.append(el("p", {class: "cc-muted", text: "★ Middle-earth skill (Explore, Hunting, Old Lore, Riddle, Travel)"}));
 			cols.append(skillCol);
 
