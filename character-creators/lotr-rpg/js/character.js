@@ -199,23 +199,20 @@ export function cloneCharacter (c) {
 	return JSON.parse(JSON.stringify(c));
 }
 
-export function recomputeAbilityScores (character, data) {
-	const base = character.abilities.base || {};
-	const final = {};
-	for (const ab of ABILITIES) final[ab] = Number(base[ab] ?? 10);
+export function getAbilityBonuses (character, data) {
+	const bonuses = {str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0};
+	if (!character || !data) return bonuses;
 
-	const race = data.getRace(character.culture.raceUid);
-	const sub = character.culture.subraceUid
+	const race = data.getRace(character.culture?.raceUid);
+	const sub = character.culture?.subraceUid
 		? data.subraces.find(s => toUid(s.name, s.source) === String(character.culture.subraceUid).toLowerCase())
 		: null;
 
 	const applyBlock = (block) => {
 		if (!block) return;
-		// fixed scores
 		for (const ab of ABILITIES) {
-			if (typeof block[ab] === "number") final[ab] += block[ab];
+			if (typeof block[ab] === "number") bonuses[ab] += block[ab];
 		}
-		// simple choose amount (not fully interactive for multi-options beyond culture.abilityChoice)
 	};
 
 	if (sub?.overwrite?.ability) {
@@ -225,30 +222,45 @@ export function recomputeAbilityScores (character, data) {
 		if (sub?.ability) sub.ability.forEach(applyBlock);
 	}
 
-	// Manual assignments for weighted choices stored on culture.abilityChoice
-	const assigns = character.culture.abilityChoice || {};
+	const assigns = character.culture?.abilityChoice || {};
 	for (const [ab, n] of Object.entries(assigns)) {
-		if (ABILITIES.includes(ab)) final[ab] += Number(n || 0);
+		if (ABILITIES.includes(ab)) bonuses[ab] += Number(n || 0);
 	}
 
-	// Virtues may grant ASI-like bumps via feat.ability
 	const virtueUids = [
-		character.culture.startingVirtueUid,
+		character.culture?.startingVirtueUid,
 		...(character.virtues || []).map(v => v.uid),
 	].filter(Boolean);
 	for (const uid of virtueUids) {
 		const feat = data.getFeat(uid);
-		// ability on virtues often not structured; skip unless simple fixed
 		if (!feat?.ability) continue;
 		for (const block of feat.ability) {
 			for (const ab of ABILITIES) {
-				if (typeof block[ab] === "number") final[ab] += block[ab];
+				if (typeof block[ab] === "number") bonuses[ab] += block[ab];
 			}
 		}
 	}
 
+	return bonuses;
+}
+
+export function recomputeAbilityScores (character, data) {
+	character.abilities = character.abilities || {};
+	character.abilities.base = character.abilities.base || {};
+
+	const bonuses = getAbilityBonuses(character, data);
+
 	for (const ab of ABILITIES) {
-		character.abilities[ab] = Math.min(20, Math.max(1, final[ab]));
+		if (character.abilities.base[ab] != null) {
+			character.abilities[ab] = Math.min(30, Math.max(1, Number(character.abilities.base[ab]) + (bonuses[ab] || 0)));
+		} else if (character.abilities[ab] != null) {
+			const finalVal = Number(character.abilities[ab]) || 10;
+			character.abilities.base[ab] = Math.max(1, finalVal - (bonuses[ab] || 0));
+			character.abilities[ab] = finalVal;
+		} else {
+			character.abilities.base[ab] = 10;
+			character.abilities[ab] = 10 + (bonuses[ab] || 0);
+		}
 	}
 	return character;
 }
@@ -712,6 +724,7 @@ export function derive (character, data) {
 		startingVirtue: virtue,
 		skills: skillRows,
 		abilities: character.abilities,
+		abilityBonuses: getAbilityBonuses(character, data),
 		mods,
 		saves,
 		pb,

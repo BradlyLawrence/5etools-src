@@ -383,6 +383,7 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			cell.append(el("div", {class: "cc-ability-name", text: fullName}));
 
 			if (isEditMode) {
+				const bonus = d.abilityBonuses?.[ab] || 0;
 				const scoreIn = el("input", {
 					class: "cc-input cc-input-num",
 					type: "number",
@@ -390,8 +391,12 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 					max: "30",
 					value: String(char.abilities[ab] || 10),
 					style: "width: 55px; text-align: center; font-weight: bold; font-size: 1.1rem; margin: 2px auto;",
+					title: bonus > 0 ? `Total: ${char.abilities[ab] || 10} (Base ${char.abilities.base?.[ab] || 10} + Culture/Virtue ${bonus})` : `Score: ${char.abilities[ab] || 10}`,
 					onChange: (e) => {
 						const num = Math.max(1, Math.min(30, Number(e.target.value) || 10));
+						char.abilities = char.abilities || {};
+						char.abilities.base = char.abilities.base || {};
+						char.abilities.base[ab] = Math.max(1, num - bonus);
 						char.abilities[ab] = num;
 						setChar(char);
 					},
