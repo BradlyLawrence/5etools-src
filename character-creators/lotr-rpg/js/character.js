@@ -174,8 +174,12 @@ export function recomputeAbilityScores (character, data) {
 		// simple choose amount (not fully interactive for multi-options beyond culture.abilityChoice)
 	};
 
-	if (race?.ability) race.ability.forEach(applyBlock);
-	if (sub?.ability) sub.ability.forEach(applyBlock);
+	if (sub?.overwrite?.ability) {
+		if (sub.ability) sub.ability.forEach(applyBlock);
+	} else {
+		if (race?.ability) race.ability.forEach(applyBlock);
+		if (sub?.ability) sub.ability.forEach(applyBlock);
+	}
 
 	// Manual assignments for weighted choices stored on culture.abilityChoice
 	const assigns = character.culture.abilityChoice || {};

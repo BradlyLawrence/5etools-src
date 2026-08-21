@@ -4908,11 +4908,11 @@ globalThis.DataUtil = class {
 		}
 	}
 
-	static async loadJSON (url) {
-		return DataUtil._loadJson(url, {isDoDataMerge: true});
+	static async loadJSON (url, {isBustCache = false} = {}) {
+		return DataUtil._loadJson(url, {isDoDataMerge: true, isBustCache});
 	}
 
-	static async loadRawJSON (url, {isBustCache} = {}) {
+	static async loadRawJSON (url, {isBustCache = false} = {}) {
 		return DataUtil._loadJson(url, {isBustCache});
 	}
 

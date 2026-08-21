@@ -397,7 +397,8 @@
 			"source": "MECultures",
 			"raceName": "Elf",
 			"raceSource": "TLotRR",
-			"ability": [{"dex": 1, "wis": 1}],
+			"ability": [{"dex": 1, "wis": 3}],
+			"overwrite": {"ability": true},
 			"skillProficiencies": [{"insight": true}],
 			"entries": [
 				{

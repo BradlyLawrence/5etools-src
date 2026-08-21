@@ -341,7 +341,7 @@ export class BrewUtil2Base {
 
 	async _pGetBrew_pGetLocalBrew_ () {
 		// auto-load from `prerelease/` and `homebrew/`, for custom versions of the site
-		const indexLocal = await DataUtil.loadJSON(`${Renderer.get().baseUrl}${this._PATH_LOCAL_INDEX}`);
+		const indexLocal = await DataUtil.loadJSON(`${Renderer.get().baseUrl}${this._PATH_LOCAL_INDEX}`, {isBustCache: true});
 		if (!indexLocal?.toImport?.length) return this._cache_brewsLocal = [];
 
 		const brewDocs = (await indexLocal.toImport
@@ -350,7 +350,7 @@ export class BrewUtil2Base {
 				const url = /^https?:\/\//.test(name) ? name : `${Renderer.get().baseUrl}${this._PATH_LOCAL_DIR}/${name}`;
 				const filename = UrlUtil.getFilename(url);
 				try {
-					const json = await DataUtil.loadRawJSON(url);
+					const json = await DataUtil.loadRawJSON(url, {isBustCache: true});
 					return this._getBrewDoc({json, url, filename, isLocal: true});
 				} catch (e) {
 					JqueryUtil.doToast({type: "danger", content: `Failed to load local homebrew from URL "${url}"! ${VeCt.STR_SEE_CONSOLE}`});
