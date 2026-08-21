@@ -1,4 +1,4 @@
-import {derive, ABILITIES, ABILITY_FULL, formatMod} from "./character.js?v=3.4";
+import {derive, ABILITIES, ABILITY_FULL, formatMod} from "./character.js?v=3.5";
 
 /**
  * Build a print/PDF-friendly character sheet element for Lord of the Rings Roleplaying.

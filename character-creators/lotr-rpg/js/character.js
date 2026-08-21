@@ -9,14 +9,14 @@ import {
 	featureLevelFromUid,
 	featureNameFromUid,
 	normalizeSkillId,
-} from "./rules.js?v=3.4";
+} from "./rules.js?v=3.5";
 import {
 	entityUid,
 	subclassUid,
 	entriesToText,
 	toUid,
 	cleanTags,
-} from "./data.js?v=3.4";
+} from "./data.js?v=3.5";
 
 export {
 	ABILITIES,
