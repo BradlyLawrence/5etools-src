@@ -137,11 +137,12 @@ export function buildPdfSheet (character, data) {
 					<ul class="cc-pdf-list compact">
 						${d.skills.map(sk => {
 							const isMeSkill = ["Explore", "Hunting", "Old Lore", "Riddle", "Travel"].includes(sk.name);
-							return `<li><span>${sk.proficient ? "●" : "○"} ${esc(sk.name)}${isMeSkill ? " ★" : ""}</span>
+							const icon = sk.isExpert ? "✪" : (sk.proficient ? "●" : "○");
+							return `<li><span>${icon} ${esc(sk.name)}${isMeSkill ? " ★" : ""}</span>
 							<span class="cc-pdf-right">${formatMod(sk.bonus)}</span></li>`;
 						}).join("")}
 					</ul>
-					<div class="cc-pdf-tiny">★ Middle-earth skill (Explore, Hunting, Old Lore, Riddle, Travel)</div>
+					<div class="cc-pdf-tiny">● Proficient &nbsp;·&nbsp; ✪ Expertise &nbsp;·&nbsp; ★ Middle-earth skill</div>
 				</div>
 				<div>
 					<h3>Virtues, Crafts &amp; Features</h3>

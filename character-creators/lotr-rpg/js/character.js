@@ -222,10 +222,14 @@ export function recomputeCharacter (character, data) {
 	for (const ab of (cls?.proficiency || [])) saves[ab] = true;
 	character.proficiencies.saves = Object.keys(saves);
 
-	const skills = {};
+	const skills = {...(character.proficiencies.skills || {})};
 	const mark = (id) => {
 		const k = normalizeSkillId(id);
-		if (k) skills[k] = "proficient";
+		if (k) {
+			if (skills[k] !== "expert" && skills[k] !== "expertise") {
+				skills[k] = "proficient";
+			}
+		}
 	};
 	if (race?.skillProficiencies) {
 		for (const block of race.skillProficiencies) {
@@ -565,9 +569,17 @@ export function derive (character, data) {
 
 	const skillRows = SKILLS.map(sk => {
 		const mode = character.proficiencies.skills?.[sk.id];
-		const prof = !!mode;
-		const bonus = mods[sk.ability] + (prof ? pb : 0);
-		return {...sk, proficient: prof, bonus};
+		const isExpert = mode === "expert" || mode === "expertise" || mode === 2;
+		const isProf = isExpert || !!mode;
+		const multiplier = isExpert ? 2 : (isProf ? 1 : 0);
+		const bonus = mods[sk.ability] + (multiplier * pb);
+		return {
+			...sk,
+			proficient: isProf,
+			isExpert,
+			profMode: isExpert ? "expert" : (isProf ? "proficient" : "none"),
+			bonus,
+		};
 	});
 
 	const acInfo = computeAc(character, data, mods);
@@ -888,8 +900,14 @@ export function exportPayload (character) {
 
 export function importPayload (json) {
 	if (!json || typeof json !== "object") throw new Error("Invalid character file.");
+	// Handle roster exports or wrapped characters
+	let target = json;
+	if (json.character && typeof json.character === "object") target = json.character;
+	else if (Array.isArray(json.characters) && json.characters.length) target = json.characters[0]?.character || json.characters[0];
+	else if (Array.isArray(json.roster) && json.roster.length) target = json.roster[0]?.character || json.roster[0];
+
 	const base = createEmptyCharacter();
-	const merged = deepMerge(base, json);
+	const merged = deepMerge(base, target);
 	merged.fileType = FILE_TYPE;
 	merged.schemaVersion = SCHEMA_VERSION;
 	return merged;

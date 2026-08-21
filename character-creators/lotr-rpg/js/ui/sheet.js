@@ -27,6 +27,7 @@ import {mountSourceSelectorModal} from "../../../shared/sources.js?v=2.5";
 
 export function mountSheet (root, {data, character, onChange, onNew}) {
 	let char = character;
+	let isEditMode = false;
 
 	const setChar = (c) => {
 		char = c;
@@ -62,6 +63,17 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 				onClick: () => openSubclassPicker(),
 			}));
 		}
+
+		toolbar.append(el("button", {
+			type: "button",
+			class: `cc-btn ${isEditMode ? "cc-btn-primary" : ""}`,
+			text: isEditMode ? "✔ Finish Editing" : "✏️ Edit Sheet",
+			title: "Toggle manual editing mode for sheet stats, scores, and features",
+			onClick: () => {
+				isEditMode = !isEditMode;
+				render();
+			},
+		}));
 
 		// Options Menu Dropdown
 		let isMenuOpen = false;
@@ -120,7 +132,7 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 				type: "button", class: "cc-dropdown-item", text: "📂 Load JSON",
 				onClick: async () => {
 					isMenuOpen = false; renderMenu();
-					const json = await loadJsonFile({expectedFileType: FILE_TYPE});
+					const json = await loadJsonFile({expectedFileType: FILE_TYPE, allowAnyValidJson: true});
 					if (!json) return;
 					try {
 						const next = importPayload(json);
@@ -198,10 +210,35 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 			onInput: (e) => { char.identity.name = e.target.value; onChange?.(char); },
 		}));
 		const culture = d.subraceName ? `${d.cultureName} (${d.subraceName})` : d.cultureName;
-		headerMain.append(el("div", {
-			class: "cc-sheet-sub",
-			text: `Level ${d.level} ${culture} ${d.className}${d.subclassName ? ` (${d.subclassName})` : ""} · ${d.backgroundName}`,
-		}));
+
+		if (isEditMode) {
+			const editMetaRow = el("div", {class: "cc-inline-form", style: "gap: 0.5rem; margin-top: 0.35rem; flex-wrap: wrap; align-items: center;"});
+			editMetaRow.append(el("span", {class: "cc-field-label", style: "font-size: 0.8rem;", text: "Level:"}));
+			editMetaRow.append(el("input", {
+				class: "cc-input cc-input-num", type: "number", min: "1", max: "20",
+				value: String(char.level || 1),
+				style: "width: 55px; height: 26px; padding: 2px 4px; font-size: 0.85rem;",
+				onChange: (e) => {
+					const lvl = Math.max(1, Math.min(20, Number(e.target.value) || 1));
+					char.level = lvl;
+					if (char.class) char.class.levels = lvl;
+					setChar(char);
+				},
+			}));
+			editMetaRow.append(el("span", {class: "cc-field-label", style: "font-size: 0.8rem;", text: "Player:"}));
+			editMetaRow.append(el("input", {
+				class: "cc-input", style: "height: 26px; padding: 2px 6px; font-size: 0.85rem; max-width: 130px;",
+				placeholder: "Player name",
+				value: char.identity.playerName || "",
+				onInput: (e) => { char.identity.playerName = e.target.value; onChange?.(char); },
+			}));
+			headerMain.append(editMetaRow);
+		} else {
+			headerMain.append(el("div", {
+				class: "cc-sheet-sub",
+				text: `Level ${d.level} ${culture} ${d.className}${d.subclassName ? ` (${d.subclassName})` : ""} · ${d.backgroundName}`,
+			}));
+		}
 		headerWrap.append(headerMain);
 		root.append(headerWrap);
 
@@ -340,29 +377,68 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 		// Base Ability Scores Grid (STR, DEX, CON, INT, WIS, CHA)
 		const abGrid = el("div", {class: "cc-ability-grid"});
 		for (const ab of ["str", "dex", "con", "int", "wis", "cha"]) {
-			const cell = el("div", {class: "cc-ability-cell", style: "cursor: pointer;", title: `Double-click to edit ${ab.toUpperCase()} score`});
 			const fullName = {str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma"}[ab];
+			const cell = el("div", {class: "cc-ability-cell"});
 			cell.append(el("div", {class: "cc-ability-name", text: fullName}));
-			cell.append(el("div", {class: "cc-ability-score", text: String(char.abilities[ab] || 10)}));
+
+			if (isEditMode) {
+				const scoreIn = el("input", {
+					class: "cc-input cc-input-num",
+					type: "number",
+					min: "1",
+					max: "30",
+					value: String(char.abilities[ab] || 10),
+					style: "width: 55px; text-align: center; font-weight: bold; font-size: 1.1rem; margin: 2px auto;",
+					onChange: (e) => {
+						const num = Math.max(1, Math.min(30, Number(e.target.value) || 10));
+						char.abilities[ab] = num;
+						setChar(char);
+					},
+				});
+				cell.append(scoreIn);
+			} else {
+				const scoreDiv = el("div", {
+					class: "cc-ability-score",
+					style: "cursor: pointer;",
+					title: `Double-click to set ${ab.toUpperCase()} score`,
+					text: String(char.abilities[ab] || 10),
+				});
+				scoreDiv.addEventListener("dblclick", async () => {
+					const current = char.abilities[ab] || 10;
+					const val = await showPromptModal(`Set Base ${fullName}`, `Enter new base score for ${fullName} (${ab.toUpperCase()}):`, {
+						defaultValue: String(current),
+						placeholder: "Score (1-30)",
+						inputType: "number",
+						el,
+					});
+					if (val === null) return;
+					const num = Math.max(1, Math.min(30, Number(val) || 10));
+					char.abilities[ab] = num;
+					setChar(char);
+				});
+				cell.append(scoreDiv);
+			}
+
 			cell.append(el("div", {class: "cc-ability-mod", text: formatMod(d.mods[ab])}));
 			const save = d.saves[ab];
-			cell.append(el("div", {
-				class: "cc-ability-save",
-				text: `Save ${formatMod(save.value)}${save.proficient ? " ●" : ""}`,
-			}));
-			cell.addEventListener("dblclick", async () => {
-				const current = char.abilities[ab] || 10;
-				const val = await showPromptModal(`Set Base ${fullName}`, `Enter new base score for ${fullName} (${ab.toUpperCase()}):`, {
-					defaultValue: String(current),
-					placeholder: "Score (1-30)",
-					inputType: "number",
-					el,
-				});
-				if (val === null) return;
-				const num = Math.max(1, Math.min(30, Number(val) || 10));
-				char.abilities[ab] = num;
-				setChar(char);
+			const saveDiv = el("div", {
+				class: `cc-ability-save ${save.proficient ? "is-proficient" : ""}`,
+				style: "cursor: pointer; user-select: none;",
+				title: `Click to toggle ${ab.toUpperCase()} saving throw proficiency`,
+				html: `Save ${formatMod(save.value)} <strong>${save.proficient ? "●" : "○"}</strong>`,
+				onClick: () => {
+					char.proficiencies = char.proficiencies || {};
+					let curSaves = Array.isArray(char.proficiencies.saves) ? [...char.proficiencies.saves] : [];
+					if (curSaves.includes(ab)) {
+						curSaves = curSaves.filter(s => s !== ab);
+					} else {
+						curSaves.push(ab);
+					}
+					char.proficiencies.saves = curSaves;
+					setChar(char);
+				},
 			});
+			cell.append(saveDiv);
 			abGrid.append(cell);
 		}
 		root.append(abGrid);
@@ -819,12 +895,33 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 				const isMeSkill = ["Explore", "Hunting", "Old Lore", "Riddle", "Travel"].includes(sk.name);
 				const isStealth = sk.id === "stealth";
 				const stealthBadge = isStealth && d.stealthDisadvantage ? ` <span class="cc-badge-stealth-disadv" title="Disadvantage on Stealth checks from wearing noisy armor">⚠ Disadv</span>` : "";
-				ul.append(el("li", {
-					class: sk.proficient ? "is-proficient" : "",
-					html: `<span>${sk.proficient ? "●" : "○"} ${esc(sk.name)}${isMeSkill ? " ★" : ""}${stealthBadge}</span><span>${formatMod(sk.bonus)}</span>`,
-				}));
+				const icon = sk.isExpert ? "✪" : (sk.proficient ? "●" : "○");
+				const stateClass = sk.isExpert ? "is-expert is-proficient" : (sk.proficient ? "is-proficient" : "");
+				const profLabel = sk.isExpert ? " [Expertise]" : (sk.proficient ? " [Proficient]" : "");
+
+				const li = el("li", {
+					class: `${stateClass} cc-skill-row`,
+					style: "cursor: pointer; user-select: none; transition: background 0.15s ease;",
+					title: `Click to cycle proficiency (None → Proficient → Expertise)\nCurrent: ${sk.isExpert ? "Expertise (2× PB)" : (sk.proficient ? "Proficient (+PB)" : "None")}`,
+					html: `<span><strong style="color: ${sk.isExpert ? "var(--cc-accent, #c99c47)" : "inherit"}; font-size: 1.1em;">${icon}</strong> ${esc(sk.name)}${isMeSkill ? " ★" : ""}${stealthBadge}<span class="cc-muted" style="font-size: 0.75rem;">${profLabel}</span></span><span style="font-weight: ${sk.proficient ? "bold" : "normal"};">${formatMod(sk.bonus)}</span>`,
+					onClick: () => {
+						char.proficiencies = char.proficiencies || {};
+						char.proficiencies.skills = char.proficiencies.skills || {};
+						const cur = char.proficiencies.skills[sk.id];
+						if (!cur) {
+							char.proficiencies.skills[sk.id] = "proficient";
+						} else if (cur === "proficient") {
+							char.proficiencies.skills[sk.id] = "expert";
+						} else {
+							delete char.proficiencies.skills[sk.id];
+						}
+						setChar(char);
+					},
+				});
+				ul.append(li);
 			}
 			skillCol.append(ul);
+			skillCol.append(el("p", {class: "cc-muted", text: "● Proficient (+PB) · ✪ Expertise (2× PB) · Click skill to cycle"}));
 			skillCol.append(el("p", {class: "cc-muted", text: "★ Middle-earth skill (Explore, Hunting, Old Lore, Riddle, Travel)"}));
 			cols.append(skillCol);
 

@@ -20,16 +20,32 @@ export function downloadJson (filename, data) {
 
 /**
  * Open a file picker and parse JSON.
- * @param {{expectedFileType?: string}} [opts]
+ * @param {{expectedFileType?: string|string[], allowAnyValidJson?: boolean}} [opts]
  * @returns {Promise<object|null>}
  */
-export function loadJsonFile ({expectedFileType = FILE_TYPE_2024} = {}) {
+export function loadJsonFile ({expectedFileType = null, allowAnyValidJson = true} = {}) {
 	return new Promise((resolve) => {
 		const input = document.createElement("input");
 		input.type = "file";
 		input.accept = ".json,application/json";
+		input.style.position = "fixed";
+		input.style.top = "-1000px";
+		input.style.left = "-1000px";
+		input.style.opacity = "0";
+		input.style.pointerEvents = "none";
+		document.body.appendChild(input);
+
+		let isHandled = false;
+		const cleanup = () => {
+			if (!isHandled) {
+				isHandled = true;
+				try { if (input.parentNode) input.remove(); } catch {}
+			}
+		};
+
 		input.addEventListener("change", async () => {
 			const file = input.files?.[0];
+			cleanup();
 			if (!file) {
 				resolve(null);
 				return;
@@ -37,10 +53,15 @@ export function loadJsonFile ({expectedFileType = FILE_TYPE_2024} = {}) {
 			try {
 				const text = await file.text();
 				const json = JSON.parse(text);
-				if (expectedFileType && json.fileType && json.fileType !== expectedFileType) {
-					alert(`Unexpected file type "${json.fileType}". Expected "${expectedFileType}".`);
-					resolve(null);
-					return;
+				if (expectedFileType) {
+					const allowedTypes = Array.isArray(expectedFileType) ? expectedFileType : [expectedFileType];
+					if (json.fileType && !allowedTypes.includes(json.fileType)) {
+						if (!allowAnyValidJson) {
+							alert(`Unexpected file type "${json.fileType}". Expected "${allowedTypes.join(" or ")}".`);
+							resolve(null);
+							return;
+						}
+					}
 				}
 				resolve(json);
 			} catch (e) {
@@ -48,6 +69,22 @@ export function loadJsonFile ({expectedFileType = FILE_TYPE_2024} = {}) {
 				resolve(null);
 			}
 		});
+
+		input.addEventListener("cancel", () => {
+			cleanup();
+			resolve(null);
+		});
+
+		// Fallback for browsers that don't emit cancel
+		window.addEventListener("focus", () => {
+			setTimeout(() => {
+				if (!isHandled && (!input.files || input.files.length === 0)) {
+					cleanup();
+					resolve(null);
+				}
+			}, 1000);
+		}, {once: true});
+
 		input.click();
 	});
 }

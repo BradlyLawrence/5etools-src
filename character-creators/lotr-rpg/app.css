@@ -65,10 +65,21 @@
 	color: #ffffff;
 }
 
-/* Middle-earth Skills */
+/* Middle-earth Skills & Saves */
+.cc-skill-list li.cc-skill-row:hover {
+	background: var(--cc-bg-hover, rgba(201, 156, 71, 0.1));
+	border-radius: 4px;
+}
 .cc-skill-list li.is-proficient span:first-child {
 	color: var(--cc-accent);
 	font-weight: 600;
+}
+.cc-skill-list li.is-expert span:first-child {
+	color: var(--cc-accent-strong, #e5b358);
+	font-weight: 700;
+}
+.cc-ability-save:hover {
+	color: var(--cc-accent);
 }
 
 .cc-equip-packages {
