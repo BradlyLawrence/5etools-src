@@ -80,10 +80,25 @@ function setupCharImportDropzone() {
 		reader.onload = (evt) => {
 			try {
 				const jsonObj = JSON.parse(evt.target.result);
-				const pc = parseCharacterJson(jsonObj);
-				addCharacterToParty(pc);
+				const charList = Array.isArray(jsonObj.characters)
+					? jsonObj.characters
+					: (Array.isArray(jsonObj.roster) ? jsonObj.roster : [jsonObj]);
+
+				let count = 0;
+				let lastPc = null;
+				for (const item of charList) {
+					const pc = parseCharacterJson(item);
+					addCharacterToParty(pc);
+					lastPc = pc;
+					count++;
+				}
 				renderPartyGrid();
-				alert(`Successfully imported ${pc.name} (${pc.culture} ${pc.calling})!`);
+				fileInput.value = "";
+				if (count === 1 && lastPc) {
+					alert(`Successfully imported ${lastPc.name} (${lastPc.culture} ${lastPc.calling})!`);
+				} else {
+					alert(`Successfully imported ${count} adventurers into the Fellowship!`);
+				}
 			} catch (err) {
 				alert("Error parsing character file: " + err.message);
 			}

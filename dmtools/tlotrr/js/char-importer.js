@@ -48,48 +48,98 @@ export function loadPartyFromStorage() {
 	return partyState;
 }
 
+function normalizeName(str) {
+	if (!str) return "";
+	return str
+		.split("|")[0]
+		.replace(/[-_]+/g, " ")
+		.trim()
+		.split(/\s+/)
+		.map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : "")
+		.join(" ");
+}
+
 /**
- * Parse character JSON exported from character-creators/lotr-rpg
+ * Parse character JSON exported from character-creators/lotr-rpg or 5etools roster
  */
 export function parseCharacterJson(jsonObj) {
-	if (!jsonObj) throw new Error("Invalid JSON data");
+	if (!jsonObj || typeof jsonObj !== "object") throw new Error("Invalid JSON data");
 	
-	// Validate schema type if available
-	if (jsonObj.fileType && jsonObj.fileType !== "5etools-char-lotr") {
-		console.warn("File type does not explicitly match 5etools-char-lotr, attempting best-effort parse.");
+	// Support direct character or wrapped format ({character: ...})
+	let target = jsonObj;
+	if (jsonObj.character && typeof jsonObj.character === "object") target = jsonObj.character;
+
+	const name = target.identity?.name || target.name || "Unnamed Adventurer";
+
+	// Calling / Class
+	let calling = "Hero";
+	if (target.class?.name) calling = target.class.name;
+	else if (target.class?.uid) calling = normalizeName(target.class.uid);
+	else if (target.calling?.name) calling = target.calling.name;
+	else if (target.calling?.id) calling = normalizeName(target.calling.id);
+	else if (target.classId) calling = normalizeName(target.classId);
+
+	// Culture / Race / Subrace
+	let culture = "Free Folk";
+	if (target.culture?.subraceUid && target.culture?.raceUid) {
+		const r = normalizeName(target.culture.raceUid);
+		const sr = normalizeName(target.culture.subraceUid);
+		culture = `${r} (${sr})`;
+	} else if (target.culture?.name) {
+		culture = target.culture.name;
+	} else if (target.culture?.raceUid) {
+		culture = normalizeName(target.culture.raceUid);
+	} else if (target.race?.name) {
+		culture = target.race.name;
+	} else if (target.raceUid) {
+		culture = normalizeName(target.raceUid);
 	}
 
-	const name = jsonObj.identity?.name || "Unnamed Adventurer";
-	const calling = jsonObj.calling?.name || jsonObj.calling?.id || "Hero";
-	const culture = jsonObj.culture?.name || jsonObj.culture?.raceUid || "Free Folk";
-	const level = jsonObj.level || 1;
+	const level = Number(target.level) || Number(target.class?.levels) || 1;
 
-	// Stats
-	const str = jsonObj.abilities?.str || 10;
-	const dex = jsonObj.abilities?.dex || 10;
-	const con = jsonObj.abilities?.con || 10;
-	const int = jsonObj.abilities?.int || 10;
-	const wis = jsonObj.abilities?.wis || 10;
-	const cha = jsonObj.abilities?.cha || 10;
+	// Abilities
+	const abilities = target.abilities?.base || target.abilities || {};
+	const str = Number(target.abilities?.str ?? abilities.str ?? 10);
+	const dex = Number(target.abilities?.dex ?? abilities.dex ?? 10);
+	const con = Number(target.abilities?.con ?? abilities.con ?? 10);
+	const int = Number(target.abilities?.int ?? abilities.int ?? 10);
+	const wis = Number(target.abilities?.wis ?? abilities.wis ?? 10);
+	const cha = Number(target.abilities?.cha ?? abilities.cha ?? 10);
 
 	// Calculate mods
 	const dexMod = Math.floor((dex - 10) / 2);
+	const conMod = Math.floor((con - 10) / 2);
 	const wisMod = Math.floor((wis - 10) / 2);
+	const pb = Math.floor((level - 1) / 4) + 2;
 
-	// HP & Hope
-	const maxHp = jsonObj.health?.maxHp || (10 + Math.floor((con - 10) / 2) * level);
-	const hp = jsonObj.health?.currentHp !== undefined ? jsonObj.health.currentHp : maxHp;
-	const ac = jsonObj.health?.ac || (10 + dexMod);
+	// HP & AC
+	let maxHp = 10 + (conMod * level);
+	if (target.class?.hpMaxOverride != null) maxHp = Number(target.class.hpMaxOverride);
+	else if (target.class?.hpMax != null) maxHp = Number(target.class.hpMax);
+	else if (target.health?.maxHp != null) maxHp = Number(target.health.maxHp);
+	else if (target.hpMax != null) maxHp = Number(target.hpMax);
 
-	// Hope & Shadow (LOTR specific)
-	const maxHope = jsonObj.health?.maxHope || (8 + wisMod);
-	const currentHope = jsonObj.health?.currentHope !== undefined ? jsonObj.health.currentHope : maxHope;
-	const shadow = jsonObj.health?.shadow || 0;
-	const permShadow = jsonObj.health?.permShadow || 0;
+	const hp = target.class?.hpCurrent ?? target.health?.currentHp ?? target.hpCurrent ?? maxHp;
+	const tempHp = target.combat?.tempHp ?? target.health?.tempHp ?? 0;
 
-	const passivePerception = 10 + wisMod;
+	let ac = 10 + dexMod;
+	if (target.combat?.acOverride != null) ac = Number(target.combat.acOverride);
+	else if (target.health?.ac != null) ac = Number(target.health.ac);
+	else if (target.ac != null) ac = Number(target.ac);
 
-	const id = "pc_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+	// Hope & Shadow (LOTR specific: Max Hope = 10 + WIS mod)
+	const maxHope = target.hope?.max ?? target.health?.maxHope ?? (10 + wisMod);
+	const currentHope = target.hope?.current ?? target.health?.currentHope ?? maxHope;
+	const shadow = target.shadow?.score ?? target.health?.shadow ?? 0;
+	const permShadow = (Array.isArray(target.shadow?.scars) ? target.shadow.scars.length : null) ?? target.health?.permShadow ?? 0;
+
+	// Skills & Passive Perception
+	const perceptionSkill = target.proficiencies?.skills?.perception;
+	const isPerceptionExpert = perceptionSkill === "expert" || perceptionSkill === "expertise" || perceptionSkill === 2;
+	const isPerceptionProf = isPerceptionExpert || !!perceptionSkill;
+	const passivePerception = 10 + wisMod + (isPerceptionExpert ? 2 * pb : (isPerceptionProf ? pb : 0));
+
+	const id = target._id || ("pc_" + Date.now() + "_" + Math.floor(Math.random() * 1000));
 
 	return {
 		id,
@@ -100,14 +150,14 @@ export function parseCharacterJson(jsonObj) {
 		ac,
 		hp,
 		maxHp,
-		tempHp: 0,
+		tempHp,
 		currentHope,
 		maxHope,
 		shadow,
 		permShadow,
 		passivePerception,
-		travelRole: "None", // Guide, Scout, Hunter, Look-out, None
-		raw: jsonObj
+		travelRole: target.travelRole || "None",
+		raw: target
 	};
 }
 
