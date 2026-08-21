@@ -65,6 +65,8 @@ export const RACE_VIRTUE_FEATS = {
 /** Extra virtue categories unlocked by subculture name (lowercase) */
 export const SUBRACE_VIRTUE_CATS = {
 	"mirkwood": ["VtMir"],
+	"lothlórien": ["VtLor"],
+	"lothlorien": ["VtLor"],
 };
 
 export function toUid (name, source = SOURCE) {

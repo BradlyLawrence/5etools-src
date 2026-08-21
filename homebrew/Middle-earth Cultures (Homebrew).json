@@ -391,6 +391,31 @@
 					"entries": ["You have proficiency with the {@item shortbow|PHB}, {@item longbow|PHB}, and {@item spear|PHB}."]
 				}
 			]
+		},
+		{
+			"name": "Lothlórien",
+			"source": "MECultures",
+			"raceName": "Elf",
+			"raceSource": "TLotRR",
+			"ability": [{"dex": 1, "wis": 1}],
+			"skillProficiencies": [{"insight": true}],
+			"entries": [
+				{
+					"type": "entries",
+					"name": "Ability Score Increase",
+					"entries": ["Your Dexterity score increases by 1, and your Wisdom score increases by 1."]
+				},
+				{
+					"type": "entries",
+					"name": "Tree-Walkers of the Golden Wood",
+					"entries": ["You are at home high in the boughs of the great mellyrn. You gain a climbing speed equal to your walking speed, and you have advantage on Dexterity ({@skill Acrobatics}) checks made to balance on narrow surfaces or tree branches."]
+				},
+				{
+					"type": "entries",
+					"name": "Galadhrim Weapons",
+					"entries": ["You have proficiency with the {@item shortbow|PHB}, {@item longbow|PHB}, and {@item shortsword|PHB}."]
+				}
+			]
 		}
 	],
 	"raceFluff": [
@@ -672,6 +697,42 @@
 					"items": [
 						"Increase your Charisma by 1, to a maximum of 20.",
 						"You gain proficiency in the {@skill Performance} skill. If you are already proficient, you instead gain expertise (double proficiency bonus) with Performance checks."
+					]
+				}
+			]
+		},
+		{
+			"name": "Grace of the Golden Wood",
+			"source": "MECultures",
+			"category": "VtLor",
+			"prerequisite": [{"race": [{"name": "Elf", "source": "TLotRR", "displayEntry": "Elf (Lothlórien)"}]}],
+			"ability": [{"choose": {"from": ["wis", "cha"], "amount": 1}}],
+			"entries": [
+				"You carry the serene majesty and starlight of the Lady's realm in your heart.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Wisdom or Charisma by 1, to a maximum of 20.",
+						"You have advantage on saving throws against being {@condition charmed} or gaining Shadow points from sorcery and despair.",
+						"When you make a Wisdom ({@skill Insight}) check, you can treat a d20 roll of 9 or lower as a 10."
+					]
+				}
+			]
+		},
+		{
+			"name": "Bows of the Galadhrim",
+			"source": "MECultures",
+			"category": "VtLor",
+			"prerequisite": [{"race": [{"name": "Elf", "source": "TLotRR", "displayEntry": "Elf (Lothlórien)"}]}],
+			"ability": [{"choose": {"from": ["dex", "wis"], "amount": 1}}],
+			"entries": [
+				"The woodcraft of the Galadhrim enables you to move unseen and strike without revealing your presence.",
+				{
+					"type": "list",
+					"items": [
+						"Increase your Dexterity or Wisdom by 1, to a maximum of 20.",
+						"You gain proficiency in the {@skill Stealth} skill. If you are already proficient, you instead gain expertise (double proficiency bonus) with Stealth checks.",
+						"When you make a ranged weapon attack while hidden, missing with the attack does not reveal your position."
 					]
 				}
 			]

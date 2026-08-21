@@ -31,7 +31,7 @@ Then open:
 - Free League homebrew (`TLotRR`) vendored under `lotr-rpg/data/` and listed in `homebrew/`
 - Extra table content in `homebrew/Middle-earth Cultures (Homebrew).json` (`MECultures`):
   - Cultures: **Man of Gondor**, **Rider of Rohan**, **Beorning**
-  - Elf subculture: **Mirkwood** (under Free League Elf; use official **Dwarf → Erebor** for Dwarves of Erebor)
+  - Elf subcultures: **Mirkwood**, **Lothlórien** (under Free League Elf; use official **Dwarf → Erebor** for Dwarves of Erebor)
   - Loaded by the LOTR creator and browsable on the main site (Races / Feats) when local homebrew is active
 - Cultures (races + subcultures), backgrounds, callings (classes)
 - Starting virtue, level-up virtues/crafts, titles/ways/paths
