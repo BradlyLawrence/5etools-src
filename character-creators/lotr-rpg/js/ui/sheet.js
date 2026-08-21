@@ -1085,13 +1085,19 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 
 		if (preview.needVirtue) {
 			modal.append(el("h3", {
-				text: preview.virtueMode === "craft-or-virtue" ? "Virtue or Craft" : "Virtue",
+				text: preview.virtueMode === "craft"
+					? "Craft"
+					: preview.virtueMode === "craft-or-virtue"
+						? "Virtue or Craft"
+						: "Virtue",
 			}));
 			modal.append(el("p", {
 				class: "cc-muted",
-				text: preview.virtueMode === "craft-or-virtue"
-					? "Take a common/cultural virtue, or a Scholar craft (if offered)."
-					: "Take a common or cultural virtue.",
+				text: preview.virtueMode === "craft"
+					? "Take a Scholar craft."
+					: preview.virtueMode === "craft-or-virtue"
+						? "Take a common/cultural virtue, or a Scholar craft."
+						: "Take a common or cultural virtue.",
 			}));
 			if (preview.crafts?.length) {
 				modal.append(el("h4", {text: "Crafts"}));
@@ -1112,24 +1118,26 @@ export function mountSheet (root, {data, character, onChange, onNew}) {
 				}
 				modal.append(cList);
 			}
-			modal.append(el("h4", {text: "Virtues"}));
-			const vList = el("div", {class: "cc-picker-list cc-picker-list-compact"});
-			for (const feat of preview.virtues) {
-				const uid = entityUid(feat);
-				const btn = el("button", {
-					type: "button", class: "cc-pick",
-					onClick: () => {
-						state.virtueUid = uid;
-						state.craftUid = null;
-						modal.querySelectorAll(".cc-pick").forEach(n => n.classList.remove("is-selected"));
-						btn.classList.add("is-selected");
-					},
-				});
-				btn.append(el("div", {class: "cc-pick-title", text: feat.name}));
-				btn.append(el("div", {class: "cc-pick-meta", text: feat.category || ""}));
-				vList.append(btn);
+			if (preview.virtues?.length) {
+				modal.append(el("h4", {text: "Virtues"}));
+				const vList = el("div", {class: "cc-picker-list cc-picker-list-compact"});
+				for (const feat of preview.virtues) {
+					const uid = entityUid(feat);
+					const btn = el("button", {
+						type: "button", class: "cc-pick",
+						onClick: () => {
+							state.virtueUid = uid;
+							state.craftUid = null;
+							modal.querySelectorAll(".cc-pick").forEach(n => n.classList.remove("is-selected"));
+							btn.classList.add("is-selected");
+						},
+					});
+					btn.append(el("div", {class: "cc-pick-title", text: feat.name}));
+					btn.append(el("div", {class: "cc-pick-meta", text: feat.category || ""}));
+					vList.append(btn);
+				}
+				modal.append(vList);
 			}
-			modal.append(vList);
 		}
 
 		const actions = el("div", {class: "cc-wizard-footer"});

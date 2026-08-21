@@ -13,6 +13,7 @@ import {
 	createEmptyCharacter,
 	recomputeCharacter,
 	classSkillOptions,
+	classToolOptions,
 	entityUid,
 	entriesToText,
 	finalizeLevelOne,
@@ -144,6 +145,13 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 			const {chooseCount} = classSkillOptions(cls);
 			if ((char.class.skillChoices || []).length < chooseCount) {
 				return `Pick ${chooseCount} skill${chooseCount === 1 ? "" : "s"}.`;
+			}
+			const toolOpts = classToolOptions(cls);
+			if (toolOpts.chooseCount > 0 && (char.class.toolChoices || []).length < toolOpts.chooseCount) {
+				return `Pick ${toolOpts.chooseCount} tool proficienc${toolOpts.chooseCount === 1 ? "y" : "ies"}.`;
+			}
+			if (cls.name === "Scholar" && !(char.crafts || []).length) {
+				return "Choose a starting craft.";
 			}
 			const missEq = missingEquipmentTypePicks(char, data);
 			if (missEq.length) {
@@ -653,6 +661,8 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 				onClick: () => {
 					char.class.uid = uid;
 					char.class.skillChoices = [];
+					char.class.toolChoices = [];
+					if (cls.name !== "Scholar") char.crafts = [];
 					char.class.subclassUid = null;
 					char.class.equipmentChoices = {packages: {}, typePicks: {}};
 					char.equipment = [];
@@ -683,6 +693,43 @@ export function mountWizard (root, {data, character, onChange, onComplete}) {
 					label: (s) => titleCase(s),
 					onChange: (vals) => { char.class.skillChoices = vals; setChar(char); },
 				}));
+			}
+
+			const toolOpts = classToolOptions(cls);
+			if (toolOpts.chooseCount > 0) {
+				detail.append(el("h4", {text: `Tool proficiencies (choose ${toolOpts.chooseCount})`}));
+				detail.append(multiCheck(toolOpts.options, {
+					selected: char.class.toolChoices || [],
+					max: toolOpts.chooseCount,
+					label: (s) => titleCase(s),
+					onChange: (vals) => { char.class.toolChoices = vals; setChar(char); },
+				}));
+			}
+
+			if (cls.name === "Scholar") {
+				detail.append(el("h4", {text: "Starting Scholar Craft (choose 1)"}));
+				detail.append(el("p", {class: "cc-muted", text: "Scholars begin play with one craft of their choice."}));
+				const crafts = data.crafts();
+				const cList = el("div", {class: "cc-picker-list cc-picker-list-compact"});
+				const selectedCraftUid = char.crafts?.[0]?.uid;
+				for (const feat of crafts) {
+					const uid = entityUid(feat);
+					const btn = el("button", {
+						type: "button",
+						class: `cc-pick ${selectedCraftUid === uid ? "is-selected" : ""}`,
+						onClick: () => {
+							char.crafts = [{uid, levelGained: 1}];
+							setChar(char);
+						},
+					});
+					btn.append(el("div", {class: "cc-pick-title", text: feat.name}));
+					cList.append(btn);
+				}
+				detail.append(cList);
+				if (selectedCraftUid) {
+					const craftFeat = data.getFeat(selectedCraftUid);
+					if (craftFeat) detail.append(el("pre", {class: "cc-prose", text: entriesToText(craftFeat.entries)}));
+				}
 			}
 
 			detail.append(renderEquipmentUi(cls));

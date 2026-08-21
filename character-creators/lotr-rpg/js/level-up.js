@@ -21,20 +21,23 @@ export function previewLevelUp (character, data) {
 	const needSubclass = to >= subclassUnlockLevel(cls) && !character.class.subclassUid;
 	const needVirtue = virtueLevelsForClass(cls).includes(to);
 
-	// Detect if this level's feature is "Craft or Virtue" (choice) vs pure Virtue
-	let virtueMode = null; // "virtue" | "craft-or-virtue"
+	// Detect if this level's feature is "Craft" vs "Craft or Virtue" vs pure "Virtue"
+	let virtueMode = null; // "craft" | "virtue" | "craft-or-virtue"
 	if (needVirtue) {
-		for (const ref of cls.classFeatures || []) {
-			const lvl = featureLevelFromUid(ref);
-			const name = featureNameFromUid(ref).toLowerCase();
-			if (lvl === to && (name.includes("virtue") || name.includes("craft"))) {
-				virtueMode = name.includes("craft or virtue") || name === "crafts"
-					? "craft-or-virtue"
-					: "virtue";
-				break;
-			}
+		if (cls.name === "Scholar") {
+			virtueMode = [3, 5, 7, 9].includes(to) ? "craft" : "virtue";
+		} else {
+			// Check if this level offers craft or virtue (e.g. Captain 2, 6, 10; Champion 2, 6; Messenger 2, 6, 10; Treasure Hunter 6; Warden 2, 6, 10)
+			const hasCraftOption = Array.isArray(cls.featProgression) && cls.featProgression.some(fp =>
+				Array.isArray(fp.category) && fp.category.includes("Craft") && fp.progression?.[String(to)] != null
+			);
+			const hasClassFeatCraft = (cls.classFeatures || []).some(ref => {
+				const lvl = featureLevelFromUid(ref);
+				const name = featureNameFromUid(ref).toLowerCase();
+				return lvl === to && name.includes("craft or virtue");
+			});
+			virtueMode = (hasCraftOption || hasClassFeatCraft) ? "craft-or-virtue" : "virtue";
 		}
-		if (!virtueMode) virtueMode = "virtue";
 	}
 
 	const race = data.getRace(character.culture.raceUid);
@@ -56,8 +59,8 @@ export function previewLevelUp (character, data) {
 		needVirtue,
 		virtueMode,
 		subclasses: needSubclass ? data.subclassesForClass(cls) : [],
-		virtues: needVirtue ? data.virtuesForRace(race, {subrace}) : [],
-		crafts: needVirtue && virtueMode === "craft-or-virtue" ? data.crafts() : [],
+		virtues: needVirtue && virtueMode !== "craft" ? data.virtuesForRace(race, {subrace}) : [],
+		crafts: needVirtue && (virtueMode === "craft" || virtueMode === "craft-or-virtue") ? data.crafts() : [],
 		className: cls.name,
 		subclassTitle: cls.subclassTitle || "Subclass",
 	};
@@ -76,16 +79,22 @@ export function applyLevelUp (character, data, choices = {}) {
 	}
 
 	if (preview.needVirtue) {
-		if (choices.craftUid) {
+		if (preview.virtueMode === "craft") {
+			if (!choices.craftUid) throw new Error("Choose a craft.");
+			character.crafts = character.crafts || [];
+			character.crafts.push({uid: choices.craftUid, levelGained: to});
+		} else if (preview.virtueMode === "virtue") {
+			if (!choices.virtueUid) throw new Error("Choose a virtue.");
+			character.virtues = character.virtues || [];
+			character.virtues.push({uid: choices.virtueUid, levelGained: to});
+		} else if (choices.craftUid) {
 			character.crafts = character.crafts || [];
 			character.crafts.push({uid: choices.craftUid, levelGained: to});
 		} else if (choices.virtueUid) {
 			character.virtues = character.virtues || [];
 			character.virtues.push({uid: choices.virtueUid, levelGained: to});
 		} else {
-			throw new Error(preview.virtueMode === "craft-or-virtue"
-				? "Choose a virtue or craft."
-				: "Choose a virtue.");
+			throw new Error("Choose a virtue or craft.");
 		}
 	}
 

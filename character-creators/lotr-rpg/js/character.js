@@ -36,11 +36,11 @@ export const SCHEMA_VERSION = 1;
 
 export const CALLING_SHADOW_PATHS = {
 	"captain": "Lure of Power",
-	"champion": "Path of Despair",
+	"champion": "Curse of Vengeance",
 	"messenger": "Wandering Madness",
 	"scholar": "Lure of Secrets",
 	"treasure hunter": "Dragon-sickness",
-	"warden": "Fear of the Shadow",
+	"warden": "Path of Despair",
 };
 
 export const SHADOW_PATH_STAGES = {
@@ -251,6 +251,9 @@ export function recomputeCharacter (character, data) {
 			}
 		}
 	}
+	for (const t of (character.class?.toolChoices || [])) {
+		tools[t.split("|")[0]] = true;
+	}
 	character.proficiencies.tools = tools;
 
 	const wpSet = new Set(cls?.startingProficiencies?.weapons || []);
@@ -356,16 +359,26 @@ export function subclassUnlockLevel (cls) {
 /** Levels where Craft or Virtue / Virtue features appear */
 export function virtueLevelsForClass (cls) {
 	if (!cls) return [];
-	const levels = [];
+	const levels = new Set();
+	if (Array.isArray(cls.featProgression)) {
+		for (const fp of cls.featProgression) {
+			if (fp.progression) {
+				for (const lvlStr of Object.keys(fp.progression)) {
+					const lvl = parseInt(lvlStr, 10);
+					if (lvl > 1) levels.add(lvl);
+				}
+			}
+		}
+	}
 	for (const ref of cls.classFeatures || []) {
 		const name = featureNameFromUid(ref).toLowerCase();
 		const lvl = featureLevelFromUid(ref);
-		if (!lvl) continue;
+		if (!lvl || lvl <= 1) continue;
 		if (name.includes("virtue") || name.includes("craft or virtue") || name === "crafts") {
-			levels.push(lvl);
+			levels.add(lvl);
 		}
 	}
-	return [...new Set(levels)].sort((a, b) => a - b);
+	return [...levels].sort((a, b) => a - b);
 }
 
 export function listFeaturesUpToLevel (character, data, level) {
@@ -821,6 +834,46 @@ export function classSkillOptions (cls) {
 	return {options: [...new Set(opts)], chooseCount};
 }
 
+export function classToolOptions (cls) {
+	const toolProfs = cls?.startingProficiencies?.toolProficiencies || [];
+	const opts = [];
+	let chooseCount = 0;
+	for (const block of toolProfs) {
+		if (block.choose) {
+			chooseCount = block.choose.count || 0;
+			for (const t of block.choose.from || []) opts.push(t.split("|")[0]);
+		} else if (block.any) {
+			chooseCount = Number(block.any) || 1;
+			opts.push(
+				"any artisan's tools",
+				"calligrapher's supplies",
+				"cartographer's tools",
+				"cobbler's tools",
+				"cook's utensils",
+				"glassblower's tools",
+				"herbalism kit",
+				"leatherworker's tools",
+				"mason's tools",
+				"musical instrument",
+				"navigator's tools",
+				"painter's supplies",
+				"potter's tools",
+				"smith's tools",
+				"thieves' tools",
+				"tinker's tools",
+				"weaver's tools",
+				"woodcarver's tools",
+				"pipe",
+			);
+		} else {
+			for (const [k, v] of Object.entries(block)) {
+				if (v === true) opts.push(k.split("|")[0]);
+			}
+		}
+	}
+	return {options: [...new Set(opts)], chooseCount};
+}
+
 export function exportPayload (character) {
 	const copy = cloneCharacter(character);
 	touch(copy);
@@ -961,24 +1014,29 @@ export function computeAc (character, data, mods) {
 		}
 	}
 
-	// Unarmored Defense (Messenger / Scholar: 10 + DEX + WIS)
-	if (!hasArmor) {
-		const calling = cls?.name;
-		if (calling === "Messenger" || calling === "Scholar") {
-			isUnarmoredDef = true;
-			baseAc = 10;
-			dexBonus = mods.dex + mods.wis;
-			armorName = `${calling} Unarmoured Defence (10 + DEX + WIS)`;
-		} else {
-			armorName = "Unarmoured (10 + DEX)";
-		}
-	}
-
 	// Manual toggle for shield in combat stats if toggled directly
-	if (character.combat.shield && !hasShield) {
+	if (character.combat?.shield && !hasShield) {
 		hasShield = true;
 		shieldName = "Shield";
 		shieldBonus = 2;
+	}
+
+	// Unarmored Defense (Messenger: 10 + DEX + CHA; Scholar: 10 + DEX + WIS — neither allows a shield)
+	if (!hasArmor) {
+		const calling = cls?.name;
+		if (calling === "Messenger" && !hasShield) {
+			isUnarmoredDef = true;
+			baseAc = 10;
+			dexBonus = mods.dex + mods.cha;
+			armorName = "Messenger Unarmoured Defence (10 + DEX + CHA)";
+		} else if (calling === "Scholar" && !hasShield) {
+			isUnarmoredDef = true;
+			baseAc = 10;
+			dexBonus = mods.dex + mods.wis;
+			armorName = "Scholar Unarmoured Defence (10 + DEX + WIS)";
+		} else {
+			armorName = "Unarmoured (10 + DEX)";
+		}
 	}
 
 	const totalAc = baseAc + dexBonus + shieldBonus;
@@ -1012,93 +1070,69 @@ export function computeCallingResources (character, data, mods, pb) {
 
 	if (calling === "Captain") {
 		const dieSize = level >= 10 ? "d10" : level >= 5 ? "d8" : "d6";
-		const maxDice = Math.max(1, mods.cha || 1) + (level >= 7 ? 1 : 0);
+		const maxDice = Math.max(1, mods.cha || 1);
 		const current = savedRes.leadershipDice ?? maxDice;
 		resources.push({
 			id: "leadershipDice",
 			name: `Leadership Dice (${dieSize})`,
 			current: Math.max(0, Math.min(maxDice, Number(current))),
 			max: maxDice,
-			recovery: "Short / Long Rest",
-			resetOn: "short",
-		});
-		const rallyMax = 1;
-		resources.push({
-			id: "rallyingCry",
-			name: "Rallying Cry",
-			current: Math.max(0, Math.min(rallyMax, Number(savedRes.rallyingCry ?? rallyMax))),
-			max: rallyMax,
-			recovery: "Short / Long Rest",
-			resetOn: "short",
+			recovery: "Long Rest",
+			resetOn: "long",
 		});
 	} else if (calling === "Champion") {
-		const surgeMax = level >= 17 ? 2 : 1;
+		const surgeMax = 1;
 		resources.push({
 			id: "surge",
-			name: "Surge (Second Wind)",
+			name: `Surge of Vigour (1d10+${level} HP)`,
 			current: Math.max(0, Math.min(surgeMax, Number(savedRes.surge ?? surgeMax))),
 			max: surgeMax,
 			recovery: "Short / Long Rest",
 			resetOn: "short",
 		});
+		if (level >= 9) {
+			const indomMax = 1;
+			resources.push({
+				id: "indomitable",
+				name: "Indomitable (Reroll Save)",
+				current: Math.max(0, Math.min(indomMax, Number(savedRes.indomitable ?? indomMax))),
+				max: indomMax,
+				recovery: "Long Rest",
+				resetOn: "long",
+			});
+		}
 	} else if (calling === "Messenger") {
-		const maxWis = Math.max(1, mods.wis || 1);
+		const tirelessMax = pb;
 		resources.push({
-			id: "wordsOfWisdom",
-			name: "Words of Wisdom",
-			current: Math.max(0, Math.min(maxWis, Number(savedRes.wordsOfWisdom ?? maxWis))),
-			max: maxWis,
+			id: "tirelessSwift",
+			name: "Tireless & Swift (Bonus Dash/Disengage)",
+			current: Math.max(0, Math.min(tirelessMax, Number(savedRes.tirelessSwift ?? tirelessMax))),
+			max: tirelessMax,
 			recovery: "Long Rest",
 			resetOn: "long",
 		});
 	} else if (calling === "Scholar") {
-		const maxHealPool = 5 * level;
-		resources.push({
-			id: "handsOfHealer",
-			name: "Hands of a Healer Pool",
-			current: Math.max(0, Math.min(maxHealPool, Number(savedRes.handsOfHealer ?? maxHealPool))),
-			max: maxHealPool,
-			recovery: "Long Rest",
-			resetOn: "long",
-		});
+		const dieSize = level >= 10 ? "d10" : level >= 5 ? "d8" : "d6";
 		const maxLore = Math.max(1, mods.int || 1);
 		resources.push({
 			id: "rhymesOfLore",
-			name: "Rhymes of Lore",
+			name: `Rhymes of Lore (${dieSize})`,
 			current: Math.max(0, Math.min(maxLore, Number(savedRes.rhymesOfLore ?? maxLore))),
 			max: maxLore,
-			recovery: "Short / Long Rest",
-			resetOn: "short",
+			recovery: level >= 5 ? "Short / Long Rest" : "Long Rest",
+			resetOn: level >= 5 ? "short" : "long",
 		});
-	} else if (calling === "Treasure Hunter") {
-		const maxLuck = 3;
-		resources.push({
-			id: "luckPoints",
-			name: "Luck Points",
-			current: Math.max(0, Math.min(maxLuck, Number(savedRes.luckPoints ?? maxLuck))),
-			max: maxLuck,
-			recovery: "Long Rest",
-			resetOn: "long",
-		});
-	} else if (calling === "Warden") {
-		const maxSongs = Math.max(1, mods.wis || 1);
-		resources.push({
-			id: "songsOfSlaying",
-			name: "Songs of Slaying",
-			current: Math.max(0, Math.min(maxSongs, Number(savedRes.songsOfSlaying ?? maxSongs))),
-			max: maxSongs,
-			recovery: "Short / Long Rest",
-			resetOn: "short",
-		});
-		const wardMax = 1;
-		resources.push({
-			id: "wardenWard",
-			name: "Warden's Ward",
-			current: Math.max(0, Math.min(wardMax, Number(savedRes.wardenWard ?? wardMax))),
-			max: wardMax,
-			recovery: "Short / Long Rest",
-			resetOn: "short",
-		});
+		if (level >= 2) {
+			const maxHealPool = 5 * level;
+			resources.push({
+				id: "handsOfHealer",
+				name: `Hands of a Healer Pool (${maxHealPool} HP)`,
+				current: Math.max(0, Math.min(maxHealPool, Number(savedRes.handsOfHealer ?? maxHealPool))),
+				max: maxHealPool,
+				recovery: "Long Rest",
+				resetOn: "long",
+			});
+		}
 	}
 
 	return resources;
