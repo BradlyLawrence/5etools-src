@@ -3080,18 +3080,117 @@
         "name": "Ironwright",
         "kind": "class",
         "category": "Campaign classes",
-        "status": "draft",
-        "description": "A martial inventor who specialises in technological weapons or armour. The full class progression and armour specialisation are still being developed.",
-        "rulesHtml": "<h3>Class foundation</h3><p><b>Hit Die</b>: d10.</p><p><b>Skill Ranks per Level</b>: 4 + <a href=\"https://legacy.aonprd.com/coreRulebook/gettingStarted.html#intelligence\" target=\"_blank\" rel=\"noopener noreferrer\">Int</a> modifier. </p><p><b>Attunement Cap</b>: 4 + <a href=\"https://legacy.aonprd.com/coreRulebook/gettingStarted.html#intelligence\" target=\"_blank\" rel=\"noopener noreferrer\">Int</a> modifier.</p><p><b>Base Attack Bonus</b>: full progression. <b>Base Saves</b>: good Fortitude; poor Reflex and Will.</p><p>The Ironwright is an incomplete class. Only the features described here are available; additional features and the armour path have not yet been defined. The table shows single-class base attack and saving throw bonuses.</p><h3>Level progression</h3><table><thead><tr><th>Level</th><th>Base attack bonus</th><th>Fortitude</th><th>Reflex</th><th>Will</th><th>Overnight points per item</th><th>Features</th></tr></thead><tbody><tr><td>1</td><td>+1</td><td>+2</td><td>+0</td><td>+0</td><td>1</td><td>Weapon or armour focus (armour features pending); Weapon family specialisation (weapon focus); Overnight maintenance 1 point per attuned item</td></tr><tr><td>2</td><td>+2</td><td>+3</td><td>+0</td><td>+0</td><td>1</td><td>—</td></tr><tr><td>3</td><td>+3</td><td>+3</td><td>+1</td><td>+1</td><td>1</td><td>—</td></tr><tr><td>4</td><td>+4</td><td>+4</td><td>+1</td><td>+1</td><td>1</td><td>—</td></tr><tr><td>5</td><td>+5</td><td>+4</td><td>+1</td><td>+1</td><td>1</td><td>—</td></tr><tr><td>6</td><td>+6/+1</td><td>+5</td><td>+2</td><td>+2</td><td>2</td><td>Powered attack training +1 attack and damage (weapon focus); Overnight maintenance 2 points per attuned item</td></tr><tr><td>7</td><td>+7/+2</td><td>+5</td><td>+2</td><td>+2</td><td>2</td><td>—</td></tr><tr><td>8</td><td>+8/+3</td><td>+6</td><td>+2</td><td>+2</td><td>2</td><td>—</td></tr><tr><td>9</td><td>+9/+4</td><td>+6</td><td>+3</td><td>+3</td><td>2</td><td>—</td></tr><tr><td>10</td><td>+10/+5</td><td>+7</td><td>+3</td><td>+3</td><td>2</td><td>—</td></tr><tr><td>11</td><td>+11/+6/+1</td><td>+7</td><td>+3</td><td>+3</td><td>3</td><td>Overnight maintenance 3 points per attuned item</td></tr><tr><td>12</td><td>+12/+7/+2</td><td>+8</td><td>+4</td><td>+4</td><td>3</td><td>—</td></tr><tr><td>13</td><td>+13/+8/+3</td><td>+8</td><td>+4</td><td>+4</td><td>3</td><td>—</td></tr><tr><td>14</td><td>+14/+9/+4</td><td>+9</td><td>+4</td><td>+4</td><td>3</td><td>—</td></tr><tr><td>15</td><td>+15/+10/+5</td><td>+9</td><td>+5</td><td>+5</td><td>3</td><td>—</td></tr><tr><td>16</td><td>+16/+11/+6/+1</td><td>+10</td><td>+5</td><td>+5</td><td>4</td><td>Overnight maintenance 4 points per attuned item</td></tr><tr><td>17</td><td>+17/+12/+7/+2</td><td>+10</td><td>+5</td><td>+5</td><td>4</td><td>—</td></tr><tr><td>18</td><td>+18/+13/+8/+3</td><td>+11</td><td>+6</td><td>+6</td><td>4</td><td>—</td></tr><tr><td>19</td><td>+19/+14/+9/+4</td><td>+11</td><td>+6</td><td>+6</td><td>4</td><td>—</td></tr><tr><td>20</td><td>+20/+15/+10/+5</td><td>+12</td><td>+6</td><td>+6</td><td>4</td><td>—</td></tr></tbody></table><p>Tech Use is a class skill. Ironwrights are proficient with technological melee weapons and technological armour.</p><h3>Weapon specialisation</h3><p>At 1st level, a weapon-focused Ironwright chooses one technological weapon family. She gains the specialisation benefits listed below.</p><h3>Powered attacks</h3><p>At 6th level, a weapon-focused ironwright gains a +1 bonus on attack and damage rolls when she spends reservoir on a technological weapon attack.</p><h3>Overnight maintenance</h3><p>At 1st level, an ironwright restores 1 reservoir point to each item attuned throughout her overnight rest, up to its maximum capacity. This increases to 2 points at 6th level, 3 at 11th level and 4 at 16th level.</p>",
+        "status": "playtest",
+        "description": "Ironwrights build, maintain and push technological equipment beyond its limits. Some specialise in weapons; others turn their expertise to armour and shields.",
+        "rulesHtml": "<h3>Class foundation</h3><p><b>Hit Die</b>: d10.</p><p><b>Skill Ranks per Level</b>: 4 + <a href=\"https://legacy.aonprd.com/coreRulebook/gettingStarted.html#intelligence\" target=\"_blank\" rel=\"noopener noreferrer\">Int</a> modifier. </p><p><b>Attunement Cap</b>: 4 + <a href=\"https://legacy.aonprd.com/coreRulebook/gettingStarted.html#intelligence\" target=\"_blank\" rel=\"noopener noreferrer\">Int</a> modifier.</p><p><b>Base Attack Bonus</b>: full progression. <b>Base Saves</b>: good Fortitude; poor Reflex and Will.</p><p>The table shows single-class base attack and saving throw bonuses.</p><h3>Level progression</h3><table><thead><tr><th>Level</th><th>Base attack bonus</th><th>Fortitude</th><th>Reflex</th><th>Will</th><th>Overnight points per item</th><th>Features</th></tr></thead><tbody><tr><td>1</td><td>+1</td><td>+2</td><td>+0</td><td>+0</td><td>1</td><td>Weapon family or armour specialisation; Workshop Training +1; Craft Technological Equipment; Overnight maintenance 1 point per attuned item</td></tr><tr><td>2</td><td>+2</td><td>+3</td><td>+0</td><td>+0</td><td>1</td><td>Technical Knack (choices pending)</td></tr><tr><td>3</td><td>+3</td><td>+3</td><td>+1</td><td>+1</td><td>1</td><td>Tech Armour Training 1</td></tr><tr><td>4</td><td>+4</td><td>+4</td><td>+1</td><td>+1</td><td>1</td><td>Field Repairs</td></tr><tr><td>5</td><td>+5</td><td>+4</td><td>+1</td><td>+1</td><td>1</td><td>Workshop Training +2</td></tr><tr><td>6</td><td>+6/+1</td><td>+5</td><td>+2</td><td>+2</td><td>2</td><td>Overnight maintenance 2 points per attuned item</td></tr><tr><td>7</td><td>+7/+2</td><td>+5</td><td>+2</td><td>+2</td><td>2</td><td>Powered Attack Training +1; Tech Armour Training 2</td></tr><tr><td>8</td><td>+8/+3</td><td>+6</td><td>+2</td><td>+2</td><td>2</td><td>Technical Knack (choices pending)</td></tr><tr><td>9</td><td>+9/+4</td><td>+6</td><td>+3</td><td>+3</td><td>2</td><td>Workshop Training +3</td></tr><tr><td>10</td><td>+10/+5</td><td>+7</td><td>+3</td><td>+3</td><td>2</td><td>Overload</td></tr><tr><td>11</td><td>+11/+6/+1</td><td>+7</td><td>+3</td><td>+3</td><td>3</td><td>Tech Armour Training 3; Overnight maintenance 3 points per attuned item</td></tr><tr><td>12</td><td>+12/+7/+2</td><td>+8</td><td>+4</td><td>+4</td><td>3</td><td>Powered Attack Training +2</td></tr><tr><td>13</td><td>+13/+8/+3</td><td>+8</td><td>+4</td><td>+4</td><td>3</td><td>Workshop Training +4</td></tr><tr><td>14</td><td>+14/+9/+4</td><td>+9</td><td>+4</td><td>+4</td><td>3</td><td>Technical Knack (choices pending)</td></tr><tr><td>15</td><td>+15/+10/+5</td><td>+9</td><td>+5</td><td>+5</td><td>3</td><td>Tech Armour Training 4</td></tr><tr><td>16</td><td>+16/+11/+6/+1</td><td>+10</td><td>+5</td><td>+5</td><td>4</td><td>Overnight maintenance 4 points per attuned item</td></tr><tr><td>17</td><td>+17/+12/+7/+2</td><td>+10</td><td>+5</td><td>+5</td><td>4</td><td>Powered Attack Training +3; Workshop Training +5</td></tr><tr><td>18</td><td>+18/+13/+8/+3</td><td>+11</td><td>+6</td><td>+6</td><td>4</td><td>Technical Knack (choices pending)</td></tr><tr><td>19</td><td>+19/+14/+9/+4</td><td>+11</td><td>+6</td><td>+6</td><td>4</td><td>—</td></tr><tr><td>20</td><td>+20/+15/+10/+5</td><td>+12</td><td>+6</td><td>+6</td><td>4</td><td>Overload Mastery</td></tr></tbody></table><p>Tech Use is a class skill. Ironwrights are proficient with technological melee weapons and technological armour.</p><h3>Weapon specialisation</h3><p>At 1st level, a weapon-focused Ironwright chooses one technological weapon family. She gains the specialisation benefits listed below.</p><h3>Powered Attack Training</h3><p>At 7th level, an ironwright gains a +1 bonus on attack and damage rolls with powered technological weapon attacks, increasing to +2 at 12th level and +3 at 17th level. These bonuses also apply while Overload replaces the reservoir cost.</p><h3>Overnight maintenance</h3><p>At 1st level, an ironwright restores 1 reservoir point to each item attuned throughout her overnight rest, up to its maximum capacity. This increases to 2 points at 6th level, 3 at 11th level and 4 at 16th level.</p><h3>Workshop Training</h3><p>Gain a +1 competence bonus on Craft checks to construct or repair technological equipment at 1st level, increasing by 1 at 5th, 9th, 13th and 17th levels. This stacks with Precision Rig.</p><h3>Craft Technological Equipment</h3><p>At 1st level, an ironwright gains Craft Technological Equipment as a bonus feat.</p><h3>Field Repairs</h3><p>At 4th level, an ironwright can use suitable scrap in place of purchased materials to repair technological equipment.</p><h3>Technical Knacks</h3><p>An ironwright gains a technical knack at 2nd level and another at 8th, 14th and 18th levels.</p><h3>Overload</h3><p>As a swift action, overload one equipped technological item. Its powered abilities cost no reservoir and retain normal action requirements. After the first powered ability each round, take 20% of maximum item HP as damage, rounded up, bypassing hardness. End as a free action on your turn; it ends automatically when broken, destroyed or unequipped. On ending, the powered mechanism breaks and requires workshop repair; restoring HP and Field Repairs do not fix it. At level 20, strain becomes 10% and the item gains +2 weapon damage or +2 to its armour or shield AC bonus.</p><h3>Playtest availability</h3><p>Technical knack choices and the feat that grants access to other classes are not yet available. Technology crafting and Field Repairs still need their checks, repair amounts, material costs and times. Their places in the progression are reserved; those procedures are not yet playable.</p><h3>Tech Armour Training</h3><p>At 3rd level, an ironwright reduces the armour check penalty of technological armour by 1 (minimum 0) and increases its maximum Dexterity bonus by 1. These benefits increase by 1 at 7th, 11th and 15th levels. This ability costs no reservoir.</p><h3>Armour Specialisation</h3><p>At 1st level, an ironwright may specialise in technological armour and shields instead of a weapon family. She gains the improved powered benefits listed below for all technological armour and shields.</p>",
         "definition": {
-          "status": "partial-playtest",
+          "ironwrightFeatures": {
+            "specializationMinimumLevel": 1,
+            "spendingTrainingMinimumLevel": 7,
+            "spendingTrainingBonus": 1,
+            "recovery": [
+              {
+                "minimumLevel": 1,
+                "points": 1
+              },
+              {
+                "minimumLevel": 6,
+                "points": 2
+              },
+              {
+                "minimumLevel": 11,
+                "points": 3
+              },
+              {
+                "minimumLevel": 16,
+                "points": 4
+              }
+            ],
+            "notes": "Weapon family or armour specialisation begins at 1st level. Powered Attack Training increases at 7th, 12th and 17th levels. Maintenance restores reservoir per item attuned throughout the rest. Technical knack options and detailed technology crafting and repair procedures remain pending.",
+            "armourTraining": [
+              {
+                "minimumLevel": 3,
+                "bonus": 1
+              },
+              {
+                "minimumLevel": 7,
+                "bonus": 2
+              },
+              {
+                "minimumLevel": 11,
+                "bonus": 3
+              },
+              {
+                "minimumLevel": 15,
+                "bonus": 4
+              }
+            ],
+            "spendingTrainingProgression": [
+              {
+                "minimumLevel": 7,
+                "bonus": 1
+              },
+              {
+                "minimumLevel": 12,
+                "bonus": 2
+              },
+              {
+                "minimumLevel": 17,
+                "bonus": 3
+              }
+            ],
+            "workshopTraining": [
+              {
+                "minimumLevel": 1,
+                "bonus": 1
+              },
+              {
+                "minimumLevel": 5,
+                "bonus": 2
+              },
+              {
+                "minimumLevel": 9,
+                "bonus": 3
+              },
+              {
+                "minimumLevel": 13,
+                "bonus": 4
+              },
+              {
+                "minimumLevel": 17,
+                "bonus": 5
+              }
+            ],
+            "fieldRepairs": {
+              "minimumLevel": 4,
+              "description": "At 4th level, repair technological equipment using suitable scrap instead of purchased materials. Checks, repair amounts and times await the technology crafting rules."
+            },
+            "technicalKnacks": {
+              "levels": [
+                2,
+                8,
+                14,
+                18
+              ],
+              "status": "options-pending"
+            },
+            "overload": {
+              "minimumLevel": 10,
+              "masteryLevel": 20,
+              "damageFraction": 0.2,
+              "masteryDamageFraction": 0.1,
+              "masteryBonus": 2,
+              "description": "As a swift action, overload one equipped technological item. Its powered abilities cost no reservoir and retain normal action requirements. After the first powered ability each round, take 20% of maximum item HP as damage, rounded up, bypassing hardness. End as a free action on your turn; it ends automatically when broken, destroyed or unequipped. On ending, the powered mechanism breaks and requires workshop repair; restoring HP and Field Repairs do not fix it. At level 20, strain becomes 10% and the item gains +2 weapon damage or +2 to its armour or shield AC bonus."
+            }
+          },
+          "status": "playtest",
           "hitDie": 10,
           "skillRanksPerLevel": 4,
           "baseAttackProgression": "full",
           "goodSaves": [
             "fortitude"
           ],
-          "chassisStatus": "draft",
+          "chassisStatus": "playtest",
           "progression": [
             {
               "level": 1,
@@ -3103,8 +3202,9 @@
               "will": 0,
               "maintenancePerItem": 1,
               "features": [
-                "Weapon or armour focus (armour features pending)",
-                "Weapon family specialisation (weapon focus; playtest)",
+                "Weapon family or armour specialisation",
+                "Workshop Training +1",
+                "Craft Technological Equipment",
                 "Overnight maintenance 1 point per attuned item"
               ]
             },
@@ -3117,7 +3217,9 @@
               "reflex": 0,
               "will": 0,
               "maintenancePerItem": 1,
-              "features": []
+              "features": [
+                "Technical Knack (choices pending)"
+              ]
             },
             {
               "level": 3,
@@ -3128,7 +3230,9 @@
               "reflex": 1,
               "will": 1,
               "maintenancePerItem": 1,
-              "features": []
+              "features": [
+                "Tech Armour Training 1"
+              ]
             },
             {
               "level": 4,
@@ -3139,7 +3243,9 @@
               "reflex": 1,
               "will": 1,
               "maintenancePerItem": 1,
-              "features": []
+              "features": [
+                "Field Repairs"
+              ]
             },
             {
               "level": 5,
@@ -3150,7 +3256,9 @@
               "reflex": 1,
               "will": 1,
               "maintenancePerItem": 1,
-              "features": []
+              "features": [
+                "Workshop Training +2"
+              ]
             },
             {
               "level": 6,
@@ -3163,7 +3271,6 @@
               "will": 2,
               "maintenancePerItem": 2,
               "features": [
-                "Powered attack training +1 attack and damage (weapon focus)",
                 "Overnight maintenance 2 points per attuned item"
               ]
             },
@@ -3177,7 +3284,10 @@
               "reflex": 2,
               "will": 2,
               "maintenancePerItem": 2,
-              "features": []
+              "features": [
+                "Powered Attack Training +1",
+                "Tech Armour Training 2"
+              ]
             },
             {
               "level": 8,
@@ -3189,7 +3299,9 @@
               "reflex": 2,
               "will": 2,
               "maintenancePerItem": 2,
-              "features": []
+              "features": [
+                "Technical Knack (choices pending)"
+              ]
             },
             {
               "level": 9,
@@ -3201,7 +3313,9 @@
               "reflex": 3,
               "will": 3,
               "maintenancePerItem": 2,
-              "features": []
+              "features": [
+                "Workshop Training +3"
+              ]
             },
             {
               "level": 10,
@@ -3213,7 +3327,9 @@
               "reflex": 3,
               "will": 3,
               "maintenancePerItem": 2,
-              "features": []
+              "features": [
+                "Overload"
+              ]
             },
             {
               "level": 11,
@@ -3227,6 +3343,7 @@
               "will": 3,
               "maintenancePerItem": 3,
               "features": [
+                "Tech Armour Training 3",
                 "Overnight maintenance 3 points per attuned item"
               ]
             },
@@ -3241,7 +3358,9 @@
               "reflex": 4,
               "will": 4,
               "maintenancePerItem": 3,
-              "features": []
+              "features": [
+                "Powered Attack Training +2"
+              ]
             },
             {
               "level": 13,
@@ -3254,7 +3373,9 @@
               "reflex": 4,
               "will": 4,
               "maintenancePerItem": 3,
-              "features": []
+              "features": [
+                "Workshop Training +4"
+              ]
             },
             {
               "level": 14,
@@ -3267,7 +3388,9 @@
               "reflex": 4,
               "will": 4,
               "maintenancePerItem": 3,
-              "features": []
+              "features": [
+                "Technical Knack (choices pending)"
+              ]
             },
             {
               "level": 15,
@@ -3280,7 +3403,9 @@
               "reflex": 5,
               "will": 5,
               "maintenancePerItem": 3,
-              "features": []
+              "features": [
+                "Tech Armour Training 4"
+              ]
             },
             {
               "level": 16,
@@ -3310,7 +3435,10 @@
               "reflex": 5,
               "will": 5,
               "maintenancePerItem": 4,
-              "features": []
+              "features": [
+                "Powered Attack Training +3",
+                "Workshop Training +5"
+              ]
             },
             {
               "level": 18,
@@ -3324,7 +3452,9 @@
               "reflex": 6,
               "will": 6,
               "maintenancePerItem": 4,
-              "features": []
+              "features": [
+                "Technical Knack (choices pending)"
+              ]
             },
             {
               "level": 19,
@@ -3352,7 +3482,9 @@
               "reflex": 6,
               "will": 6,
               "maintenancePerItem": 4,
-              "features": []
+              "features": [
+                "Overload Mastery"
+              ]
             }
           ]
         },
@@ -10055,6 +10187,112 @@
       }
     },
     {
+      "id": "tech-armour-proficiency",
+      "name": "Tech Armour Proficiency",
+      "description": "You are proficient with technological armour and shields and can activate their reservoir abilities. Ironwrights gain this proficiency through their class.",
+      "combat": true,
+      "parameter": null,
+      "selectable": true,
+      "referenceId": "campaign:tech-armour-proficiency",
+      "source": "Campaign technology",
+      "prerequisites": [],
+      "effects": [],
+      "automationStatus": "equipment-proficiency",
+      "repeatable": false,
+      "repeatability": {
+        "mode": "none"
+      },
+      "index": {
+        "chains": [],
+        "topics": [],
+        "themes": [
+          "defensive"
+        ]
+      }
+    },
+    {
+      "id": "lookout",
+      "name": "Lookout (Combat, Teamwork)",
+      "description": "Lookout (Combat, Teamwork)\nYour allies help you avoid being surprised.\nBenefit: Whenever you are adjacent to an ally who also has this feat, you may act in the surprise round as long as your ally would normally be able to act in the surprise round. If you would normally be denied the ability to act in the surprise round, your initiative is equal to your initiative roll or the roll of your ally –1, whichever is lower. If both you and your ally would be able to act in the surprise round without the aid of this feat, you may take both a standard and a move action (or a full-round action) during the surprise round.",
+      "combat": true,
+      "parameter": null,
+      "selectable": true,
+      "referenceId": "support:feat:advancedplayersguide/advancedfeats.html#lookout",
+      "sourceUrl": "https://legacy.aonprd.com/advancedplayersguide/advancedfeats.html#lookout",
+      "source": "Advanced Player’s Guide",
+      "prerequisites": [],
+      "effects": [
+        {
+          "kind": "manual",
+          "description": "Whenever you are adjacent to an ally who also has this feat, you may act in the surprise round as long as your ally would normally be able to act in the surprise round. If you would normally be denied the ability to act in the surprise round, your initiative is equal to your initiative roll or the roll of your ally –1, whichever is lower. If both you and your ally would be able to act in the surprise round without the aid of this feat, you may take both a standard and a move action (or a full-round action) during the surprise round."
+        }
+      ],
+      "automationStatus": "table-reference",
+      "repeatable": false,
+      "repeatability": {
+        "mode": "none"
+      },
+      "index": {
+        "chains": [],
+        "topics": [],
+        "themes": [
+          "defensive"
+        ]
+      }
+    },
+    {
+      "id": "swap-places",
+      "name": "Swap Places (Combat, Teamwork)",
+      "description": "Swap Places (Combat, Teamwork)\nYou are skilled at changing places with your ally during a chaotic melee.\nBenefit: Whenever you are adjacent to an ally who also has this feat, you can move into your ally's square as part of normal movement. At the same time, your ally moves into your previous space as an immediate action. Both you and your ally must be willing and able to move to take advantage of this feat. Your ally must be the same size as you to utilize this feat. Your ally does not provoke an attack of opportunity from this movement, but you provoke as normal. This movement does not count against your ally's movement on her next turn.",
+      "combat": true,
+      "parameter": null,
+      "selectable": true,
+      "referenceId": "support:feat:advancedplayersguide/advancedfeats.html#swap-places",
+      "sourceUrl": "https://legacy.aonprd.com/advancedplayersguide/advancedfeats.html#swap-places",
+      "source": "Advanced Player’s Guide",
+      "prerequisites": [],
+      "effects": [
+        {
+          "kind": "manual",
+          "description": "Whenever you are adjacent to an ally who also has this feat, you can move into your ally's square as part of normal movement. At the same time, your ally moves into your previous space as an immediate action. Both you and your ally must be willing and able to move to take advantage of this feat. Your ally must be the same size as you to utilize this feat. Your ally does not provoke an attack of opportunity from this movement, but you provoke as normal. This movement does not count against your ally's movement on her next turn."
+        }
+      ],
+      "automationStatus": "table-reference",
+      "repeatable": false,
+      "repeatability": {
+        "mode": "none"
+      },
+      "index": {
+        "chains": [],
+        "topics": [],
+        "themes": [
+          "defensive"
+        ]
+      }
+    },
+    {
+      "id": "craft-technological-equipment",
+      "name": "Craft Technological Equipment",
+      "description": "You can construct, modify and repair technological equipment using appropriate tools, designs and materials. Individual construction requirements and detailed crafting procedures are defined by the crafting module.",
+      "combat": false,
+      "parameter": null,
+      "selectable": false,
+      "prerequisites": [],
+      "effects": [],
+      "repeatable": false,
+      "repeatability": {
+        "mode": "none"
+      },
+      "automationStatus": "crafting-module-pending",
+      "index": {
+        "chains": [],
+        "topics": [],
+        "themes": [
+          "crafting"
+        ]
+      }
+    },
+    {
       "id": "outflank",
       "name": "Outflank",
       "description": "Flanking with an ally who has Outflank increases the flanking attack bonus to +4. Critical hits provoke an attack of opportunity from that ally.",
@@ -15512,7 +15750,11 @@
           "damageType": "slashing"
         },
         "automationStatus": "equipment-and-powered-sheet-actions",
-        "status": "playtest"
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
       },
       {
         "id": "steam-spear",
@@ -15573,7 +15815,11 @@
           "damageType": "piercing"
         },
         "automationStatus": "equipment-and-powered-sheet-actions",
-        "status": "playtest"
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
       },
       {
         "id": "piston-hammer",
@@ -15632,7 +15878,11 @@
           "damageType": "bludgeoning"
         },
         "automationStatus": "equipment-and-powered-sheet-actions",
-        "status": "playtest"
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
       },
       {
         "id": "drive-sword",
@@ -15691,7 +15941,11 @@
           "damageType": "slashing"
         },
         "automationStatus": "equipment-and-powered-sheet-actions",
-        "status": "playtest"
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
       },
       {
         "id": "vibro-dagger",
@@ -15751,7 +16005,371 @@
           "damageType": "piercing/slashing"
         },
         "automationStatus": "equipment-and-powered-sheet-actions",
-        "status": "playtest"
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 2
+        }
+      },
+      {
+        "id": "tech-light-shield",
+        "name": "Light tech shield",
+        "kind": "shield",
+        "category": "shields",
+        "cost": {
+          "gp": 13.5,
+          "text": "13.5 gp"
+        },
+        "weightLb": 9,
+        "size": "medium",
+        "defense": {
+          "bonus": 1,
+          "bonusType": "shield",
+          "maxDexBonus": null,
+          "armorCheckPenalty": -1,
+          "arcaneFailurePercent": 5,
+          "speedByBaseFt": {
+            "20": null,
+            "30": null
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "A steel shield conceals sliding panels and folding ground anchors.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "shield-light-steel",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "tech": {
+          "family": "light-shield",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        },
+        "priceBasis": {
+          "itemId": "shield-light-steel",
+          "multiplier": 1.5
+        }
+      },
+      {
+        "id": "tech-heavy-shield",
+        "name": "Heavy tech shield",
+        "kind": "shield",
+        "category": "shields",
+        "cost": {
+          "gp": 30,
+          "text": "30 gp"
+        },
+        "weightLb": 22,
+        "size": "medium",
+        "defense": {
+          "bonus": 2,
+          "bonusType": "shield",
+          "maxDexBonus": null,
+          "armorCheckPenalty": -2,
+          "arcaneFailurePercent": 15,
+          "speedByBaseFt": {
+            "20": null,
+            "30": null
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "Broad steel panels unfold from this reinforced shield to form a portable barricade.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "shield-heavy-steel",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "tech": {
+          "family": "heavy-shield",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 20
+        },
+        "priceBasis": {
+          "itemId": "shield-heavy-steel",
+          "multiplier": 1.5
+        }
+      },
+      {
+        "id": "workshop-harness",
+        "name": "Workshop harness",
+        "kind": "armor",
+        "category": "light",
+        "cost": {
+          "gp": 15,
+          "text": "15 gp"
+        },
+        "weightLb": 10,
+        "size": "medium",
+        "defense": {
+          "bonus": 0,
+          "bonusType": "armor",
+          "maxDexBonus": null,
+          "armorCheckPenalty": -1,
+          "arcaneFailurePercent": 0,
+          "speedByBaseFt": {
+            "20": 20,
+            "30": 30
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "An unarmoured work harness carries powered gloves, tool mounts and supporting cables. It occupies the armour slot and cannot be worn with another suit of armour.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "leather",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "leather",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "light-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 5
+        }
+      },
+      {
+        "id": "reinforced-work-harness",
+        "name": "Reinforced work harness",
+        "kind": "armor",
+        "category": "light",
+        "cost": {
+          "gp": 15,
+          "text": "15 gp"
+        },
+        "weightLb": 25,
+        "size": "medium",
+        "defense": {
+          "bonus": 2,
+          "bonusType": "armor",
+          "maxDexBonus": 4,
+          "armorCheckPenalty": -2,
+          "arcaneFailurePercent": 10,
+          "speedByBaseFt": {
+            "20": 20,
+            "30": 30
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "Powered gloves and supporting cables reinforce a fitted work harness. Locking joints steady the wearer when lifting heavy objects or handling delicate tools.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "leather",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "leather",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "light-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
+      },
+      {
+        "id": "articulated-strider-suit",
+        "name": "Articulated strider suit",
+        "kind": "armor",
+        "category": "medium",
+        "cost": {
+          "gp": 150,
+          "text": "150 gp"
+        },
+        "weightLb": 35,
+        "size": "medium",
+        "defense": {
+          "bonus": 4,
+          "bonusType": "armor",
+          "maxDexBonus": 4,
+          "armorCheckPenalty": -3,
+          "arcaneFailurePercent": 20,
+          "speedByBaseFt": {
+            "20": 15,
+            "30": 20
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "Powered leg joints and tension cables support articulated armour sections, providing bursts of speed and assisted leaps.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "chain-shirt",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "chain-shirt",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "medium-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 20
+        }
+      },
+      {
+        "id": "riveted-strider-suit",
+        "name": "Riveted strider suit",
+        "kind": "armor",
+        "category": "medium",
+        "cost": {
+          "gp": 300,
+          "text": "300 gp"
+        },
+        "weightLb": 45,
+        "size": "medium",
+        "defense": {
+          "bonus": 6,
+          "bonusType": "armor",
+          "maxDexBonus": 2,
+          "armorCheckPenalty": -5,
+          "arcaneFailurePercent": 25,
+          "speedByBaseFt": {
+            "20": 15,
+            "30": 20
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "Overlapping armour sections are riveted to a powered frame. Leg pistons and tension cables drive short bursts of movement and powerful leaps.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "breastplate",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "breastplate",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "medium-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 30
+        }
+      },
+      {
+        "id": "half-plate-bulwark",
+        "name": "Half-plate bulwark",
+        "kind": "armor",
+        "category": "heavy",
+        "cost": {
+          "gp": 900,
+          "text": "900 gp"
+        },
+        "weightLb": 65,
+        "size": "medium",
+        "defense": {
+          "bonus": 8,
+          "bonusType": "armor",
+          "maxDexBonus": 0,
+          "armorCheckPenalty": -8,
+          "arcaneFailurePercent": 40,
+          "speedByBaseFt": {
+            "20": 15,
+            "30": 20
+          },
+          "runMultiplier": 3
+        },
+        "traits": [],
+        "description": "A heavy armoured frame carries stabilising braces and extending guard plates for protecting nearby allies.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "half-plate",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "half-plate",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "heavy-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 40
+        }
+      },
+      {
+        "id": "full-plate-bulwark",
+        "name": "Full-plate bulwark",
+        "kind": "armor",
+        "category": "heavy",
+        "cost": {
+          "gp": 2250,
+          "text": "2250 gp"
+        },
+        "weightLb": 70,
+        "size": "medium",
+        "defense": {
+          "bonus": 9,
+          "bonusType": "armor",
+          "maxDexBonus": 0,
+          "armorCheckPenalty": -7,
+          "arcaneFailurePercent": 35,
+          "speedByBaseFt": {
+            "20": 15,
+            "30": 20
+          },
+          "runMultiplier": 3
+        },
+        "traits": [],
+        "description": "A heavy armoured frame carries stabilising braces and extending guard plates for protecting nearby allies.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "full-plate",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "full-plate",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "heavy-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 45
+        }
       }
     ]
   },
@@ -15927,7 +16545,11 @@
           "damageType": "slashing"
         },
         "automationStatus": "equipment-and-powered-sheet-actions",
-        "status": "playtest"
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
       },
       {
         "id": "steam-spear",
@@ -15988,7 +16610,11 @@
           "damageType": "piercing"
         },
         "automationStatus": "equipment-and-powered-sheet-actions",
-        "status": "playtest"
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
       },
       {
         "id": "piston-hammer",
@@ -16047,7 +16673,11 @@
           "damageType": "bludgeoning"
         },
         "automationStatus": "equipment-and-powered-sheet-actions",
-        "status": "playtest"
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
       },
       {
         "id": "drive-sword",
@@ -16106,7 +16736,11 @@
           "damageType": "slashing"
         },
         "automationStatus": "equipment-and-powered-sheet-actions",
-        "status": "playtest"
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
       },
       {
         "id": "vibro-dagger",
@@ -16166,7 +16800,371 @@
           "damageType": "piercing/slashing"
         },
         "automationStatus": "equipment-and-powered-sheet-actions",
-        "status": "playtest"
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 2
+        }
+      },
+      {
+        "id": "tech-light-shield",
+        "name": "Light tech shield",
+        "kind": "shield",
+        "category": "shields",
+        "cost": {
+          "gp": 13.5,
+          "text": "13.5 gp"
+        },
+        "weightLb": 9,
+        "size": "medium",
+        "defense": {
+          "bonus": 1,
+          "bonusType": "shield",
+          "maxDexBonus": null,
+          "armorCheckPenalty": -1,
+          "arcaneFailurePercent": 5,
+          "speedByBaseFt": {
+            "20": null,
+            "30": null
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "A steel shield conceals sliding panels and folding ground anchors.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "shield-light-steel",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "tech": {
+          "family": "light-shield",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        },
+        "priceBasis": {
+          "itemId": "shield-light-steel",
+          "multiplier": 1.5
+        }
+      },
+      {
+        "id": "tech-heavy-shield",
+        "name": "Heavy tech shield",
+        "kind": "shield",
+        "category": "shields",
+        "cost": {
+          "gp": 30,
+          "text": "30 gp"
+        },
+        "weightLb": 22,
+        "size": "medium",
+        "defense": {
+          "bonus": 2,
+          "bonusType": "shield",
+          "maxDexBonus": null,
+          "armorCheckPenalty": -2,
+          "arcaneFailurePercent": 15,
+          "speedByBaseFt": {
+            "20": null,
+            "30": null
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "Broad steel panels unfold from this reinforced shield to form a portable barricade.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "shield-heavy-steel",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "tech": {
+          "family": "heavy-shield",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 20
+        },
+        "priceBasis": {
+          "itemId": "shield-heavy-steel",
+          "multiplier": 1.5
+        }
+      },
+      {
+        "id": "workshop-harness",
+        "name": "Workshop harness",
+        "kind": "armor",
+        "category": "light",
+        "cost": {
+          "gp": 15,
+          "text": "15 gp"
+        },
+        "weightLb": 10,
+        "size": "medium",
+        "defense": {
+          "bonus": 0,
+          "bonusType": "armor",
+          "maxDexBonus": null,
+          "armorCheckPenalty": -1,
+          "arcaneFailurePercent": 0,
+          "speedByBaseFt": {
+            "20": 20,
+            "30": 30
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "An unarmoured work harness carries powered gloves, tool mounts and supporting cables. It occupies the armour slot and cannot be worn with another suit of armour.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "leather",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "leather",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "light-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 5
+        }
+      },
+      {
+        "id": "reinforced-work-harness",
+        "name": "Reinforced work harness",
+        "kind": "armor",
+        "category": "light",
+        "cost": {
+          "gp": 15,
+          "text": "15 gp"
+        },
+        "weightLb": 25,
+        "size": "medium",
+        "defense": {
+          "bonus": 2,
+          "bonusType": "armor",
+          "maxDexBonus": 4,
+          "armorCheckPenalty": -2,
+          "arcaneFailurePercent": 10,
+          "speedByBaseFt": {
+            "20": 20,
+            "30": 30
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "Powered gloves and supporting cables reinforce a fitted work harness. Locking joints steady the wearer when lifting heavy objects or handling delicate tools.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "leather",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "leather",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "light-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
+      },
+      {
+        "id": "articulated-strider-suit",
+        "name": "Articulated strider suit",
+        "kind": "armor",
+        "category": "medium",
+        "cost": {
+          "gp": 150,
+          "text": "150 gp"
+        },
+        "weightLb": 35,
+        "size": "medium",
+        "defense": {
+          "bonus": 4,
+          "bonusType": "armor",
+          "maxDexBonus": 4,
+          "armorCheckPenalty": -3,
+          "arcaneFailurePercent": 20,
+          "speedByBaseFt": {
+            "20": 15,
+            "30": 20
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "Powered leg joints and tension cables support articulated armour sections, providing bursts of speed and assisted leaps.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "chain-shirt",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "chain-shirt",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "medium-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 20
+        }
+      },
+      {
+        "id": "riveted-strider-suit",
+        "name": "Riveted strider suit",
+        "kind": "armor",
+        "category": "medium",
+        "cost": {
+          "gp": 300,
+          "text": "300 gp"
+        },
+        "weightLb": 45,
+        "size": "medium",
+        "defense": {
+          "bonus": 6,
+          "bonusType": "armor",
+          "maxDexBonus": 2,
+          "armorCheckPenalty": -5,
+          "arcaneFailurePercent": 25,
+          "speedByBaseFt": {
+            "20": 15,
+            "30": 20
+          },
+          "runMultiplier": null
+        },
+        "traits": [],
+        "description": "Overlapping armour sections are riveted to a powered frame. Leg pistons and tension cables drive short bursts of movement and powerful leaps.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "breastplate",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "breastplate",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "medium-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 30
+        }
+      },
+      {
+        "id": "half-plate-bulwark",
+        "name": "Half-plate bulwark",
+        "kind": "armor",
+        "category": "heavy",
+        "cost": {
+          "gp": 900,
+          "text": "900 gp"
+        },
+        "weightLb": 65,
+        "size": "medium",
+        "defense": {
+          "bonus": 8,
+          "bonusType": "armor",
+          "maxDexBonus": 0,
+          "armorCheckPenalty": -8,
+          "arcaneFailurePercent": 40,
+          "speedByBaseFt": {
+            "20": 15,
+            "30": 20
+          },
+          "runMultiplier": 3
+        },
+        "traits": [],
+        "description": "A heavy armoured frame carries stabilising braces and extending guard plates for protecting nearby allies.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "half-plate",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "half-plate",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "heavy-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 40
+        }
+      },
+      {
+        "id": "full-plate-bulwark",
+        "name": "Full-plate bulwark",
+        "kind": "armor",
+        "category": "heavy",
+        "cost": {
+          "gp": 2250,
+          "text": "2250 gp"
+        },
+        "weightLb": 70,
+        "size": "medium",
+        "defense": {
+          "bonus": 9,
+          "bonusType": "armor",
+          "maxDexBonus": 0,
+          "armorCheckPenalty": -7,
+          "arcaneFailurePercent": 35,
+          "speedByBaseFt": {
+            "20": 15,
+            "30": 20
+          },
+          "runMultiplier": 3
+        },
+        "traits": [],
+        "description": "A heavy armoured frame carries stabilising braces and extending guard plates for protecting nearby allies.",
+        "automationStatus": "sheet-conditional-profiles",
+        "derivedFrom": "full-plate",
+        "origin": "campaign",
+        "status": "playtest",
+        "proficiency": "tech-armour",
+        "priceBasis": {
+          "itemId": "full-plate",
+          "multiplier": 1.5
+        },
+        "tech": {
+          "family": "heavy-armour",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 45
+        }
       }
     ],
     "families": [
@@ -16353,6 +17351,170 @@
             "status": "playtest"
           }
         ]
+      },
+      {
+        "id": "light-armour",
+        "name": "Light tech armour",
+        "actions": [
+          {
+            "id": "powered-grip",
+            "name": "Powered Grip",
+            "cost": 1,
+            "actionType": "swift",
+            "description": "For 1 minute, gain a +2 circumstance bonus on Strength checks to lift, bend, force open or hold objects and on combat manoeuvre checks to grapple.",
+            "benefits": {
+              "gripBonus": 2
+            },
+            "specialistBenefits": {
+              "gripBonus": 4
+            }
+          },
+          {
+            "id": "precision-rig",
+            "name": "Precision Rig",
+            "cost": 3,
+            "actionType": "activation",
+            "description": "Gain a +2 circumstance bonus on one Craft check, or +5 when quick crafting. These bonuses do not stack. The rig covers one crafting check regardless of the work period it represents. Quick crafting raises the Craft DC by 5 to increase progress.",
+            "benefits": {
+              "craftBonus": 2,
+              "quickCraftBonus": 5
+            },
+            "specialistBenefits": {
+              "craftBonus": 4,
+              "quickCraftBonus": 10
+            }
+          }
+        ]
+      },
+      {
+        "id": "medium-armour",
+        "name": "Medium tech armour",
+        "actions": [
+          {
+            "id": "assisted-stride",
+            "name": "Assisted Stride",
+            "cost": 1,
+            "actionType": "move",
+            "description": "Before taking a move action to move, increase your land speed by 10 feet for that move. This does not grant an extra action or prevent attacks of opportunity.",
+            "benefits": {
+              "speedBonusFt": 10
+            },
+            "specialistBenefits": {
+              "speedBonusFt": 20
+            }
+          },
+          {
+            "id": "vault",
+            "name": "Vault",
+            "cost": 3,
+            "actionType": "move",
+            "description": "As a move action, jump up to 10 feet horizontally or 5 feet vertically without an Acrobatics check. You must have a clear path. This jump does not provoke attacks of opportunity. Vault can also be used as part of a charge and counts as the movement required to initiate that charge.",
+            "benefits": {
+              "horizontalFt": 10,
+              "verticalFt": 5
+            },
+            "specialistBenefits": {
+              "horizontalFt": 20,
+              "verticalFt": 10
+            }
+          }
+        ]
+      },
+      {
+        "id": "heavy-armour",
+        "name": "Heavy tech armour",
+        "actions": [
+          {
+            "id": "brace",
+            "name": "Brace",
+            "cost": 1,
+            "actionType": "immediate",
+            "description": "Before an opponent rolls a trip, bull rush, reposition, disarm or sunder manoeuvre against you or equipment you wear or wield, gain +2 CMD against that manoeuvre.",
+            "benefits": {
+              "cmdBonus": 2
+            },
+            "specialistBenefits": {
+              "cmdBonus": 4
+            }
+          },
+          {
+            "id": "interpose",
+            "name": "Interpose",
+            "cost": 3,
+            "actionType": "immediate",
+            "description": "When an adjacent ally is hit by a weapon or natural attack, intercept up to 5 damage. Declare before damage is rolled. The armour takes the intercepted damage, reduced by its hardness minus 10 (minimum 0). Broken armour cannot Interpose.",
+            "benefits": {
+              "interceptDamage": 5
+            },
+            "specialistBenefits": {
+              "interceptDamage": 10
+            }
+          }
+        ]
+      },
+      {
+        "id": "light-shield",
+        "name": "Light tech shield",
+        "actions": [
+          {
+            "id": "deflect",
+            "name": "Deflect",
+            "cost": 1,
+            "actionType": "immediate",
+            "description": "Before an attack roll against you, increase your shield bonus to AC by 1 against that attack.",
+            "benefits": {
+              "shieldBonus": 1
+            },
+            "specialistBenefits": {
+              "shieldBonus": 2
+            }
+          },
+          {
+            "id": "deploy-bulwark",
+            "name": "Deploy Bulwark",
+            "cost": 3,
+            "actionType": "standard",
+            "description": "Plant and unfold the shield across 1 connected 5-foot edges. It provides partial cover against attacks passing through those edges. It remains deployed until disengaged or destroyed without further fuel expenditure. Disengage and reclaim it as a move action, or leave it behind. While deployed it provides cover rather than an equipped shield bonus. Anyone can shelter behind it.",
+            "benefits": {
+              "edges": 1
+            },
+            "specialistBenefits": {
+              "edges": 2
+            }
+          }
+        ]
+      },
+      {
+        "id": "heavy-shield",
+        "name": "Heavy tech shield",
+        "actions": [
+          {
+            "id": "deflect",
+            "name": "Deflect",
+            "cost": 1,
+            "actionType": "immediate",
+            "description": "Before an attack roll against you, increase your shield bonus to AC by 2 against that attack.",
+            "benefits": {
+              "shieldBonus": 2
+            },
+            "specialistBenefits": {
+              "shieldBonus": 4
+            }
+          },
+          {
+            "id": "deploy-bulwark",
+            "name": "Deploy Bulwark",
+            "cost": 3,
+            "actionType": "standard",
+            "description": "Plant and unfold the shield across 2 connected 5-foot edges. It provides partial cover against attacks passing through those edges. It remains deployed until disengaged or destroyed without further fuel expenditure. Disengage and reclaim it as a move action, or leave it behind. While deployed it provides cover rather than an equipped shield bonus. Anyone can shelter behind it.",
+            "benefits": {
+              "edges": 2
+            },
+            "specialistBenefits": {
+              "edges": 4
+            }
+          }
+        ]
       }
     ],
     "traits": [
@@ -16364,7 +17526,7 @@
     ],
     "ironwright": {
       "specializationMinimumLevel": 1,
-      "spendingTrainingMinimumLevel": 6,
+      "spendingTrainingMinimumLevel": 7,
       "spendingTrainingBonus": 1,
       "recovery": [
         {
@@ -16384,11 +17546,87 @@
           "points": 4
         }
       ],
-      "notes": "Specialization from level1 is the current playtest assumption. Higher spending-training bonuses and the rest of the class are not finalized. Maintenance is per item attuned throughout the rest; attunement costs and cap remain manual."
+      "notes": "Weapon family or armour specialisation begins at 1st level. Powered Attack Training increases at 7th, 12th and 17th levels. Maintenance restores reservoir per item attuned throughout the rest. Technical knack options and detailed technology crafting and repair procedures remain pending.",
+      "armourTraining": [
+        {
+          "minimumLevel": 3,
+          "bonus": 1
+        },
+        {
+          "minimumLevel": 7,
+          "bonus": 2
+        },
+        {
+          "minimumLevel": 11,
+          "bonus": 3
+        },
+        {
+          "minimumLevel": 15,
+          "bonus": 4
+        }
+      ],
+      "spendingTrainingProgression": [
+        {
+          "minimumLevel": 7,
+          "bonus": 1
+        },
+        {
+          "minimumLevel": 12,
+          "bonus": 2
+        },
+        {
+          "minimumLevel": 17,
+          "bonus": 3
+        }
+      ],
+      "workshopTraining": [
+        {
+          "minimumLevel": 1,
+          "bonus": 1
+        },
+        {
+          "minimumLevel": 5,
+          "bonus": 2
+        },
+        {
+          "minimumLevel": 9,
+          "bonus": 3
+        },
+        {
+          "minimumLevel": 13,
+          "bonus": 4
+        },
+        {
+          "minimumLevel": 17,
+          "bonus": 5
+        }
+      ],
+      "fieldRepairs": {
+        "minimumLevel": 4,
+        "description": "At 4th level, repair technological equipment using suitable scrap instead of purchased materials. Checks, repair amounts and times await the technology crafting rules."
+      },
+      "technicalKnacks": {
+        "levels": [
+          2,
+          8,
+          14,
+          18
+        ],
+        "status": "options-pending"
+      },
+      "overload": {
+        "minimumLevel": 10,
+        "masteryLevel": 20,
+        "damageFraction": 0.2,
+        "masteryDamageFraction": 0.1,
+        "masteryBonus": 2,
+        "description": "As a swift action, overload one equipped technological item. Its powered abilities cost no reservoir and retain normal action requirements. After the first powered ability each round, take 20% of maximum item HP as damage, rounded up, bypassing hardness. End as a free action on your turn; it ends automatically when broken, destroyed or unequipped. On ending, the powered mechanism breaks and requires workshop repair; restoring HP and Field Repairs do not fix it. At level 20, strain becomes 10% and the item gains +2 weapon damage or +2 to its armour or shield AC bonus."
+      }
     },
     "notes": [
-      "Prices, weight and attunement costs are not set. These items are playtest models, not imports from an official book.",
-      "Family actions are shared by models; reservoir, permanent enhancement and Keen belong to owned instances."
+      "Defensive models use four reservoir plus two per enhancement. Prices are 150% of the recorded comparison item. The unarmoured harness uses leather as its price comparison; the articulated medium suit uses a chain shirt.",
+      "Armour specialisation doubles armour and shield powered benefits. Tech Armour Training applies to all Ironwrights.",
+      "Interpose uses normal item HP and hardness minus 10. Workshop harness durability is a campaign minimum of 5 HP. Material choices change hardness only; other special-material rules and prices are resolved at the table."
     ]
   },
   "grants": [
@@ -16575,6 +17813,36 @@
       "featId": "improved-unarmed-strike",
       "classId": "monk",
       "classLevel": 1
+    },
+    {
+      "id": "wizard-scribe-scroll",
+      "classId": "wizard",
+      "classLevel": 1,
+      "featId": "scribe-scroll"
+    },
+    {
+      "id": "sorcerer-eschew-materials",
+      "classId": "sorcerer",
+      "classLevel": 1,
+      "featId": "eschew-materials"
+    },
+    {
+      "id": "ranger-endurance",
+      "classId": "ranger",
+      "classLevel": 3,
+      "featId": "endurance"
+    },
+    {
+      "id": "ironwright-tech-armour",
+      "classId": "ironwright",
+      "classLevel": 1,
+      "featId": "tech-armour-proficiency"
+    },
+    {
+      "id": "ironwright-craft-technology",
+      "classId": "ironwright",
+      "classLevel": 1,
+      "featId": "craft-technological-equipment"
     }
   ],
   "prerequisiteExceptions": [

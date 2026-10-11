@@ -1,9 +1,10 @@
+import {validateCraftedItems,craftedAbilityScores,craftedEffects} from './magic-items.mjs';
 import {activeAbilityScores,selectableEffects,selectableScenarios,selectableSummary} from './selectable-abilities.mjs';
 import {martialEffects,martialScenarios} from './martial-options.mjs';
 import {optionEffects,optionDefenses} from './core-options.mjs';
 import {racialEffects,validateRacial} from './racial.mjs';
 import {validateBackground,backgroundDetails,backgroundEffects} from './backgrounds.mjs';
-import {validateTechState,reservoirMaximum,poweredBenefits,applyTechEvent} from './technology.mjs';
+import {overloadActive,techBroken,validateTechState,reservoirMaximum,poweredBenefits,applyTechEvent} from './technology.mjs';
 export {applyTechEvent};
 import {prepareEquipment,equipmentEffects,equipmentSummary} from './equipped-items.mjs';
 import {SPELL_SCHOOLS} from './spell-schools.mjs';
@@ -121,6 +122,7 @@ export const DEFAULT_CHARACTER = {
 
 export function validateCharacter(c) {
   validateTechState(c);
+  validateCraftedItems(c);
   validateBackground(c.background);
   if(c.builder)validateRacial(c.builder);
   if(c.equipment!==undefined){if(!object(c.equipment))fail('Invalid equipment');if(c.equipment.baseSpeed!==undefined&&![20,30].includes(c.equipment.baseSpeed))fail('Equipment base speed must be 20 or 30');if(c.equipment.damageMode!==undefined&&!['standard','two-handed','off-hand'].includes(c.equipment.damageMode))fail('Invalid equipment handling');}
@@ -147,7 +149,7 @@ export function validateCharacter(c) {
 }
 
 export function evaluateCharacter(rules, input, rowConditions = null, techActionId = null) {
-  const prepared=prepareEquipment(rules,activeAbilityScores(validateCharacter(input)),techActionId);
+  const prepared=prepareEquipment(rules,activeAbilityScores(craftedAbilityScores(validateCharacter(input))),techActionId);
   const c=prepared.character;
   const background=backgroundDetails(c.background);
   const result = evaluateClassGrants(rules, c, c.context);
@@ -156,7 +158,7 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
   if(rules.abilities)validateAbilityLinks(rules.abilities,CLASSES,new Set(rules.feats.map(f=>f.id)));
   const abilities = rules.abilities ? evaluateAbilities(rules.abilities, c, result, Object.fromEntries(Object.entries(rowConditions??{}).filter(([k])=>!k.startsWith('class-option.')))) : null;
   if (abilities) result.effects.push(...abilities.effects);
-  result.effects.push(...equipmentEffects(prepared.equipment,c,result,abilities));
+  result.effects.push(...equipmentEffects(prepared.equipment,c,result,abilities),...craftedEffects(c));
   result.effects.push(...backgroundEffects(c.background,abilities?.conditions ?? rowConditions ?? {}),...racialEffects(c),...optionEffects(c),...selectableEffects(c,rowConditions??{}),...martialEffects(c,rowConditions??{},prepared.equipment?.weapon));
   const mod = ability => Math.floor((c.abilities[ability] - 10) / 2);
   const dexAC = c.context.deniedDexToAC ? Math.min(0, mod('dex')) : mod('dex');
@@ -223,12 +225,12 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
     output.technology={recovery,selectedInstanceId:tech?.instance.instanceId??null,specialist:tech?.specialist??false,
       items:(input.techEquipment?.items??[]).map(i=>{const model=rules.equipment.items.find(m=>m.id===i.itemId);return {...i,name:model.name,maximum:reservoirMaximum(model,i)};}),actions:[]};
     if(tech)for(const a of tech.family.actions){
-      const action=poweredBenefits(tech,a.id),eligible=tech.proficient&&c.context.attackType==='melee';
+      const action=poweredBenefits(tech,a.id),eligible=tech.proficient&&c.context.attackType==='melee'&&!tech.instance.mechanismBroken&&!techBroken(tech.item,tech.instance);
       const rows=eligible?(output.sheetRows??[{id:'normal',label:'Normal',conditions:{}}]).map(row=>{
         const evaluated=evaluateCharacter(rules,input,row.conditions??{},a.id);
         return {label:row.label,stats:evaluated.stats,equipment:evaluated.equipment};
       }):[];
-      output.technology.actions.push({...action,eligible,available:eligible&&tech.instance.reservoir>=a.cost,rows});
+      output.technology.actions.push({...action,eligible,available:eligible&&(tech.instance.reservoir>=a.cost||overloadActive(c,tech.instance)),rows});
     }
   }
   return output;

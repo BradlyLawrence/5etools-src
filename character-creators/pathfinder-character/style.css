@@ -30,3 +30,5 @@ nav{display:flex;gap:12px;flex-wrap:wrap}a{color:#c2a46e}button,input,textarea{f
 #panel .spell-options button[aria-pressed=true]{box-shadow:inset 3px 0 #e5bc76}
 .spell-preview{display:none;margin-top:7px;white-space:normal;line-height:1.5;color:#e0e6ee}
 .spell-options button:hover .spell-preview,.spell-options button:focus .spell-preview{display:block}
+
+#roster .saved-character-row{display:flex;gap:10px;align-items:center;margin:10px 0}#roster .saved-character-row>button:first-child{flex:1;text-align:left}#roster .delete-character{color:#ffb4ab;border-color:#8e4944;flex:0 0 auto}

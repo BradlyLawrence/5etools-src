@@ -11,23 +11,26 @@ export function sheetCharacter(c){
 }
 export function equip(c,rules,slot,id){
  if(!['weaponId','armorId','shieldId'].includes(slot))throw Error('Unknown equipment slot.');
+ for(const i of c.craftedItems??[])if(i.design.slot+'Id'===slot)i.equipped=false;
  const kind={weaponId:'weapon',armorId:'armor',shieldId:'shield'}[slot];
  if(id&&!rules.equipment.items.some(x=>x.id===id&&x.kind===kind))throw Error('Unknown equipment.');
+ for(const i of c.techEquipment?.items??[])if(i.overloaded&&c.equipment?.[slot]===i.itemId)techEvent(c,rules,{type:'overload-end',instanceId:i.instanceId});
  c.equipment??={};c.equipment[slot]=id|| (slot==='weaponId'?'unarmed-strike':null);
+ if(slot!=='weaponId'&&c.techEquipment)c.techEquipment[slot==='armorId'?'armorInstanceId':'shieldInstanceId']=null;
  if(slot==='weaponId'){
   if(c.techEquipment)c.techEquipment.selectedInstanceId=null;
   delete c.equipment.damageMode;delete c.equipment.thrown;
-  const item=rules.equipment.items.find(x=>x.id===id);
-  if(item?.tech){
-   let out=sheetCharacter(c),owned=out.techEquipment?.items.find(x=>x.itemId===id);
-   if(!owned){out=applyTechEvent(rules,out,{type:'add',itemId:id,instanceId:crypto.randomUUID()});owned=out.techEquipment.items.at(-1);}
-   out=applyTechEvent(rules,out,{type:'select',instanceId:owned.instanceId});
-   c.techEquipment=out.techEquipment;
-  }
  }
+ const item=rules.equipment.items.find(x=>x.id===id);
+ if(item?.tech){
+  let out=sheetCharacter(c),owned=out.techEquipment?.items.find(x=>x.itemId===id&&!x.deployed);
+  if(!owned){out=applyTechEvent(rules,out,{type:'add',itemId:id,instanceId:crypto.randomUUID()});owned=out.techEquipment.items.at(-1);}
+  out=applyTechEvent(rules,out,{type:'select',instanceId:owned.instanceId});c.techEquipment=out.techEquipment;c.equipment=out.equipment;
+ }
+
  return c;
 }
-export function techEvent(c,rules,event){const out=applyTechEvent(rules,sheetCharacter(c),event);c.techEquipment=out.techEquipment;return c;}
+export function techEvent(c,rules,event){const out=applyTechEvent(rules,sheetCharacter(c),event);c.techEquipment=out.techEquipment;c.equipment=out.equipment;return c;}
 export function equipmentSheet(c,rules,action=null){const input=sheetCharacter(c),sheet=evaluateCharacter(rules,input,null,action);sheet.dragonborn=dragonbornFeatures(input);
  if(sheet.dragonborn?.claws){
  const clawCharacter=structuredClone(input),clawRules={...rules,equipment:{...rules.equipment,items:[...rules.equipment.items,{id:'draconic-claw',name:'Draconic claw',kind:'weapon',proficiency:'natural',handling:'light',finesseEligible:true,traits:[],damage:{small:['1d3'],medium:['1d4'],types:['slashing']},critical:[{threatMin:20,multiplier:2}],rangeIncrementFt:null}]}};

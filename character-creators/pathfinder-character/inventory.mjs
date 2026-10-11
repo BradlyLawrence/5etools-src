@@ -6,7 +6,7 @@ export function inventoryRows(c){
   const id=c.equipment?.[slot];if(!id||id==='unarmed-strike'||c.techEquipment?.items.some(i=>i.itemId===id))continue;
   const row=rows.find(x=>x.key===id);if(row){row.quantity++;row.equipped=true;}else rows.push({key:id,itemId:id,quantity:1,equipped:true});
  }
- for(const i of c.techEquipment?.items??[])rows.push({key:i.instanceId,itemId:i.itemId,quantity:1,tech:i,equipped:c.techEquipment.selectedInstanceId===i.instanceId});
+ for(const i of c.techEquipment?.items??[])rows.push({key:i.instanceId,itemId:i.itemId,quantity:1,tech:i,equipped:[c.techEquipment.selectedInstanceId,c.techEquipment.armorInstanceId,c.techEquipment.shieldInstanceId].includes(i.instanceId)});
  return rows;
 }
 export function inventoryAction(c,rules,action,key){
@@ -20,13 +20,13 @@ export function inventoryAction(c,rules,action,key){
  const row=inventoryRows(c).find(x=>x.key===key);if(!row)throw Error('Item is not in your inventory.');
  const item=items.find(x=>x.id===row.itemId),slot=slots[item?.kind];
  if(action==='equip'){
-  if(!slot)throw Error('This item is carried rather than equipped.');
+  if(!slot)throw Error('This item is carried rather than equipped.');if(row.tech?.deployed)throw Error('Disengage the barricade before equipping it.');
   if(row.equipped){
    if(!row.tech){c.carriedEquipment??={};c.carriedEquipment[row.itemId]=(c.carriedEquipment[row.itemId]??0)+1;}
    equip(c,rules,slot,'');return;
   }
   const old=c.equipment?.[slot];
-  if(old&&old!=='unarmed-strike'&&!c.techEquipment?.items.some(i=>i.itemId===old)){c.carriedEquipment??={};c.carriedEquipment[old]=(c.carriedEquipment[old]??0)+1;}
+  if(old&&old!=='unarmed-strike'&&!c.craftedItems?.some(i=>i.equipped&&i.design.slot+'Id'===slot)&&!c.techEquipment?.items.some(i=>i.itemId===old)){c.carriedEquipment??={};c.carriedEquipment[old]=(c.carriedEquipment[old]??0)+1;}
   equip(c,rules,slot,row.itemId);
   if(row.tech)techEvent(c,rules,{type:'select',instanceId:row.key});
   else {c.carriedEquipment[row.itemId]--;if(!c.carriedEquipment[row.itemId])delete c.carriedEquipment[row.itemId];}

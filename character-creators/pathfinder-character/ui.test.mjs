@@ -84,6 +84,18 @@ test('all tabs remain accessible on an incomplete draft and edited choices save'
   clickChoice('[data-choice-field]',{choiceField:'classChoice.rogue-ability-2',choiceId:'resiliency'});
   nodes.get('save').onclick();
   assert.equal(readRoster(localStorage).characters[0].character.builder.classOptions['rogue-ability-2'],'resiliency');
+  change('class.0','ironwright');change('class.1','ironwright');
+  clickChoice('[data-choice-field]',{choiceField:'classChoice.ironwright-family',choiceId:'armour'});
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'6'}})}});
+  clickChoice('[data-choice-field]',{choiceField:'equipment',choiceId:'full-plate-bulwark'});
+  clickChoice('[data-inventory-action]',{inventoryAction:'add-selected'});
+  nodes.get('save').onclick();
+  const armour=readRoster(localStorage).characters[0].character.techEquipment.items.find(i=>i.itemId==='full-plate-bulwark');
+  clickChoice('[data-inventory-action]',{inventoryAction:'equip',item:armour.instanceId});
+  assert.match(nodes.get('panel').innerHTML,/Intercept up to 10 damage/);
+  clickChoice('[data-deftech-action]',{deftechAction:'spend',instance:armour.instanceId,powered:'brace'});
+  nodes.get('save').onclick();
+  assert.equal(readRoster(localStorage).characters[0].character.techEquipment.items.find(i=>i.instanceId===armour.instanceId).reservoir,3);
 
 
 

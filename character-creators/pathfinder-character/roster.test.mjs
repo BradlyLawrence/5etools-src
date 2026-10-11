@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseCharacter,saveCharacter,readRoster,exportCharacter,KEY} from './roster.mjs';
+import {parseCharacter,saveCharacter,readRoster,exportCharacter,deleteCharacter,KEY} from './roster.mjs';
 const character={name:'Test adventurer',classes:{fighter:1},feats:[],techEquipment:{items:[{reservoir:2}]}};
 function memory(){const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)};}
 test('workshop import and backup preserve all character fields',()=>{
@@ -21,4 +21,12 @@ test('invalid or foreign files and storage failures never silently replace saves
  assert.throws(()=>parseCharacter({...character,classes:{fighter:21}}));
  const s=memory();s.setItem(KEY,'broken');assert.throws(()=>saveCharacter(s,character));assert.equal(s.getItem(KEY),'broken');
  assert.throws(()=>saveCharacter({getItem:()=>null,setItem:()=>{throw Error('Quota exceeded');}},character),/Quota/);
+});
+
+test('deleting one character preserves other saves and prevents stale resurrection',()=>{
+ const s=memory();s.setItem('workshop','unchanged');saveCharacter(s,character,'one');saveCharacter(s,character,'two');
+ deleteCharacter(s,'one');assert.deepEqual(readRoster(s).characters.map(e=>e.id),['two']);assert.equal(s.getItem('workshop'),'unchanged');
+ assert.throws(()=>saveCharacter(s,character,'one',JSON.stringify(character)),/another tab/);
+ assert.throws(()=>deleteCharacter(s,'missing'),/no longer/);deleteCharacter(s,'two');assert.deepEqual(readRoster(s).characters,[]);
+ s.setItem(KEY,'bad');assert.throws(()=>deleteCharacter(s,'one'));assert.equal(s.getItem(KEY),'bad');
 });

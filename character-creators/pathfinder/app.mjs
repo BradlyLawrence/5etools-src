@@ -7,7 +7,7 @@ const label=v=>v.charAt(0).toUpperCase()+v.slice(1).replace(/([a-z])([A-Z])/g,'$
 const facts=value=>'<dl>'+Object.entries(value).map(([k,v])=>`<dt>${esc(label(k))}</dt><dd>${esc(typeof v==='string'?label(v):v)}</dd>`).join('')+'</dl>';
 const link=(e,kind='feats')=>`<a href="#${kind}/${encodeURIComponent(e.id)}">${esc(e.name)}</a>`;
 function specialistText(b){
- const phrases=[];
+ const phrases=[];for(const [key,text] of Object.entries({gripBonus:'circumstance bonus on lifting and grappling',craftBonus:'circumstance bonus on Craft',quickCraftBonus:'circumstance bonus on quick Craft instead',speedBonusFt:'feet of additional movement',horizontalFt:'feet horizontal vault',verticalFt:'feet vertical vault',cmdBonus:'CMD against the listed manoeuvres',interceptDamage:'damage intercepted',shieldBonus:'additional shield AC against one attack',edges:'connected 5-foot edges of partial cover'}))if(b[key])phrases.push(esc(b[key]+' '+text));
  if(b.extraDice)phrases.push('Deal an additional '+esc(b.extraDice)+' damage');
  if(b.brutal)phrases.push('the attack gains Brutal '+b.brutal);
  if(b.ignoreHardness)phrases.push('ignore '+b.ignoreHardness+' points of hardness');
@@ -59,7 +59,7 @@ function detail(){let kind,id;try{[kind,id]=location.hash.slice(1).split('/');id
   body='<p class="prose">'+esc(e.description)+'</p><dl>'+Object.entries(stats).filter(([,v])=>v!==undefined).map(([k,v])=>`<dt>${esc(label(k))}</dt><dd>${esc(typeof v==='string'?label(v):v)}</dd>`).join('')+'</dl>';
   for(const id of e.traits??[]){if(id==='reservoir'&&e.tech)continue;const t=data.traits.find(t=>t.id===id);body+=`<h3>${esc(t?.name??id)}</h3><p>${esc(t?.description??'No definition available.')}</p>`;}
   if(e.tech){
-   body+=`<h3>Reservoir ${e.tech.reservoirBase}</h3><p>Reservoir represents the amount of fuel an item can hold, whether that's steam, black powder, liquid fuel, or some other magical substance.</p><p>This item has a maximum of ${e.tech.reservoirBase} points +${e.tech.reservoirPerEnhancement} per permanent enhancement bonus.</p><p>Reservoirs can only be refilled through supplies, workshops, or character special abilities.</p><p>Ordinary attacks cost no reservoir. Declare powered actions and spend their points before rolling, including on a miss.</p>`;
+   body+=`<h3>Reservoir ${e.tech.reservoirBase}</h3><p>Reservoir represents the amount of fuel an item can hold, whether that's steam, black powder, liquid fuel, or some other magical substance.</p><p>This item has a maximum of ${e.tech.reservoirBase} points +${e.tech.reservoirPerEnhancement} per permanent enhancement bonus.</p><p>Reservoirs can only be refilled through supplies, workshops, or character special abilities.</p><p>Ordinary use costs no reservoir. Pay the listed reservoir cost when activating a powered ability.</p>`;
    for(const a of family?.actions??[]){
     const description=a.description.replace(' (specialist: full)','');
     body+=`<h3>${esc(a.name)}</h3><p><b>Reservoir Cost</b>: ${a.cost} ${a.cost===1?'point':'points'}.</p><p>${esc(description)}</p>`;

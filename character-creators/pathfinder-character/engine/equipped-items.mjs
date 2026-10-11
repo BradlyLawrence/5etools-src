@@ -1,10 +1,13 @@
-import {selectedTech,techProficient,poweredBenefits,techModifiers} from './technology.mjs';
+import {activeCrafted,craftedEnhancement} from './magic-items.mjs';
+import {overloadActive,techBroken,selectedTech,techProficient,poweredBenefits,techModifiers} from './technology.mjs';
 /** Resolve a single equipped attack profile and armor; no turn or target tracking. */
 export function prepareEquipment(rules,input,actionId=null){
  const c=structuredClone(input);const tech=selectedTech(rules,c);if(tech){c.equipment??={size:'medium',baseSpeed:30};c.equipment.weaponId=tech.item.id;}if(!c.equipment)return {character:c,equipment:null};
  if(!rules.equipment)throw new Error('Equipment catalogue is not loaded');
- const find=(id,kinds)=>{if(!id)return null;const i=rules.equipment.items.find(i=>i.id===id);if(!i||!kinds.includes(i.kind))throw new Error('Invalid equipped item: '+id);return i;};
+ const find=(id,kinds)=>{if(!id)return null;const i=rules.equipment.items.find(i=>i.id===id);if(!i||!kinds.includes(i.kind))throw new Error('Invalid equipped item: '+id);return structuredClone(i);};
  const weapon=find(c.equipment.weaponId,['weapon']),armor=find(c.equipment.armorId,['armor']),shield=find(c.equipment.shieldId,['shield']);
+ for(const item of [armor,shield].filter(Boolean))if(activeCrafted(c).some(i=>i.design.slot===item.kind)){item.defense.bonus+=craftedEnhancement(c,item.kind);item.defense.armorCheckPenalty=Math.min(0,item.defense.armorCheckPenalty+1);}
+ for(const [item,key] of [[armor,'armorInstanceId'],[shield,'shieldInstanceId']])if(item?.tech){const owned=c.techEquipment?.items.find(i=>i.instanceId===c.techEquipment[key]);if(owned&&owned.itemId===item.id){item.defense.bonus+=owned.enhancement+(overloadActive(c,owned)&&(c.classes.ironwright??0)>=20?2:0);const max=item.durability.hitPoints+owned.enhancement*10;if((owned.damageTaken??0)>=max){item.defense.bonus=0;}else if((owned.damageTaken??0)>=max/2){item.defense.bonus=Math.floor(item.defense.bonus/2);item.defense.armorCheckPenalty*=2;}}if(item.kind==='armor'){const training=Math.max(0,...(rules.technology.ironwright.armourTraining??[]).filter(r=>(c.classes.ironwright??0)>=r.minimumLevel).map(r=>r.bonus));item.defense.armorCheckPenalty=Math.min(0,item.defense.armorCheckPenalty+training);if(item.defense.maxDexBonus!==null)item.defense.maxDexBonus+=training;}}
  if(weapon?.tech&&!weapon.tech.twoWeaponEligible&&(c.ruleState?.conditions?.['two-weapon-full-attack']||c.ruleState?.conditions?.['two-weapon-defense-eligible']))throw new Error('This two-handed tech weapon cannot be used for two-weapon fighting or Two-Weapon Defense.');
  const size=c.equipment.size??'medium';if(!['small','medium'].includes(size))throw new Error('Equipment size must be small or medium');
  const classes=Object.keys(c.classes).filter(k=>c.classes[k]>0),any=list=>classes.some(k=>list.includes(k));
@@ -34,7 +37,7 @@ export function equipmentEffects(equipment,c,result,abilities){
  if(shieldApplies){const focus=abilities?.effects.filter(e=>e.target==='shield.acBonus').reduce((n,e)=>n+e.value,0)??0;add('ac',shield.defense.bonus+focus,'shield','shield');}
  if(shield?.id==='shield-tower')add('attack.all',-2,'tower-shield-encumbrance');
  for(const item of [armor,shield].filter(Boolean)){
-  const prof=has(item.kind==='armor'?'armor-proficiency-'+item.category:item.id==='shield-tower'?'tower-shield-proficiency':'shield-proficiency');
+  const prof=item.tech?techProficient(c,item):has(item.kind==='armor'?'armor-proficiency-'+item.category:item.id==='shield-tower'?'tower-shield-proficiency':'shield-proficiency');
   if(!prof)add('attack.all',item.defense.armorCheckPenalty,item.id+'-nonproficiency');
   equipment.skillPenalty=(equipment.skillPenalty??0)+item.defense.armorCheckPenalty;
  }
@@ -50,6 +53,7 @@ export function equipmentSummary(e,c,result,stats){
  if(!e)return null;
  const has=id=>result.feats.some(f=>f.active&&f.featId===id&&(!f.weaponId||f.weaponId===e.weapon?.id));
  const critical=structuredClone(e.weapon?.critical??null);if(critical&&(has('improved-critical')||e.tech?.instance.keen))for(const p of critical)p.threatMin=21-(21-p.threatMin)*2;
+ if(critical&&e.tech&&techBroken(e.tech.item,e.tech.instance))for(const p of critical){p.threatMin=20;p.multiplier=2;}
  const powered=e.techAction?.benefits??{};if(critical)for(const p of critical){p.threatMin=Math.max(2,p.threatMin-(powered.threatRangeBonus??0));p.multiplier+=powered.criticalMultiplierBonus??0;}
  const reduction=stats['spell.armorFailureReduction'].total;
  return {poweredBenefits:powered,extraDamageDice:powered.extraDice??null,brutal:powered.brutal??0,attackReachBonus:powered.attackReachBonus??0,weaponId:e.weapon?.id??null,damageDice:e.weapon?.damage[e.size]??null,damageTypes:e.weapon?.damage.types??[],critical,rangeIncrementFt:e.weapon?.rangeIncrementFt??null,
