@@ -118,7 +118,7 @@ export function applyTechEvent(rules,input,event){
   }
   case 'update':{
    check(['enhancement','reservoir','attuned','keen','damageTaken','material'].includes(event.field),'Unsupported item field');
-   const i=item();i[event.field]=event.value;
+   const i=item();if(event.field==='enhancement'){const crafted=c.craftedItems?.find(x=>x.techInstanceId===i.instanceId);if(crafted)check(event.value===(crafted.design.effects.find(e=>e.kind===(crafted.design.slot==='weapon'?'weapon':'armor'))?.value??0),'This enhancement belongs to a crafted design; create an upgraded design in the workshop.');}i[event.field]=event.value;
    // Capacity changes never create fuel. Lower capacity safely clamps the counter.
    if(event.field==='enhancement'&&integer(event.value,0,5)){const model=rules.equipment.items.find(m=>m.id===i.itemId);i.reservoir=Math.min(i.reservoir,reservoirMaximum(model,i));}break;
   }

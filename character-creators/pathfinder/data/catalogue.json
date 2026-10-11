@@ -16370,6 +16370,850 @@
           "hardness": 10,
           "hitPoints": 45
         }
+      },
+      {
+        "id": "gyro-shortsword",
+        "name": "Gyro shortsword",
+        "kind": "weapon",
+        "proficiency": "tech-melee",
+        "nonproficiencyAttackPenalty": -4,
+        "handling": "one-handed",
+        "finesseEligible": false,
+        "cost": {
+          "gp": 350,
+          "text": "350 gp"
+        },
+        "weightLb": 6,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d4"
+          ],
+          "medium": [
+            "1d6"
+          ],
+          "types": [
+            "slashing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 19,
+            "multiplier": 2
+          }
+        ],
+        "rangeIncrementFt": null,
+        "traits": [
+          "reservoir"
+        ],
+        "reload": null,
+        "tech": {
+          "family": "heavy-blades",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "description": "A short, broad blade with small gyroscopes housed in its guard. A fuel chamber sits beneath the grip; when engaged, the gyroscopes steady the blade through a one-handed cut.",
+        "source": {
+          "book": "Campaign technology playtest"
+        },
+        "sourceRow": {
+          "cost": "350 gp",
+          "weight": "6 lb.",
+          "damageSmall": "1d4",
+          "damageMedium": "1d6",
+          "critical": "19-20/x2",
+          "range": "—",
+          "damageType": "slashing"
+        },
+        "automationStatus": "equipment-and-powered-sheet-actions",
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
+      },
+      {
+        "id": "short-steam-spear",
+        "name": "Short steam spear",
+        "kind": "weapon",
+        "proficiency": "tech-melee",
+        "nonproficiencyAttackPenalty": -4,
+        "handling": "one-handed",
+        "finesseEligible": false,
+        "cost": {
+          "gp": 250,
+          "text": "250 gp"
+        },
+        "weightLb": 6,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d4"
+          ],
+          "medium": [
+            "1d6"
+          ],
+          "types": [
+            "piercing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 20,
+            "multiplier": 3
+          }
+        ],
+        "rangeIncrementFt": null,
+        "traits": [
+          "reservoir"
+        ],
+        "reload": null,
+        "tech": {
+          "family": "spears",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "description": "A compact spear with a pressure cylinder built into its shaft. Its short haft leaves one hand free, while nested sections drive the point forward when powered.",
+        "source": {
+          "book": "Campaign technology playtest"
+        },
+        "sourceRow": {
+          "cost": "250 gp",
+          "weight": "6 lb.",
+          "damageSmall": "1d4",
+          "damageMedium": "1d6",
+          "critical": "20-20/x3",
+          "range": "—",
+          "damageType": "piercing"
+        },
+        "automationStatus": "equipment-and-powered-sheet-actions",
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
+      },
+      {
+        "id": "steam-handaxe",
+        "name": "Steam handaxe",
+        "kind": "weapon",
+        "proficiency": "tech-melee",
+        "nonproficiencyAttackPenalty": -4,
+        "handling": "one-handed",
+        "finesseEligible": false,
+        "cost": {
+          "gp": 300,
+          "text": "300 gp"
+        },
+        "weightLb": 7,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d3"
+          ],
+          "medium": [
+            "1d4"
+          ],
+          "types": [
+            "slashing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 20,
+            "multiplier": 3
+          }
+        ],
+        "rangeIncrementFt": null,
+        "traits": [
+          "reservoir"
+        ],
+        "reload": null,
+        "tech": {
+          "family": "axes",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "description": "A thick axe head mounted on a short, reinforced haft. A small pressure cylinder behind the blade drives each powered strike, venting steam through the back of the head.",
+        "source": {
+          "book": "Campaign technology playtest"
+        },
+        "sourceRow": {
+          "cost": "300 gp",
+          "weight": "7 lb.",
+          "damageSmall": "1d3",
+          "damageMedium": "1d4",
+          "critical": "20-20/x3",
+          "range": "—",
+          "damageType": "slashing"
+        },
+        "automationStatus": "equipment-and-powered-sheet-actions",
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
+      },
+      {
+        "id": "pistol-2",
+        "name": "Revolving pistol (2-shot)",
+        "kind": "weapon",
+        "proficiency": "tech-ranged",
+        "handling": "ranged",
+        "nonproficiencyAttackPenalty": -4,
+        "finesseEligible": false,
+        "cost": {
+          "gp": 100,
+          "text": "100 gp"
+        },
+        "weightLb": 4,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d4"
+          ],
+          "medium": [
+            "1d6"
+          ],
+          "types": [
+            "piercing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 20,
+            "multiplier": 2
+          }
+        ],
+        "rangeIncrementFt": 30,
+        "traits": [],
+        "reload": {
+          "capacity": 2,
+          "action": "move",
+          "rapidReloadAction": "swift",
+          "provokes": true
+        },
+        "firearm": {
+          "family": "pistol",
+          "touchACRangeFt": 0,
+          "coneFt": 0,
+          "hands": 1,
+          "baseMisfire": 1
+        },
+        "description": "A revolving pistol with a 2-shot cylinder. Attacks target normal AC. A move action fills the cylinder; Rapid Reload reduces this to a swift action.",
+        "source": {
+          "book": "Campaign gunslinger",
+          "file": "docs/GUNSLINGER_PLAYTEST.md"
+        },
+        "sourceRow": {
+          "damageSmall": "1d4",
+          "damageMedium": "1d6",
+          "critical": "20/x2",
+          "range": "30 ft.",
+          "damageType": "P"
+        }
+      },
+      {
+        "id": "pistol-4",
+        "name": "Revolving pistol (4-shot)",
+        "kind": "weapon",
+        "proficiency": "tech-ranged",
+        "handling": "ranged",
+        "nonproficiencyAttackPenalty": -4,
+        "finesseEligible": false,
+        "cost": {
+          "gp": 250,
+          "text": "250 gp"
+        },
+        "weightLb": 5,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d4"
+          ],
+          "medium": [
+            "1d6"
+          ],
+          "types": [
+            "piercing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 20,
+            "multiplier": 2
+          }
+        ],
+        "rangeIncrementFt": 30,
+        "traits": [],
+        "reload": {
+          "capacity": 4,
+          "action": "move",
+          "rapidReloadAction": "swift",
+          "provokes": true
+        },
+        "firearm": {
+          "family": "pistol",
+          "touchACRangeFt": 0,
+          "coneFt": 0,
+          "hands": 1,
+          "baseMisfire": 1
+        },
+        "description": "A revolving pistol with a 4-shot cylinder. Attacks target normal AC. A move action fills the cylinder; Rapid Reload reduces this to a swift action.",
+        "source": {
+          "book": "Campaign gunslinger",
+          "file": "docs/GUNSLINGER_PLAYTEST.md"
+        },
+        "sourceRow": {
+          "damageSmall": "1d4",
+          "damageMedium": "1d6",
+          "critical": "20/x2",
+          "range": "30 ft.",
+          "damageType": "P"
+        }
+      },
+      {
+        "id": "pistol-6",
+        "name": "Revolving pistol (6-shot)",
+        "kind": "weapon",
+        "proficiency": "tech-ranged",
+        "handling": "ranged",
+        "nonproficiencyAttackPenalty": -4,
+        "finesseEligible": false,
+        "cost": {
+          "gp": 500,
+          "text": "500 gp"
+        },
+        "weightLb": 6,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d4"
+          ],
+          "medium": [
+            "1d6"
+          ],
+          "types": [
+            "piercing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 20,
+            "multiplier": 2
+          }
+        ],
+        "rangeIncrementFt": 30,
+        "traits": [],
+        "reload": {
+          "capacity": 6,
+          "action": "move",
+          "rapidReloadAction": "swift",
+          "provokes": true
+        },
+        "firearm": {
+          "family": "pistol",
+          "touchACRangeFt": 0,
+          "coneFt": 0,
+          "hands": 1,
+          "baseMisfire": 1
+        },
+        "description": "A revolving pistol with a 6-shot cylinder. Attacks target normal AC. A move action fills the cylinder; Rapid Reload reduces this to a swift action.",
+        "source": {
+          "book": "Campaign gunslinger",
+          "file": "docs/GUNSLINGER_PLAYTEST.md"
+        },
+        "sourceRow": {
+          "damageSmall": "1d4",
+          "damageMedium": "1d6",
+          "critical": "20/x2",
+          "range": "30 ft.",
+          "damageType": "P"
+        }
+      },
+      {
+        "id": "rifle",
+        "name": "Rifle",
+        "kind": "weapon",
+        "proficiency": "tech-ranged",
+        "handling": "ranged",
+        "nonproficiencyAttackPenalty": -4,
+        "finesseEligible": false,
+        "cost": {
+          "gp": 200,
+          "text": "200 gp"
+        },
+        "weightLb": 10,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d8"
+          ],
+          "medium": [
+            "1d10"
+          ],
+          "types": [
+            "piercing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 20,
+            "multiplier": 2
+          }
+        ],
+        "rangeIncrementFt": 120,
+        "traits": [],
+        "reload": {
+          "capacity": 1,
+          "action": "move",
+          "rapidReloadAction": "move",
+          "provokes": true
+        },
+        "firearm": {
+          "family": "rifle",
+          "touchACRangeFt": 0,
+          "coneFt": 0,
+          "hands": 2,
+          "baseMisfire": 1
+        },
+        "description": "A two-handed rifle. Attacks target normal AC; attacks within 10 feet take a −2 penalty. A move action loads one cartridge, or up to two with Rapid Reload.",
+        "source": {
+          "book": "Campaign gunslinger",
+          "file": "docs/GUNSLINGER_PLAYTEST.md"
+        },
+        "sourceRow": {
+          "damageSmall": "1d8",
+          "damageMedium": "1d10",
+          "critical": "20/x2",
+          "range": "120 ft.",
+          "damageType": "P"
+        }
+      },
+      {
+        "id": "double-rifle",
+        "name": "Double rifle",
+        "kind": "weapon",
+        "proficiency": "tech-ranged",
+        "handling": "ranged",
+        "nonproficiencyAttackPenalty": -4,
+        "finesseEligible": false,
+        "cost": {
+          "gp": 1000,
+          "text": "1000 gp"
+        },
+        "weightLb": 12,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d8"
+          ],
+          "medium": [
+            "1d10"
+          ],
+          "types": [
+            "piercing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 20,
+            "multiplier": 2
+          }
+        ],
+        "rangeIncrementFt": 120,
+        "traits": [],
+        "reload": {
+          "capacity": 2,
+          "action": "move",
+          "rapidReloadAction": "move",
+          "provokes": true
+        },
+        "firearm": {
+          "family": "rifle",
+          "touchACRangeFt": 0,
+          "coneFt": 0,
+          "hands": 2,
+          "baseMisfire": 1
+        },
+        "description": "A two-handed rifle. Attacks target normal AC; attacks within 10 feet take a −2 penalty. A move action loads one cartridge, or up to two with Rapid Reload.",
+        "source": {
+          "book": "Campaign gunslinger",
+          "file": "docs/GUNSLINGER_PLAYTEST.md"
+        },
+        "sourceRow": {
+          "damageSmall": "1d8",
+          "damageMedium": "1d10",
+          "critical": "20/x2",
+          "range": "120 ft.",
+          "damageType": "P"
+        }
+      },
+      {
+        "id": "light-trenchgun",
+        "name": "Light trenchgun",
+        "kind": "weapon",
+        "proficiency": "tech-ranged",
+        "handling": "ranged",
+        "nonproficiencyAttackPenalty": -4,
+        "finesseEligible": false,
+        "cost": {
+          "gp": 180,
+          "text": "180 gp"
+        },
+        "weightLb": 9,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d3"
+          ],
+          "medium": [
+            "1d4"
+          ],
+          "types": [
+            "piercing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": null,
+        "rangeIncrementFt": null,
+        "traits": [],
+        "reload": {
+          "capacity": 1,
+          "action": "move",
+          "rapidReloadAction": "swift",
+          "provokes": true
+        },
+        "firearm": {
+          "family": "trenchgun",
+          "touchACRangeFt": 0,
+          "coneFt": 15,
+          "hands": 2,
+          "baseMisfire": 1
+        },
+        "description": "A two-handed trenchgun firing a 15-foot cone. Targets make a Reflex save for half damage. Firing takes a standard action, at most once per round; it cannot critically hit. Reloading takes a move action, or a swift action with Rapid Reload.",
+        "source": {
+          "book": "Campaign gunslinger",
+          "file": "docs/GUNSLINGER_PLAYTEST.md"
+        },
+        "sourceRow": {
+          "damageSmall": "1d3",
+          "damageMedium": "1d4",
+          "critical": "—",
+          "range": "15-foot cone",
+          "damageType": "P"
+        }
+      },
+      {
+        "id": "handcannon",
+        "name": "Handcannon",
+        "kind": "weapon",
+        "proficiency": "tech-ranged",
+        "handling": "ranged",
+        "nonproficiencyAttackPenalty": -4,
+        "finesseEligible": false,
+        "cost": {
+          "gp": 300,
+          "text": "300 gp"
+        },
+        "weightLb": 18,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "2d6"
+          ],
+          "medium": [
+            "3d6"
+          ],
+          "types": [
+            "piercing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 20,
+            "multiplier": 2
+          }
+        ],
+        "rangeIncrementFt": 20,
+        "traits": [],
+        "reload": {
+          "capacity": 1,
+          "action": "two full-round actions",
+          "rapidReloadAction": "full-round",
+          "provokes": true
+        },
+        "firearm": {
+          "family": "handcannon",
+          "touchACRangeFt": 20,
+          "coneFt": 0,
+          "hands": 2,
+          "baseMisfire": 2
+        },
+        "description": "A two-handed handcannon. Attacks target touch AC within 20 feet and normal AC beyond. Firing takes a standard action, at most once per round. Brace as a move action or take −2 to attack; moving more than 5 feet that turn imposes another −2. Reloading takes two full-round actions, or one with Rapid Reload.",
+        "source": {
+          "book": "Campaign gunslinger",
+          "file": "docs/GUNSLINGER_PLAYTEST.md"
+        },
+        "sourceRow": {
+          "damageSmall": "2d6",
+          "damageMedium": "3d6",
+          "critical": "20/x2",
+          "range": "20 ft.",
+          "damageType": "P"
+        }
+      },
+      {
+        "id": "work-lamp",
+        "name": "Work lamp",
+        "kind": "tool",
+        "category": "tools",
+        "utility": true,
+        "gadgetId": "work-lamp",
+        "mundane": true,
+        "traits": [],
+        "weightLb": 2,
+        "cost": {
+          "gp": 25,
+          "text": "25 gp"
+        },
+        "craftingCostGp": 12.5,
+        "description": "A shuttered oil lamp with a reflector and clips for a belt, helmet or workbench. Provides normal light within 20 feet and increases illumination one step for another 20 feet. Opening or closing its shutter takes a move action. One flask of ordinary lamp oil lasts six hours. No reservoir or attunement required. Crafting materials cost 12.5 gp (half the purchase price).",
+        "source": {
+          "book": "Campaign equipment"
+        },
+        "sourceRow": {
+          "cost": "25 gp",
+          "weight": "2 lb."
+        }
+      },
+      {
+        "id": "inspection-lens",
+        "name": "Inspection lens",
+        "kind": "tool",
+        "category": "tools",
+        "utility": true,
+        "gadgetId": "inspection-lens",
+        "mundane": true,
+        "traits": [],
+        "weightLb": 1,
+        "cost": {
+          "gp": 50,
+          "text": "50 gp"
+        },
+        "craftingCostGp": 25,
+        "description": "An adjustable magnifying lens on a folding stand or headband. With adequate light, gain a +2 circumstance bonus on Disable Device checks to pick an accessible lock or open a safe, and on sight-based Perception checks to examine a stationary object within arm’s reach. This does not replace thieves’ tools, required training or access to the mechanism, and does not improve general awareness or unrelated Disable Device checks. No reservoir or attunement required. Crafting materials cost 25 gp (half the purchase price).",
+        "source": {
+          "book": "Campaign equipment"
+        },
+        "sourceRow": {
+          "cost": "50 gp",
+          "weight": "1 lb."
+        }
+      },
+      {
+        "id": "portable-winch",
+        "name": "Portable winch",
+        "kind": "tool",
+        "category": "tools",
+        "utility": true,
+        "gadgetId": "portable-winch",
+        "mundane": true,
+        "traits": [],
+        "weightLb": 8,
+        "cost": {
+          "gp": 75,
+          "text": "75 gp"
+        },
+        "craftingCostGp": 37.5,
+        "description": "A hand-cranked drum with a ratchet that holds its load when you stop turning. When securely anchored, one operator can haul up to five times her normal maximum load, moving it 5 feet per full-round action. Includes 50 feet of cable and requires two hands. Setup or packing away takes one minute. The anchor must support the load; the winch cannot pull an unwilling creature that is free to move. No reservoir or attunement required. Crafting materials cost 37.5 gp (half the purchase price).",
+        "source": {
+          "book": "Campaign equipment"
+        },
+        "sourceRow": {
+          "cost": "75 gp",
+          "weight": "8 lb."
+        }
+      },
+      {
+        "id": "omni-tool",
+        "name": "Omni-tool",
+        "kind": "tool",
+        "category": "tools",
+        "utility": true,
+        "gadgetId": "omni-tool",
+        "mundane": false,
+        "traits": [],
+        "weightLb": 2,
+        "cost": {
+          "gp": 100,
+          "text": "100 gp"
+        },
+        "craftingCostGp": 50,
+        "description": "A folding assembly of blades, grips, files and measuring instruments. Reconfigure it as a standard action. Counts as ordinary artisan’s tools for crafts using handheld tools; a forge, furnace, loom or alchemical laboratory is still required when the job calls for one. No reservoir required. Crafting materials cost 50 gp (half the purchase price).",
+        "source": {
+          "book": "Campaign equipment"
+        },
+        "sourceRow": {
+          "cost": "100 gp",
+          "weight": "2 lb."
+        }
+      },
+      {
+        "id": "masterwork-omni-tool",
+        "name": "Masterwork omni-tool",
+        "kind": "tool",
+        "category": "tools",
+        "utility": true,
+        "gadgetId": "masterwork-omni-tool",
+        "mundane": false,
+        "traits": [],
+        "weightLb": 2,
+        "cost": {
+          "gp": 250,
+          "text": "250 gp"
+        },
+        "craftingCostGp": 125,
+        "description": "Precisely fitted interchangeable tools. Reconfigure as a standard action. Counts as masterwork artisan’s tools for crafts using handheld tools, granting a +2 circumstance bonus when used. It does not replace a forge, furnace, loom or alchemical laboratory. This replaces other tool bonuses. No reservoir required. Crafting materials cost 125 gp (half the purchase price).",
+        "source": {
+          "book": "Campaign equipment"
+        },
+        "sourceRow": {
+          "cost": "250 gp",
+          "weight": "2 lb."
+        }
+      },
+      {
+        "id": "darkvision-goggles-30",
+        "name": "Darkvision goggles (30 ft.)",
+        "kind": "tool",
+        "category": "tools",
+        "utility": true,
+        "gadgetId": "darkvision-goggles-30",
+        "mundane": false,
+        "traits": [],
+        "weightLb": 1,
+        "cost": {
+          "gp": 3000,
+          "text": "3000 gp"
+        },
+        "craftingCostGp": 1500,
+        "description": "Adjustable lenses with an alchemical treatment reveal shapes in darkness. Grants 30-foot black-and-white darkvision while worn. Normal daytime vision is unaffected. Use the better range if you already have darkvision. Continuous operation; no reservoir required. Crafting materials cost 1500 gp (half the purchase price).",
+        "source": {
+          "book": "Campaign equipment"
+        },
+        "sourceRow": {
+          "cost": "3000 gp",
+          "weight": "1 lb."
+        }
+      },
+      {
+        "id": "darkvision-goggles-60",
+        "name": "Darkvision goggles (60 ft.)",
+        "kind": "tool",
+        "category": "tools",
+        "utility": true,
+        "gadgetId": "darkvision-goggles-60",
+        "mundane": false,
+        "traits": [],
+        "weightLb": 1,
+        "cost": {
+          "gp": 12000,
+          "text": "12000 gp"
+        },
+        "craftingCostGp": 6000,
+        "description": "Adjustable lenses with an alchemical treatment reveal shapes in darkness. Grants 60-foot black-and-white darkvision while worn. Normal daytime vision is unaffected. Use the better range if you already have darkvision. Continuous operation; no reservoir required. Crafting materials cost 6000 gp (half the purchase price).",
+        "source": {
+          "book": "Campaign equipment"
+        },
+        "sourceRow": {
+          "cost": "12000 gp",
+          "weight": "1 lb."
+        }
+      },
+      {
+        "id": "camp-boiler-2",
+        "name": "Camp boiler (2 points)",
+        "kind": "tool",
+        "category": "tools",
+        "utility": true,
+        "gadgetId": "camp-boiler-2",
+        "mundane": false,
+        "traits": [],
+        "weightLb": 10,
+        "cost": {
+          "gp": 1000,
+          "text": "1000 gp"
+        },
+        "craftingCostGp": 500,
+        "description": "During an eight-hour rest, this boiler restores 2 reservoir points, divided among connected technological items as you choose. Requires water and a maintained heat source. It can complete this process only once per 24 hours. Items cannot exceed their reservoir capacity. Unused output is lost. Crafting materials cost 500 gp (half the purchase price).",
+        "source": {
+          "book": "Campaign equipment"
+        },
+        "sourceRow": {
+          "cost": "1000 gp",
+          "weight": "10 lb."
+        }
+      },
+      {
+        "id": "camp-boiler-4",
+        "name": "Camp boiler (4 points)",
+        "kind": "tool",
+        "category": "tools",
+        "utility": true,
+        "gadgetId": "camp-boiler-4",
+        "mundane": false,
+        "traits": [],
+        "weightLb": 10,
+        "cost": {
+          "gp": 4000,
+          "text": "4000 gp"
+        },
+        "craftingCostGp": 2000,
+        "description": "During an eight-hour rest, this boiler restores 4 reservoir points, divided among connected technological items as you choose. Requires water and a maintained heat source. It can complete this process only once per 24 hours. Items cannot exceed their reservoir capacity. Unused output is lost. Crafting materials cost 2000 gp (half the purchase price).",
+        "source": {
+          "book": "Campaign equipment"
+        },
+        "sourceRow": {
+          "cost": "4000 gp",
+          "weight": "10 lb."
+        }
+      },
+      {
+        "id": "camp-boiler-8",
+        "name": "Camp boiler (8 points)",
+        "kind": "tool",
+        "category": "tools",
+        "utility": true,
+        "gadgetId": "camp-boiler-8",
+        "mundane": false,
+        "traits": [],
+        "weightLb": 10,
+        "cost": {
+          "gp": 16000,
+          "text": "16000 gp"
+        },
+        "craftingCostGp": 8000,
+        "description": "During an eight-hour rest, this boiler restores 8 reservoir points, divided among connected technological items as you choose. Requires water and a maintained heat source. It can complete this process only once per 24 hours. Items cannot exceed their reservoir capacity. Unused output is lost. Crafting materials cost 8000 gp (half the purchase price).",
+        "source": {
+          "book": "Campaign equipment"
+        },
+        "sourceRow": {
+          "cost": "16000 gp",
+          "weight": "10 lb."
+        }
       }
     ]
   },
@@ -17165,6 +18009,195 @@
           "hardness": 10,
           "hitPoints": 45
         }
+      },
+      {
+        "id": "gyro-shortsword",
+        "name": "Gyro shortsword",
+        "kind": "weapon",
+        "proficiency": "tech-melee",
+        "nonproficiencyAttackPenalty": -4,
+        "handling": "one-handed",
+        "finesseEligible": false,
+        "cost": {
+          "gp": 350,
+          "text": "350 gp"
+        },
+        "weightLb": 6,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d4"
+          ],
+          "medium": [
+            "1d6"
+          ],
+          "types": [
+            "slashing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 19,
+            "multiplier": 2
+          }
+        ],
+        "rangeIncrementFt": null,
+        "traits": [
+          "reservoir"
+        ],
+        "reload": null,
+        "tech": {
+          "family": "heavy-blades",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "description": "A short, broad blade with small gyroscopes housed in its guard. A fuel chamber sits beneath the grip; when engaged, the gyroscopes steady the blade through a one-handed cut.",
+        "source": {
+          "book": "Campaign technology playtest"
+        },
+        "sourceRow": {
+          "cost": "350 gp",
+          "weight": "6 lb.",
+          "damageSmall": "1d4",
+          "damageMedium": "1d6",
+          "critical": "19-20/x2",
+          "range": "—",
+          "damageType": "slashing"
+        },
+        "automationStatus": "equipment-and-powered-sheet-actions",
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
+      },
+      {
+        "id": "short-steam-spear",
+        "name": "Short steam spear",
+        "kind": "weapon",
+        "proficiency": "tech-melee",
+        "nonproficiencyAttackPenalty": -4,
+        "handling": "one-handed",
+        "finesseEligible": false,
+        "cost": {
+          "gp": 250,
+          "text": "250 gp"
+        },
+        "weightLb": 6,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d4"
+          ],
+          "medium": [
+            "1d6"
+          ],
+          "types": [
+            "piercing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 20,
+            "multiplier": 3
+          }
+        ],
+        "rangeIncrementFt": null,
+        "traits": [
+          "reservoir"
+        ],
+        "reload": null,
+        "tech": {
+          "family": "spears",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "description": "A compact spear with a pressure cylinder built into its shaft. Its short haft leaves one hand free, while nested sections drive the point forward when powered.",
+        "source": {
+          "book": "Campaign technology playtest"
+        },
+        "sourceRow": {
+          "cost": "250 gp",
+          "weight": "6 lb.",
+          "damageSmall": "1d4",
+          "damageMedium": "1d6",
+          "critical": "20-20/x3",
+          "range": "—",
+          "damageType": "piercing"
+        },
+        "automationStatus": "equipment-and-powered-sheet-actions",
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
+      },
+      {
+        "id": "steam-handaxe",
+        "name": "Steam handaxe",
+        "kind": "weapon",
+        "proficiency": "tech-melee",
+        "nonproficiencyAttackPenalty": -4,
+        "handling": "one-handed",
+        "finesseEligible": false,
+        "cost": {
+          "gp": 300,
+          "text": "300 gp"
+        },
+        "weightLb": 7,
+        "size": "medium",
+        "damage": {
+          "small": [
+            "1d3"
+          ],
+          "medium": [
+            "1d4"
+          ],
+          "types": [
+            "slashing"
+          ],
+          "typeMode": "combined"
+        },
+        "critical": [
+          {
+            "threatMin": 20,
+            "multiplier": 3
+          }
+        ],
+        "rangeIncrementFt": null,
+        "traits": [
+          "reservoir"
+        ],
+        "reload": null,
+        "tech": {
+          "family": "axes",
+          "reservoirBase": 4,
+          "reservoirPerEnhancement": 2,
+          "twoWeaponEligible": false
+        },
+        "description": "A thick axe head mounted on a short, reinforced haft. A small pressure cylinder behind the blade drives each powered strike, venting steam through the back of the head.",
+        "source": {
+          "book": "Campaign technology playtest"
+        },
+        "sourceRow": {
+          "cost": "300 gp",
+          "weight": "7 lb.",
+          "damageSmall": "1d3",
+          "damageMedium": "1d4",
+          "critical": "20-20/x3",
+          "range": "—",
+          "damageType": "slashing"
+        },
+        "automationStatus": "equipment-and-powered-sheet-actions",
+        "status": "playtest",
+        "durability": {
+          "hardness": 10,
+          "hitPoints": 10
+        }
       }
     ],
     "families": [
@@ -17374,7 +18407,7 @@
             "name": "Precision Rig",
             "cost": 3,
             "actionType": "activation",
-            "description": "Gain a +2 circumstance bonus on one Craft check, or +5 when quick crafting. These bonuses do not stack. The rig covers one crafting check regardless of the work period it represents. Quick crafting raises the Craft DC by 5 to increase progress.",
+            "description": "Gain a +2 circumstance bonus on one Craft check. When rushing the construction or repair of technological equipment, gain +5 instead. These bonuses do not stack. An armour specialist gains +4 or +10, respectively. The rig covers one crafting check regardless of the work period it represents. Rushing raises the Craft DC by 5.",
             "benefits": {
               "craftBonus": 2,
               "quickCraftBonus": 5
@@ -17382,7 +18415,8 @@
             "specialistBenefits": {
               "craftBonus": 4,
               "quickCraftBonus": 10
-            }
+            },
+            "quickCraftTechnologyOnly": true
           }
         ]
       },

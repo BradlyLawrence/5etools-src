@@ -1,4 +1,5 @@
-import {activeCrafted,craftedEnhancement} from './magic-items.mjs';
+import {MINOR_ADAPTATIONS,validateAdaptationBase} from './minor-adaptations.mjs';
+import {activeCrafted,craftedEnhancement,equippedGadgets} from './magic-items.mjs';
 import {overloadActive,techBroken,selectedTech,techProficient,poweredBenefits,techModifiers} from './technology.mjs';
 /** Resolve a single equipped attack profile and armor; no turn or target tracking. */
 export function prepareEquipment(rules,input,actionId=null){
@@ -6,12 +7,15 @@ export function prepareEquipment(rules,input,actionId=null){
  if(!rules.equipment)throw new Error('Equipment catalogue is not loaded');
  const find=(id,kinds)=>{if(!id)return null;const i=rules.equipment.items.find(i=>i.id===id);if(!i||!kinds.includes(i.kind))throw new Error('Invalid equipped item: '+id);return structuredClone(i);};
  const weapon=find(c.equipment.weaponId,['weapon']),armor=find(c.equipment.armorId,['armor']),shield=find(c.equipment.shieldId,['shield']);
- for(const item of [armor,shield].filter(Boolean))if(activeCrafted(c).some(i=>i.design.slot===item.kind)){item.defense.bonus+=craftedEnhancement(c,item.kind);item.defense.armorCheckPenalty=Math.min(0,item.defense.armorCheckPenalty+1);}
+ for(const owned of activeCrafted(c)){validateAdaptationBase(owned.design,{weapon,armor,shield}[owned.design.slot]);if(owned.design.slot==='weapon'&&weapon)weapon.traits=[...new Set([...weapon.traits,...(owned.design.adaptations??[])])];}
+ for(const item of [armor,shield].filter(Boolean))if(activeCrafted(c).some(i=>i.design.slot===item.kind)){if(!item.tech)item.defense.bonus+=craftedEnhancement(c,item.kind);item.defense.armorCheckPenalty=Math.min(0,item.defense.armorCheckPenalty+1);}
  for(const [item,key] of [[armor,'armorInstanceId'],[shield,'shieldInstanceId']])if(item?.tech){const owned=c.techEquipment?.items.find(i=>i.instanceId===c.techEquipment[key]);if(owned&&owned.itemId===item.id){item.defense.bonus+=owned.enhancement+(overloadActive(c,owned)&&(c.classes.ironwright??0)>=20?2:0);const max=item.durability.hitPoints+owned.enhancement*10;if((owned.damageTaken??0)>=max){item.defense.bonus=0;}else if((owned.damageTaken??0)>=max/2){item.defense.bonus=Math.floor(item.defense.bonus/2);item.defense.armorCheckPenalty*=2;}}if(item.kind==='armor'){const training=Math.max(0,...(rules.technology.ironwright.armourTraining??[]).filter(r=>(c.classes.ironwright??0)>=r.minimumLevel).map(r=>r.bonus));item.defense.armorCheckPenalty=Math.min(0,item.defense.armorCheckPenalty+training);if(item.defense.maxDexBonus!==null)item.defense.maxDexBonus+=training;}}
  if(weapon?.tech&&!weapon.tech.twoWeaponEligible&&(c.ruleState?.conditions?.['two-weapon-full-attack']||c.ruleState?.conditions?.['two-weapon-defense-eligible']))throw new Error('This two-handed tech weapon cannot be used for two-weapon fighting or Two-Weapon Defense.');
+ if(weapon?.firearm){const mods=(weapon.traits??[]).map(id=>MINOR_ADAPTATIONS[id]).filter(Boolean);const capacityBonus=Math.max(0,...mods.map(a=>a.capacityBonus??0)),rangeBonus=Math.max(0,...mods.map(a=>a.rangeBonus??0));weapon.reload.capacity+=Math.ceil(weapon.reload.capacity*capacityBonus);if(rangeBonus)weapon.rangeIncrementFt=Math.floor(weapon.rangeIncrementFt*(1+rangeBonus)/5)*5;}
  const size=c.equipment.size??'medium';if(!['small','medium'].includes(size))throw new Error('Equipment size must be small or medium');
  const classes=Object.keys(c.classes).filter(k=>c.classes[k]>0),any=list=>classes.some(k=>list.includes(k));
  const proficient=weapon&&(c.proficientWeapons.includes(weapon.id)||weapon.id==='unarmed-strike'||weapon.tech&&techProficient(c,weapon)||
+  weapon.proficiency==='tech-ranged'&&any(['gunslinger'])||
   weapon.proficiency==='simple'&&any(['barbarian','bard','cleric','fighter','paladin','ranger','rogue','sorcerer','gunslinger','alchemist','cavalier','inquisitor'])||
   weapon.proficiency==='martial'&&any(['barbarian','fighter','paladin','ranger','cavalier','gunslinger'])||
   classes.includes('wizard')&&['dagger','light-crossbow','heavy-crossbow','quarterstaff','club'].includes(weapon.id)||
@@ -29,7 +33,7 @@ export function equipmentEffects(equipment,c,result,abilities){
  const {weapon,armor,shield}=equipment,has=id=>result.feats.some(f=>f.active&&f.featId===id),effects=[];
  const add=(target,value,key,bonusType='untyped')=>effects.push({kind:'modifier',target,value,bonusType,featId:'equipment.'+key,name:key});
  const shieldBash=weapon&&['shield-light','shield-heavy','spiked-shield-light','spiked-shield-heavy'].includes(weapon.id);
- const twoHandedRanged=weapon?.handling==='ranged'&&(/bow/.test(weapon.id)&&weapon.id!=='hand-crossbow');
+ const twoHandedRanged=weapon?.handling==='ranged'&&((/bow/.test(weapon.id)&&weapon.id!=='hand-crossbow')||weapon.firearm?.hands===2);
  const twoHandedMelee=weapon?.handling==='two-handed'||c.context.attackType==='melee'&&c.context.weapon.damageMode==='two-handed';
  const shieldApplies=shield&&(!shieldBash||has('improved-shield-bash'))&&!twoHandedMelee&&(!twoHandedRanged||shield.id==='buckler');
  if(shield?.id==='buckler'&&twoHandedMelee)add('attack.all',-1,'buckler-occupied-arm');
@@ -42,6 +46,9 @@ export function equipmentEffects(equipment,c,result,abilities){
   equipment.skillPenalty=(equipment.skillPenalty??0)+item.defense.armorCheckPenalty;
  }
  if(weapon){
+  if(c.equipment.fightingDefensively){add('attack.all',-4,'fighting defensively');add('ac',(c.skillRanks.acrobatics??0)>=3?3:2,'fighting defensively','dodge');if(weapon.traits.includes('blocking'))add('ac',1,'Blocking','shield');}
+  if(weapon.traits.includes('distracting'))add('skill.feint',2,'Distracting');
+  if(weapon.traits.includes('deadly'))add('coupDeGrace.dcBonus',4,'Deadly');
   const trained=c.proficientWeapons.includes(weapon.id)||result.feats.some(f=>f.active&&['martial-weapon-proficiency','exotic-weapon-proficiency'].includes(f.featId)&&f.weaponId===weapon.id)||weapon.proficiency==='simple'&&has('simple-weapon-proficiency');
   if(!trained)add('attack.weapon',-4,'weapon-nonproficiency');equipment.proficient=trained;
   if(weapon.traits.includes('disarm'))add('maneuver.disarm.check',2,'disarm-trait');
@@ -56,13 +63,24 @@ export function equipmentSummary(e,c,result,stats){
  if(critical&&e.tech&&techBroken(e.tech.item,e.tech.instance))for(const p of critical){p.threatMin=20;p.multiplier=2;}
  const powered=e.techAction?.benefits??{};if(critical)for(const p of critical){p.threatMin=Math.max(2,p.threatMin-(powered.threatRangeBonus??0));p.multiplier+=powered.criticalMultiplierBonus??0;}
  const reduction=stats['spell.armorFailureReduction'].total;
- return {poweredBenefits:powered,extraDamageDice:powered.extraDice??null,brutal:powered.brutal??0,attackReachBonus:powered.attackReachBonus??0,weaponId:e.weapon?.id??null,damageDice:e.weapon?.damage[e.size]??null,damageTypes:e.weapon?.damage.types??[],critical,rangeIncrementFt:e.weapon?.rangeIncrementFt??null,
+ const modifications=activeCrafted(c).flatMap(i=>(i.design.adaptations??[]).map(id=>MINOR_ADAPTATIONS[id])).filter(Boolean);
+ const energyResistance={};for(const a of modifications)if(a.resistance)energyResistance[a.element]=Math.max(energyResistance[a.element]??0,a.resistance);
+ const elementalDamage=modifications.filter(a=>a.dice).map(a=>({type:a.element,dice:a.dice,multipliesOnCritical:false}));
+ const highest=key=>Math.max(0,...modifications.map(a=>a[key]??0));
+ const damageReduction={amount:highest('damageReduction'),bypass:'magic'},fortificationPercent=highest('fortification'),drPenetration=highest('penetration'),fortificationReduction=highest('fortificationReduction');
+ const bypassesMagicDR=!!((e.tech?.instance.enhancement??0)>0||activeCrafted(c).some(i=>i.design.slot==='weapon'&&i.design.effects.some(x=>x.kind==='weapon'&&x.value>0)));
+ const environmentalSaveBonuses={};for(const a of modifications)if(a.environmentalSave)environmentalSaveBonuses[a.environmentalSave]=Math.max(environmentalSaveBonuses[a.environmentalSave]??0,a.environmentalSaveBonus);
+ const conditionalStealth=modifications.filter(a=>a.stealthEnvironment).map(a=>({environment:a.stealthEnvironment,sense:'sight',bonus:a.stealthSightBonus,bonusType:'circumstance'}));
+ const impactCapacitorCapacity=Math.max(0,...activeCrafted(c).filter(i=>i.design.adaptations?.includes('impact-capacitor')).map(i=>i.design.effects.find(e=>e.kind==='armor')?.value??0));
+ const gadgets=equippedGadgets(c),gadgetDarkvisionFt=Math.max(0,...gadgets.map(g=>g.darkvisionFt??0)),handheldCraftToolBonus=Math.max(0,...gadgets.map(g=>g.toolBonus??0));
+ const inspectionBonus=Math.max(0,...gadgets.map(g=>g.inspectionBonus??0));
+ return {inspectionBonus,gadgets,gadgetDarkvisionFt,handheldCraftToolBonus,impactCapacitorCapacity,unarmedLethal:modifications.some(a=>a.unarmedLethal),insulatedArmour:modifications.some(a=>a.insulated),environmentalSaveBonuses,conditionalStealth,somaticWhileWielding:modifications.some(a=>a.somaticWhileWielding),damageConcentrationDCBonus:highest('damageConcentrationDCBonus'),firearm:e.weapon?.firearm??null,damageReduction,fortificationPercent,drPenetration,fortificationReduction,bypassesMagicDR,energyResistance,elementalDamage,poweredBenefits:powered,extraDamageDice:powered.extraDice??null,brutal:powered.brutal??0,attackReachBonus:powered.attackReachBonus??0,weaponId:e.weapon?.id??null,damageDice:e.weapon?.damage[e.size]??null,damageTypes:e.weapon?.damage.types??[],critical,rangeIncrementFt:e.weapon?.rangeIncrementFt??null,
   reloadAction:e.weapon?.reload?(has('rapid-reload')?e.weapon.reload.rapidReloadAction??e.weapon.reload.action:e.weapon.reload.action):null,
   capacity:e.weapon?.reload?.capacity??null,proficient:e.proficient??null,
   arcaneFailurePercent:Math.max(0,(e.armor?.defense.arcaneFailurePercent??0)-reduction)+(e.shield?.defense.arcaneFailurePercent??0),
   speedFt:(e.armor?.defense.speedByBaseFt[String(c.equipment.baseSpeed??30)]??(c.equipment.baseSpeed??30))+stats['speed.bonus'].total,
   reachFt:c.context.attackType==='ranged'?null:(e.weapon?.id==='whip'?15:e.weapon?.traits.includes('reach')?10:5)+stats['reach.bonus'].total,
-  traits:e.weapon?.traits??[],descriptions:[e.weapon,e.armor,e.shield].filter(Boolean).map(i=>({name:i.name,text:i.description})),
+  traits:e.weapon?.traits??[],traitRules:[...new Set([...(e.weapon?.traits??[]).filter(id=>MINOR_ADAPTATIONS[id]).map(id=>MINOR_ADAPTATIONS[id]),...modifications.filter(a=>!a.resistance).map(a=>a.impactCapacitor?{...a,text:a.text+' Capacity: '+impactCapacitorCapacity+' damage.'}:a)])].concat(gadgets.map(g=>({name:g.name,text:g.description}))).filter(a=>!a.resistance&&(!a.damageReduction||a.damageReduction===damageReduction.amount)&&(!a.fortification||a.fortification===fortificationPercent)).concat(Object.entries(energyResistance).map(([element,value])=>({name:element[0].toUpperCase()+element.slice(1)+' resistance '+value,text:'Equipped resistance: prevent '+value+' '+element+' damage per hit or effect. Same-type resistance does not stack.'}))),descriptions:[e.weapon,e.armor,e.shield].filter(Boolean).map(i=>({name:i.name,text:i.description})),
   notes:['Weapon dice are separate from the calculated damage modifier. Double-weapon ends are separate attacks; choose handling at the table.','Reach, brace, trip, monk and nonlethal traits retain their source rules; target eligibility and attack resolution remain manual.','Shield AC is suppressed for two-handed melee and two-handed bow/crossbow use except a buckler with a bow/crossbow. A buckler used with two-handed melee imposes −1 on attacks. Loading hand requirements and one-handed firing exceptions remain manual.',
   'Owned tech enhancement and Keen are calculated. Other masterwork/magic enhancements, materials, racial familiarity, composite-bow Strength ratings and item-specific exceptions remain manual.']};
 }

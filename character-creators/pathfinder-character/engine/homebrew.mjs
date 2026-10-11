@@ -188,6 +188,7 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
   }
   for(const stat of ['hitPoints.bonus','concentration.bonus','reach.bonus','opportunity.extra','critical.saveDC','speed.bonus','spell.slotAdjustment','endurance.constitutionBonus','unarmed.saveDC','scorpion.duration','damageReduction.typedBypass','damageReduction.untypedBypass','channel.dcBonus','channel.excludedTargets','leadership.baseScore','shield.acBonus','crafting.skillBonus','spell.armorFailureReduction','stunning.saveDC','spell.resistanceBonus']) bases[stat]=0;
   for(const school of SPELL_SCHOOLS)bases['spell.dc.'+school]=0;
+  bases['skill.feint']=bases['skill.bluff'];bases['coupDeGrace.dcBonus']=0;
   bases['attack.confirm']=bases.attack;
   bases['sneakAttack.dice']=baseSneakAttackDice(c);
   const names = new Map(rules.feats.map(f => [f.id, f.name]));
@@ -199,7 +200,7 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
   for (const [target, base] of Object.entries(bases)) {
     const cmd=target==='combatManeuver.defense'||target.startsWith('maneuver.')&&target.endsWith('.defense');
     const maneuverCheck=target.startsWith('maneuver.')&&target.endsWith('.check');
-    const matches = e => cmd ? e.target===target || e.target==='combatManeuver.defense' || e.target==='ac'&&(e.value<0||['circumstance','deflection','dodge','insight','luck','morale','profane','sacred'].includes(e.bonusType))
+    const matches = e => target==='skill.feint' ? e.target==='skill.feint'||e.target==='skill.bluff' : cmd ? e.target===target || e.target==='combatManeuver.defense' || e.target==='ac'&&(e.value<0||['circumstance','deflection','dodge','insight','luck','morale','profane','sacred'].includes(e.bonusType))
       : maneuverCheck ? e.target===target || e.target==='combatManeuver.check' || e.target==='attack.all' || c.context.attackType==='melee'&&(e.target==='attack.melee'||e.target==='attack.weapon'&&['maneuver.trip.check','maneuver.disarm.check','maneuver.sunder.check'].includes(target))
       : (target === 'attack'||target==='attack.confirm') ? (target==='attack.confirm'&&e.target==='attack.confirm')||['attack.all', 'attack.weapon', `attack.${c.context.attackType}`].includes(e.target)
       : target === 'damage' ? e.target === 'damage.weapon' || e.target === `damage.${c.context.attackType}` : e.target === target;

@@ -9,12 +9,12 @@ export function validateEquipment(catalogue,traitCatalogue){
  for(const item of catalogue.items){
   assert(typeof item.id==='string'&&/^[a-z0-9-]+$/.test(item.id)&&!ids.has(item.id),'Invalid or duplicate item ID');ids.add(item.id);
   assert(typeof item.name==='string'&&item.name.length>0,'Missing name');
-  assert(['weapon','armor','shield','ammunition','armor-addon'].includes(item.kind),'Invalid item kind');
+  assert(['weapon','armor','shield','ammunition','armor-addon','tool'].includes(item.kind),'Invalid item kind');
   assert(item.cost&&nullable(item.cost.gp,n=>finite(n)&&n>=0),'Invalid cost');
   assert(nullable(item.weightLb,n=>finite(n)&&n>=0),'Invalid weight');
   assert(Array.isArray(item.traits)&&item.traits.every(t=>traits.has(t)),'Unknown weapon trait');
   if(item.kind==='weapon'){
-   assert(['simple','martial','exotic','tech-melee'].includes(item.proficiency),'Invalid proficiency');
+   assert(['simple','martial','exotic','tech-melee','tech-ranged'].includes(item.proficiency),'Invalid proficiency');
    assert(['unarmed','light','one-handed','two-handed','ranged'].includes(item.handling),'Invalid weapon handling');
    for(const size of ['small','medium'])assert(nullable(item.damage?.[size],a=>Array.isArray(a)&&a.length>0&&a.every(d=>/^(\d+d\d+|\d+)$/.test(d))),'Invalid damage dice');
    assert(['choice','combined'].includes(item.damage.typeMode)&&item.damage.types.every(t=>['bludgeoning','piercing','slashing'].includes(t)),'Invalid damage type');

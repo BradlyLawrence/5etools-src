@@ -1,19 +1,22 @@
+import {addCraftedItem} from './crafted-items.mjs';
+import {gadgetDesign} from './engine/magic-items.mjs';
 import {equip,techEvent} from './equipment.mjs';
 const slots={weapon:'weaponId',armor:'armorId',shield:'shieldId'};
 export function inventoryRows(c){
  const rows=Object.entries(c.carriedEquipment??{}).filter(([,n])=>n>0).map(([itemId,quantity])=>({key:itemId,itemId,quantity}));
  for(const slot of Object.values(slots)){
-  const id=c.equipment?.[slot];if(!id||id==='unarmed-strike'||c.techEquipment?.items.some(i=>i.itemId===id))continue;
+  const id=c.equipment?.[slot];if(!id||id==='unarmed-strike'||c.craftedItems?.some(i=>i.equipped&&i.design.baseId===id)||c.techEquipment?.items.some(i=>i.itemId===id))continue;
   const row=rows.find(x=>x.key===id);if(row){row.quantity++;row.equipped=true;}else rows.push({key:id,itemId:id,quantity:1,equipped:true});
  }
- for(const i of c.techEquipment?.items??[])rows.push({key:i.instanceId,itemId:i.itemId,quantity:1,tech:i,equipped:[c.techEquipment.selectedInstanceId,c.techEquipment.armorInstanceId,c.techEquipment.shieldInstanceId].includes(i.instanceId)});
+ for(const i of c.techEquipment?.items??[])if(!c.craftedItems?.some(x=>x.techInstanceId===i.instanceId))rows.push({key:i.instanceId,itemId:i.itemId,quantity:1,tech:i,equipped:[c.techEquipment.selectedInstanceId,c.techEquipment.armorInstanceId,c.techEquipment.shieldInstanceId].includes(i.instanceId)});
  return rows;
 }
 export function inventoryAction(c,rules,action,key){
  const items=rules.equipment.items;
  if(action==='add'){
   const item=items.find(x=>x.id===key);if(!item)throw Error('Unknown item.');
-  if(item.tech)techEvent(c,rules,{type:'add',itemId:key,instanceId:crypto.randomUUID()});
+  if(item.gadgetId&&!item.mundane)addCraftedItem(c,gadgetDesign(item.gadgetId,crypto.randomUUID()));
+  else if(item.tech)techEvent(c,rules,{type:'add',itemId:key,instanceId:crypto.randomUUID()});
   else {c.carriedEquipment??={};c.carriedEquipment[key]=(c.carriedEquipment[key]??0)+1;}
   return;
  }
