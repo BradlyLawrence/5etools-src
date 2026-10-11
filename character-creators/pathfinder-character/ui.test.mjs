@@ -1,0 +1,93 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {readRoster} from './roster.mjs';
+test('all tabs remain accessible on an incomplete draft and edited choices save',async()=>{
+ const catalogue=JSON.parse(await readFile(new URL('../pathfinder/data/catalogue.json',import.meta.url),'utf8'));
+ const ids=['message','roster','home','editor','title','steps','panel','new','load','saved-heading','import','file','save','download','back'];
+ const nodes=new Map(ids.map(id=>[id,{innerHTML:'',textContent:'',hidden:false,children:[],replaceChildren(){this.children=[];},append(c){this.children.push(c);},focus(){}}]));
+ const map=new Map();globalThis.localStorage={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)};
+ globalThis.document={getElementById:id=>nodes.get(id),createElement:()=>({append(){}})};
+ globalThis.window={addEventListener(){}};
+ const originalFetch=globalThis.fetch;
+ const rules=JSON.parse(await readFile(new URL('./rules.json',import.meta.url),'utf8'));
+ globalThis.fetch=async url=>({ok:true,json:async()=>url==='./rules.json'?rules:catalogue});
+ try{
+  await import('./app.mjs');nodes.get('new').onclick();
+  assert.match(nodes.get('panel').innerHTML,/Choose a race/);
+  for(let i=0;i<8;i++){nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:String(i)}})}});assert.ok(nodes.get('panel').innerHTML);assert.doesNotMatch(nodes.get('steps').innerHTML,/disabled/);}
+  const change=(key,value,type='select-one')=>nodes.get('panel').onchange({target:{dataset:{field:key},value,type,min:'1',max:'40'}});
+  change('race','humans');change('flex','str');change('class.2','fighter');change('class.0','fighter');change('class.1','fighter');change('target','3','number');
+  nodes.get('save').onclick();assert.equal(nodes.get('message').textContent,'Draft saved in this browser.');const saved=readRoster(localStorage).characters[0].character;
+  assert.deepEqual(saved.builder.classOrder,['fighter','fighter','fighter']);assert.equal(saved.abilities.str,12);assert.equal(saved.classes.fighter,3);
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'3'}})}});
+  change('target','6','number');change('class.5','ironwright');
+  assert.match(nodes.get('panel').innerHTML,/Character level 6/);
+  change('target','5','number');
+  assert.doesNotMatch(nodes.get('panel').innerHTML,/Character level 6/);
+  nodes.get('save').onclick();
+  const reduced=readRoster(localStorage).characters[0].character;
+  assert.equal(reduced.builder.classOrder.length,5);assert.equal(reduced.classes.ironwright,undefined);
+  change('target','6','number');
+  nodes.get('save').onclick();assert.equal(readRoster(localStorage).characters[0].character.classes.ironwright,undefined);
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'4'}})}});
+  change('skill.normal.climb','2','number');change('skill.background.appraise','1','number');
+  assert.match(nodes.get('panel').innerHTML,/Normal ranks: 2/);
+  nodes.get('save').onclick();
+  const skilled=readRoster(localStorage).characters[0].character;
+  assert.equal(skilled.skillRanks.climb,2);assert.equal(skilled.skillRanks.appraise,1);
+  assert.ok(skilled.classSkills.includes('climb'));
+  change('background.id','custom');change('background.name','Village scout');
+  change('background.skill.0','perception');change('background.skill.1','survival');
+  nodes.get('save').onclick();
+  const background=readRoster(localStorage).characters[0].character.background;
+  assert.deepEqual(background.skills,['perception','survival']);assert.equal(background.name,'Village scout');
+  assert.match(nodes.get('panel').innerHTML,/Background bonus/);
+  change('background.id','caretaker');nodes.get('save').onclick();
+  assert.ok(readRoster(localStorage).characters[0].character.classSkills.includes('heal'));
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'6'}})}});
+  change('equipment.weaponId','longsword');change('equipment.armorId','full-plate');
+  assert.match(nodes.get('panel').innerHTML,/Equipped statistics/);
+  assert.doesNotMatch(nodes.get('panel').innerHTML,/Unable to calculate/);
+  change('inventory.add','dagger');change('inventory.quantity.dagger','2','number');
+  nodes.get('save').onclick();
+  const equipped=readRoster(localStorage).characters[0].character;
+  assert.equal(equipped.equipment.weaponId,'longsword');assert.equal(equipped.carriedEquipment.dagger,2);
+  const clickChoice=(selector,dataset)=>nodes.get('panel').onclick({target:{closest:key=>key===selector?{dataset}:null}});
+  clickChoice('[data-inventory-action]',{inventoryAction:'picker'});
+  assert.match(nodes.get('panel').innerHTML,/data-picker-search/);
+  clickChoice('[data-choice-field]',{choiceField:'equipment',choiceId:'dagger'});
+  clickChoice('[data-inventory-action]',{inventoryAction:'add-selected'});
+  nodes.get('save').onclick();
+  assert.equal(readRoster(localStorage).characters[0].character.carriedEquipment.dagger,3);
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'4'}})}});
+  clickChoice('[data-choice-field]',{choiceField:'feat.starting',choiceId:'toughness'});
+  assert.match(nodes.get('panel').innerHTML,/feat-description/);
+  nodes.set('feat-starting',{value:rules.feats.find(f=>f.id==='toughness').name});
+  clickChoice('[data-save-feat]',{saveFeat:'starting'});
+  nodes.get('save').onclick();
+  assert.ok(readRoster(localStorage).characters[0].character.feats.some(f=>f.featId==='toughness'&&f.creatorSlot==='starting'));
+  change('target','1','number');change('class.0','wizard');change('score.int','16','number');
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'5'}})}});
+  assert.match(nodes.get('panel').innerHTML,/Spellbook/);
+  nodes.get('panel').onclick({target:{closest:selector=>selector==='[data-spell-field]'?{dataset:{spellField:'spell.wizard.book.1.0',spellId:'magic-missile'}}:null}});
+  change('spell.wizard.prepared.1.0','magic-missile');
+  nodes.get('save').onclick();
+  const caster=readRoster(localStorage).characters[0].character;
+  assert.deepEqual(caster.builder.spellcasting.wizard.book['1'],['magic-missile']);
+  assert.deepEqual(caster.builder.spellcasting.wizard.prepared['1'],['magic-missile']);
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'7'}})}});
+  assert.match(nodes.get('panel').innerHTML,/Magic Missile/i);
+  change('target','2','number');change('class.0','rogue');change('class.1','rogue');
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'3'}})}});
+  assert.match(nodes.get('panel').innerHTML,/data-choice-field="classChoice.rogue-ability-2"/);
+  clickChoice('[data-choice-field]',{choiceField:'classChoice.rogue-ability-2',choiceId:'resiliency'});
+  nodes.get('save').onclick();
+  assert.equal(readRoster(localStorage).characters[0].character.builder.classOptions['rogue-ability-2'],'resiliency');
+
+
+
+
+ }finally{globalThis.fetch=originalFetch;delete globalThis.document;delete globalThis.window;delete globalThis.localStorage;}
+});
+

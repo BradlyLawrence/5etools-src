@@ -1,0 +1,36 @@
+import {choicePicker} from './choice-picker.mjs';
+import {equipmentGroups,itemDetails,itemPrice} from './equipment-display.mjs';
+import {inventoryRows} from './inventory.mjs';
+import {equipmentSheet} from './equipment.mjs';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const signed=n=>(n>=0?'+':'')+n;
+export function renderEquipment(c,rules,view={}){
+ if(!rules)return '<p>Equipment rules could not be loaded. Reload to try again.</p>';
+ const items=rules.equipment.items,selected=c.equipment??{};
+ const rows=inventoryRows(c);
+ let html=`<div class="inventory-heading"><h3>Equipment <small>${rows.reduce((n,x)=>n+x.quantity,0)} items</small></h3><button type="button" data-inventory-action="picker">+ Add Item</button></div>`;
+ if(view.picker)html+=`<div class="item-picker">${choicePicker({label:'Equipment',value:view.choice,name:items.find(x=>x.id===view.choice)?.name,field:'equipment',placeholder:'Choose an item',groups:equipmentGroups(items).map(g=>({label:g.label,items:g.items.map(x=>({id:x.id,name:x.name+' — '+itemPrice(x),description:[x.description,...itemDetails(x).map(([k,v])=>k+': '+v)].filter(Boolean).join(' · ')}))}))})}<button type="button" data-inventory-action="add-selected">Add</button><button type="button" data-inventory-action="close">Done</button></div>`;
+ if(view.picker&&view.choice){const item=items.find(x=>x.id===view.choice);if(item)html+=`<div class="item-preview"><h4>${esc(item.name)}</h4><dl class="item-stats">${itemDetails(item).map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl></div>`;}
+ html+=`<div class="inventory-list">${rows.length?rows.map(row=>{const item=items.find(x=>x.id===row.itemId);return `<div class="inventory-row"><span>${esc(item?.name??row.itemId)}${row.quantity>1?' × '+row.quantity:''}<small>${row.equipped?'Equipped':''}${row.tech?' · Reservoir '+row.tech.reservoir:''}</small></span><div class="inventory-actions"><button type="button" data-inventory-action="inspect" data-item="${esc(row.key)}">Inspect</button>${['weapon','armor','shield'].includes(item?.kind)?`<button type="button" data-inventory-action="equip" data-item="${esc(row.key)}">${row.equipped?'Unequip':'Equip'}</button>`:''}<button type="button" class="remove-item" data-inventory-action="remove" data-item="${esc(row.key)}">Remove${row.quantity>1?' one':''}</button></div></div>`;}).join(''):'<p class="inventory-empty">Your pack is empty. Add equipment to get started.</p>'}</div>`;
+ if(view.inspect){const row=rows.find(x=>x.key===view.inspect),item=items.find(x=>x.id===row?.itemId);if(item)html+=`<section class="item-inspection"><h3>${esc(item.name)}</h3><dl class="item-stats">${itemDetails(item).map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><p>${esc(item.description)}</p><a target="_blank" href="../pathfinder/#equipment/${encodeURIComponent(item.id)}">Full item rules</a> <button type="button" data-inventory-action="dismiss">Close</button></section>`;}
+ const weapon=items.find(x=>x.id===selected.weaponId);
+ if(weapon?.rangeIncrementFt&&weapon.handling!=='ranged')html+=`<label><input type="checkbox" data-field="equipment.thrown" ${selected.thrown?'checked':''}> Throw weapon</label>`;
+ if(weapon?.handling==='one-handed')html+=`<label><input type="checkbox" data-field="equipment.twoHanded" ${selected.damageMode==='two-handed'?'checked':''}> Wield in two hands</label>`;
+ const instance=c.techEquipment?.items.find(x=>x.instanceId===c.techEquipment.selectedInstanceId);
+ if(instance){
+  const model=items.find(x=>x.id===instance.itemId),max=model.tech.reservoirBase+model.tech.reservoirPerEnhancement*instance.enhancement;
+  html+=`<h3>Reservoir ${instance.reservoir} / ${max}</h3><label>Enhancement<input type="number" min="0" max="5" data-field="tech.enhancement" value="${instance.enhancement}"></label><label>Remaining fuel<input type="number" min="0" max="${max}" data-field="tech.reservoir" value="${instance.reservoir}"></label><label><input type="checkbox" data-field="tech.attuned" ${instance.attuned?'checked':''}> Attuned</label>`;
+  if(model.damage.types.some(t=>['piercing','slashing'].includes(t)))html+=`<label><input type="checkbox" data-field="tech.keen" ${instance.keen?'checked':''}> Keen</label>`;
+ }
+ if(!c.builder.classOrder.some(Boolean))return html+'<p>Assign a class level to calculate equipment statistics.</p>';
+ try{
+  const sheet=equipmentSheet(c,rules),e=sheet.equipment;
+  html+=`<h3>Equipped statistics</h3><p>Attack ${signed(sheet.stats.attack.total)} · Damage ${esc(e.damageDice?.join(' / ')??'—')} ${signed(sheet.stats.damage.total)} · AC ${sheet.stats.ac.total}</p><p>Critical: ${esc(e.critical?.map(x=>(x.threatMin===20?'20':x.threatMin+'–20')+'/×'+x.multiplier).join(' / ')??'—')} · Speed ${e.speedFt} ft. · Arcane spell failure ${e.arcaneFailurePercent}%</p><p>${e.proficient?'Proficient with this weapon.':'Weapon nonproficiency penalty included.'} ${e.reloadAction?'Reload: '+esc(e.reloadAction)+'.':''}</p><p>Weapon traits: ${esc(e.traits.join(', ')||'None')}. ${e.reachFt?'Reach: '+e.reachFt+' ft.':''}</p><details><summary>Attack and AC breakdown</summary>${['attack','ac'].map(key=>`<p>${key==='ac'?'AC':'Attack'}: base ${sheet.stats[key].base}</p><ul>${sheet.stats[key].breakdown.map(x=>`<li>${esc(x.name)}: ${signed(x.value)}${x.applied?'':' (not applied)'}</li>`).join('')}</ul>`).join('')}</details><details><summary>Skills with equipment and feat modifiers</summary><ul>${Object.entries(sheet.stats).filter(([key])=>key.startsWith('skill.')).map(([key,value])=>`<li>${esc(key.slice(6).replace(/-/g,' '))}: ${signed(value.total)}</li>`).join('')}</ul></details>`;
+  if(instance){const family=rules.technology.families.find(f=>f.id===weapon.tech.family);for(const action of family.actions){
+   html+=`<h4>${esc(action.name)} · ${action.cost} reservoir</h4><p>${esc(action.description)}</p>`;
+   try{const powered=equipmentSheet(c,rules,action.id);html+=`<p>Attack ${signed(powered.stats.attack.total)} · Damage ${esc(powered.equipment.damageDice.join(' / '))} ${signed(powered.stats.damage.total)}${powered.equipment.extraDamageDice?' + '+esc(powered.equipment.extraDamageDice):''}</p><button type="button" data-spend="${esc(action.id)}" ${instance.reservoir<action.cost?'disabled':''}>Spend ${action.cost} reservoir</button>`;}catch(err){html+=`<p>${esc(err.message)}</p>`;}
+  }}
+  html+='<p>Ordinary magic/masterwork equipment, carrying limits and item-specific exceptions still need their selection controls. Tech enhancement and Keen are included.</p>';
+ }catch(err){html+=`<p>Unable to calculate: ${esc(err.message)}</p>`;}
+ return html;
+}

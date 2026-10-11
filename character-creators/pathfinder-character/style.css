@@ -1,0 +1,32 @@
+nav{display:flex;gap:12px;flex-wrap:wrap}a{color:#c2a46e}button,input,textarea{font:inherit}button{cursor:pointer}button.cc-card{text-align:left;color:inherit;width:100%}button:not(.cc-card){padding:10px 16px;background:#25354a;color:#f0f2f5;border:1px solid #526078;border-radius:6px}label{display:grid;gap:8px;margin:20px 0;max-width:640px}input,textarea{background:#1b2029;color:#fff;padding:12px;border:1px solid #526078;border-radius:6px}#roster{display:grid;gap:12px}#roster button{text-align:left}small{display:block;color:#a7b2c2}#message{color:#e5bc76;white-space:pre-wrap}:focus-visible{outline:3px solid #e5bc76;outline-offset:4px}[hidden]{display:none!important}#editor{max-width:800px}.cc-header{flex-wrap:wrap}.cc-card-grid{margin-top:20px}
+
+#editor{max-width:none}#steps{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}#steps [aria-current=step]{background:#425e43;border-color:#dfbe74}#panel{max-width:1050px}#panel table{border-collapse:collapse;width:100%;margin:16px 0}#panel td,#panel th{padding:10px;border:1px solid #526078;text-align:left}#panel input[type=number]{width:100px}#panel select{font:inherit;background:#1b2029;color:#fff;padding:12px;border:1px solid #526078;border-radius:6px}#panel details{margin:16px 0}#panel summary{cursor:pointer;color:#e5bc76}.class-reference{max-height:500px;overflow:auto;padding:16px}.racial-rules{max-width:850px}#panel{overflow-x:auto}
+
+.inventory-heading,.inventory-row,.inventory-actions{display:flex;align-items:center;gap:.5rem}
+.inventory-heading{justify-content:space-between;margin:1rem 0}
+.inventory-heading h3{margin:0}.inventory-heading small{font-size:.85rem;font-weight:normal;color:#9cabb5;margin-left:.5rem}
+.inventory-list,.item-picker-results{border:1px solid #34464c;border-radius:8px;max-height:360px;overflow:auto;background:#111d22}
+.inventory-row{justify-content:space-between;padding:.7rem;border-bottom:1px solid #25363c}
+.inventory-row:last-child{border-bottom:0}.inventory-row small{display:block;color:#a0b2bb;font-size:.8rem;margin-top:.2rem}
+.inventory-row button,.inventory-heading button{margin:0;white-space:nowrap}.inventory-actions{flex-wrap:wrap}
+.remove-item{color:#ff8981;border-color:#a55d56}.item-picker,.item-inspection{padding:1rem;border:1px solid #49616b;border-radius:8px;margin:1rem 0}.inventory-empty{padding:1rem}
+@media(max-width:600px){.inventory-row{align-items:flex-start;flex-direction:column}.inventory-actions{width:100%}.inventory-heading{flex-wrap:wrap}}
+
+.item-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.8rem}.item-stats dt{color:#9cabb5;font-size:.85rem}.item-stats dd{margin:.2rem 0}.item-preview{padding:0 1rem 1rem}
+
+#panel .racial-option{margin:18px 0;max-width:850px}
+#panel .racial-option-label{display:flex;align-items:center;gap:10px;margin:0;cursor:pointer}
+#panel .racial-option-label input[type=checkbox]{flex:0 0 auto;width:18px;height:18px;margin:0;padding:0;accent-color:#dfbe74}
+#panel .racial-option p{margin:6px 0 0 28px}
+#panel .racial-option.is-unavailable{color:#9299a3}
+#panel .racial-option.is-unavailable .racial-option-label{cursor:not-allowed}
+#panel .racial-conflict{font-size:.85rem;font-style:italic}
+.spell-choice{max-width:640px;margin:20px 0}
+#panel .spell-picker{margin:8px 0;position:relative}
+#panel .spell-picker>summary{background:#1b2029;color:#fff;padding:12px;border:1px solid #526078;border-radius:6px}
+.spell-options{max-height:340px;overflow-y:auto;background:#1b2029;border:1px solid #526078;border-radius:6px;margin-top:4px}
+#panel .spell-options button{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:0;padding:9px 14px;color:#fff}
+#panel .spell-options button:hover,#panel .spell-options button:focus-visible{background:#253f61;outline-offset:-3px}
+#panel .spell-options button[aria-pressed=true]{box-shadow:inset 3px 0 #e5bc76}
+.spell-preview{display:none;margin-top:7px;white-space:normal;line-height:1.5;color:#e0e6ee}
+.spell-options button:hover .spell-preview,.spell-options button:focus .spell-preview{display:block}

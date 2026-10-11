@@ -3499,8 +3499,60 @@
           "Draconic"
         ],
         "ancestry": {
-          "status": "details-pending",
-          "description": "Choose a draconic ancestry that determines your breath weapon’s energy type and whether it forms a 15-foot cone or a 30-foot line. The ancestry list is still to be agreed."
+          "status": "approved",
+          "description": "Choose an ancestry to determine breath energy and shape.",
+          "options": [
+            {
+              "id": "black",
+              "energy": "acid",
+              "shape": "line"
+            },
+            {
+              "id": "copper",
+              "energy": "acid",
+              "shape": "line"
+            },
+            {
+              "id": "blue",
+              "energy": "electricity",
+              "shape": "line"
+            },
+            {
+              "id": "bronze",
+              "energy": "electricity",
+              "shape": "line"
+            },
+            {
+              "id": "brass",
+              "energy": "fire",
+              "shape": "line"
+            },
+            {
+              "id": "red",
+              "energy": "fire",
+              "shape": "cone"
+            },
+            {
+              "id": "gold",
+              "energy": "fire",
+              "shape": "cone"
+            },
+            {
+              "id": "white",
+              "energy": "cold",
+              "shape": "cone"
+            },
+            {
+              "id": "silver",
+              "energy": "cold",
+              "shape": "cone"
+            },
+            {
+              "id": "green",
+              "energy": "acid",
+              "shape": "cone"
+            }
+          ]
         },
         "breathWeapon": {
           "usesPerDay": 1,
@@ -3528,9 +3580,45 @@
           "amount": 5,
           "type": "ancestry-energy"
         },
-        "alternateTraits": [],
+        "alternateTraits": [
+          {
+            "id": "armoured-scales",
+            "name": "Armoured Scales",
+            "replaces": [
+              "breath-weapon"
+            ],
+            "description": "Gain a +1 natural armour bonus to AC."
+          },
+          {
+            "id": "draconic-claws",
+            "name": "Draconic Claws",
+            "replaces": [
+              "breath-weapon"
+            ],
+            "description": "Gain two primary claw attacks, each dealing 1d4 slashing damage."
+          },
+          {
+            "id": "keen-senses",
+            "name": "Keen Senses",
+            "replaces": [
+              "energy-resistance"
+            ],
+            "description": "Gain darkvision 60 feet and a +2 racial bonus to Perception."
+          },
+          {
+            "id": "versatile-breath",
+            "name": "Versatile Breath",
+            "replaces": [
+              "energy-resistance"
+            ],
+            "description": "Choose a 15-foot cone or 30-foot line each time you breathe, retaining your ancestry energy type. Requires the breath weapon.",
+            "requires": [
+              "breath-weapon"
+            ]
+          }
+        ],
         "favoredClassBonuses": [],
-        "optionsStatus": "Alternate traits and race-specific favoured class bonuses are not yet designed.",
+        "optionsStatus": "Ancestry and alternate traits approved. Race-specific favoured-class bonuses remain pending.",
         "racialTraits": [
           {
             "name": "+2 Strength, +2 Charisma, -2 Dexterity",
