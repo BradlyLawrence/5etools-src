@@ -42,3 +42,22 @@ export function calculateSkills(c,r){
  if(backgroundSpent<backgroundBudget)issues.push(`${backgroundBudget-backgroundSpent} background skill ranks remain.`);
  return {normal,background:backgroundBudget,normalSpent,backgroundSpent,breakdown,rows,issues,classSkills:rows.filter(x=>x.classSkill).map(x=>x.id),skillRanks:Object.fromEntries(rows.map(x=>[x.id,x.ranks]))};
 }
+
+export function addSpecialty(c,kind,label,{racial=false}={}){
+ if(!SPECIALTIES.includes(kind)||racial&&!['craft','profession'].includes(kind))throw Error('Choose a valid specialty type.');
+ if(racial&&(c.builder.raceId!=='gnomes'||c.builder.racialAlternates?.includes('academician')))throw Error('This racial choice requires Obsessive.');
+ const name=String(label).trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+ if(!name||name.length>60)throw Error('Enter a specialty name of up to 60 characters.');
+ const id=kind+':'+name;c.builder.skills??={};c.builder.skills[id]??={normal:0,background:0};
+ if(racial){c.builder.racialSkill=id;cleanupRacialSpecialties(c);}
+ return id;
+}
+
+export function cleanupRacialSpecialties(c){
+ const references=structuredClone(c);delete references.builder.skills;delete references.builder.racialSkill;delete references.skillRanks;delete references.classSkills;
+ const uses=(value,id)=>typeof value==='string'?(value===id||value==='skill.'+id):Array.isArray(value)?value.some(v=>uses(v,id)):value&&typeof value==='object'?Object.entries(value).some(([k,v])=>k===id||k==='skill.'+id||uses(v,id)):false;
+ for(const [id,ranks] of Object.entries(c.builder.skills??{})){
+  if(!/^(craft|profession):/.test(id)||id===c.builder.racialSkill||ranks.normal||ranks.background||uses(references,id))continue;
+  delete c.builder.skills[id];
+ }
+}
