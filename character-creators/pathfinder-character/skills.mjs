@@ -1,3 +1,4 @@
+import {barbarianSkills} from './engine/barbarian-archetypes.mjs';
 import {archetypeSkills} from './engine/archetypes.mjs';
 import {optionClassSkills,optionEffects} from './engine/core-options.mjs';
 import {favoredBonus} from './advancement.mjs';
@@ -21,7 +22,7 @@ export function calculateSkills(c,r){
  const breakdown=Object.entries(r.classes).map(([id,levels])=>({id,levels,base:CLASSES[id]?.ranks??0,perLevel:Math.max(1,(CLASSES[id]?.ranks??0)+intMod)+human}));
  const normal=breakdown.reduce((n,x)=>n+x.levels*x.perLevel,0)+c.builder.classOrder.filter((_,i)=>favoredBonus(c,i)==='skill').length,backgroundBudget=r.level*2;
  const bg=backgroundDetails(c.background,c);
- const classSet=new Set([...archetypeSkills({...c,classes:r.classes}),...optionClassSkills({...c,classes:r.classes}),...bg.classSkills,'lore',...Object.keys(r.classes).flatMap(id=>CLASSES[id]?.skills??[])]);
+ const classSet=new Set([...archetypeSkills({...c,classes:r.classes}),...optionClassSkills({...c,classes:r.classes}),...bg.classSkills,'lore',...Object.keys(r.classes).flatMap(id=>id==='barbarian'?barbarianSkills({...c,classes:r.classes},CLASSES[id]?.skills??[]):CLASSES[id]?.skills??[])]);
  if(classSet.has('craft')||classSet.has('perform'))classSet.add('artistry');
  const allocations=c.builder.skills??{},ids=[...new Set([...Object.keys(SKILLS).filter(id=>!SPECIALTIES.includes(id)),...Object.keys(allocations),...(c.builder.racialSkill?[c.builder.racialSkill]:[]),...bg.effects.filter(e=>e.target.startsWith('skill.')).map(e=>e.target.slice(6))])].sort();
  let normalSpent=0,backgroundSpent=0;const issues=[];

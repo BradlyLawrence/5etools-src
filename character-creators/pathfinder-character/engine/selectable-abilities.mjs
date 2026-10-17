@@ -1,3 +1,4 @@
+import {applyBarbarianScores,barbarianRage} from './barbarian-archetypes.mjs';
 import {featSlots,slotAllows} from './feat-progression.mjs';
 import data from './selectable-abilities-data.mjs';
 import {SKILLS} from './skills.mjs';
@@ -74,7 +75,7 @@ export function selectableIssues(c){
 export function permanentAbilityBonus(c){return selectedAbilities(c).some(a=>a.id==='awakened-intellect')?2:0;}
 export function activeAbilityScores(input){
  const c=structuredClone(input),b=c.builder?.classOptions??{},selected=selectedAbilities(c),has=id=>selected.some(a=>a.id===id);
- if(c.classes?.barbarian&&b['barbarian-raging']==='on'){const bonus=c.classes.barbarian>=20?8:c.classes.barbarian>=11?6:4;c.abilities.str+=bonus;c.abilities.con+=bonus;}
+ applyBarbarianScores(c);
  if(c.classes?.alchemist&&['str','dex','con'].includes(b['alchemist-mutagen'])){
   const first=b['alchemist-mutagen'],second=b['mutagen-secondary'],mental={str:'int',dex:'wis',con:'cha'};
   let bonuses={[first]:4};
@@ -89,7 +90,7 @@ export function selectableEffects(c,conditions={}){
  const b=c.builder?.classOptions??{},selected=selectedAbilities(c),has=id=>selected.some(a=>a.id===id),effects=[];
  const add=(target,value,name,type='untyped')=>effects.push({kind:'modifier',target,value,bonusType:type,featId:'class-ability.'+name,name});
  if(c.classes.barbarian&&b['barbarian-raging']==='on'){
-  const level=c.classes.barbarian;add('ac',-2,'Rage');add('save.will',level>=20?4:level>=11?3:2,'Rage','morale');
+  const level=c.classes.barbarian,rage=barbarianRage(c);add('ac',rage.ac,'Rage');add('save.will',rage.will,'Rage','morale');
   for(const [id,skill] of [['raging-climber','climb'],['raging-swimmer','swim']])if(has(id))add('skill.'+skill,level,id,'enhancement');
   if(has('swift-foot'))add('speed.bonus',5*selected.filter(x=>x.id==='swift-foot').length,'Swift Foot','enhancement');
   if(has('quick-reflexes'))add('opportunity.extra',1,'Quick Reflexes');

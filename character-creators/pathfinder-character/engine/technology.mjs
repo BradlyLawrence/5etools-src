@@ -1,3 +1,4 @@
+import {hasBarbarian,barbarianLevel} from './barbarian-archetypes.mjs';
 import {archetypeGrants} from './archetypes.mjs';
 /** Per-item resources and declarative powered profiles; no turns or enemy records. */
 const check=(ok,message)=>{if(!ok)throw new Error(message);};
@@ -45,7 +46,7 @@ export function validateTechState(c,rules){
  check(state.selectedInstanceId===undefined||state.selectedInstanceId===null||ids.has(state.selectedInstanceId),'Unknown selected tech item');
 }
 export function techProficient(c,item){
- return (item.kind==='weapon'&&archetypeGrants(c).some(f=>f.featId==='tech-melee-proficiency'))||(c.classes.ironwright??0)>0||(c.proficientWeapons??[]).includes(item.id)||(c.feats??[]).some(f=>f.featId===(item.kind==='weapon'?'tech-melee-proficiency':'tech-armour-proficiency'));
+ return (hasBarbarian(c,'savage-technologist')&&item.kind==='weapon'&&(item.firearm||['light','one-handed'].includes(item.handling)))||(item.kind==='weapon'&&archetypeGrants(c).some(f=>f.featId==='tech-melee-proficiency'))||(c.classes.ironwright??0)>0||(c.proficientWeapons??[]).includes(item.id)||(c.feats??[]).some(f=>f.featId===(item.kind==='weapon'?'tech-melee-proficiency':'tech-armour-proficiency'));
 }
 export function selectedTech(rules,c){
  validateTechState(c,rules);
@@ -69,7 +70,7 @@ export function techModifiers(tech,action,c){
  const add=(target,value,key,bonusType='untyped')=>{if(value)effects.push({kind:'modifier',target,value,bonusType,featId:'technology.'+key,name:key});};
  add('attack.weapon',tech.instance.enhancement,'weapon-enhancement','enhancement');
  add('damage.weapon',tech.instance.enhancement,'weapon-enhancement','enhancement');
- if(techBroken(tech.item,tech.instance)){add('attack.weapon',-2,'broken weapon');add('damage.weapon',-2,'broken weapon');}
+ if(techBroken(tech.item,tech.instance)){if(!(hasBarbarian(c,'breaker')&&barbarianLevel(c)>=3))add('attack.weapon',-2,'broken weapon');add('damage.weapon',-2,'broken weapon');if(hasBarbarian(c,'breaker')&&barbarianLevel(c)>=3)add('damage.weapon',Math.floor(barbarianLevel(c)/3)-1,'Battle Scavenger');}
  if(overloadActive(c,tech.instance)&&(c.classes.ironwright??0)>=20)add('damage.weapon',2,'Overload Mastery');
  if(action){
   check(!tech.instance.mechanismBroken&&!techBroken(tech.item,tech.instance),'Powered mechanism or item is broken');

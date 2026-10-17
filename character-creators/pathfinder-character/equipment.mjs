@@ -36,7 +36,7 @@ export function equip(c,rules,slot,id){
 }
 export function techEvent(c,rules,event){const out=applyTechEvent(rules,sheetCharacter(c),event);c.techEquipment=out.techEquipment;c.equipment=out.equipment;return c;}
 export function equipmentSheet(c,rules,action=null){const input=sheetCharacter(c),sheet=evaluateCharacter(rules,input,null,action);sheet.dragonborn=dragonbornFeatures(input);
- sheet.equipment.darkvisionFt=Math.max(sheet.equipment.gadgetDarkvisionFt??0,sheet.dragonborn?.darkvisionFt??0,['dwarves','half-orcs'].includes(c.builder.raceId)?60:0);
+ sheet.equipment.darkvisionFt=Math.max(sheet.equipment.gadgetDarkvisionFt??0,sheet.dragonborn?.darkvisionFt??0,['dwarves','half-orcs'].includes(c.builder.raceId)?60:0)+(sheet.barbarian?.senses?.darkvision??0);
  if(sheet.equipment?.firearm){const f=sheet.equipment.firearm.family;sheet.equipment.firearmReload=firearmReload({family:f,capacity:sheet.equipment.capacity,level:input.classes.gunslinger??0,primary:c.builder.gunslinger?.primary??null,rapidReload:(input.feats??[]).some(x=>x.featId==='rapid-reload'&&(x.weaponId===sheet.equipment.weaponId||x.family===f))});sheet.equipment.reloadAction=sheet.equipment.firearmReload.action;}
  if(sheet.dragonborn?.claws){
  const clawCharacter=structuredClone(input),clawRules={...rules,equipment:{...rules.equipment,items:[...rules.equipment.items,{id:'draconic-claw',name:'Draconic claw',kind:'weapon',proficiency:'natural',handling:'light',finesseEligible:true,traits:[],damage:{small:['1d3'],medium:['1d4'],types:['slashing']},critical:[{threatMin:20,multiplier:2}],rangeIncrementFt:null}]}};

@@ -81,7 +81,14 @@ export function renderClassSheet(sheet,rules){
  const phalanx=sheet.equipment?.phalanx;
  if(phalanx){if(phalanx.oneHandedSpear)html+='<p>Phalanx Fighting: spear/polearm used one-handed with your shield. Normal one-handed Strength and Power Attack damage apply.</p>';if(phalanx.evasion)html+=`<p>Shielded Fortress: ${esc(phalanx.evasion)}; your wielded shield cannot be disarmed or sundered.</p>`;for(const option of phalanx.allyCoverOptions)html+=`<p>Shield Ally: ${esc(option.recipients)} — +${option.ac} cover AC, +${option.reflex} Reflex${option.evasion?', '+esc(option.evasion):''}. Move action; lasts until your next turn. Does not enable Stealth.</p>`;}
 
- for(const f of sheet.archetypeFeatures??[])html+=`<details><summary>${esc(f.archetype)}: ${esc(f.name)}</summary><p>${esc(f.text)}</p></details>`;
+ if(sheet.barbarian){const b=sheet.barbarian;html+=`<p>Barbarian defenses: DR ${b.damageReduction}/—; DR ${b.nonlethalDamageReduction}/— against nonlethal damage. ${b.uncannyDodge?'Uncanny dodge. ':''}${b.improvedUncannyDodge?'Improved uncanny dodge. ':''}${b.trapSense?'Trap sense +'+b.trapSense+'.':''}</p>`;
+ if(b.endurance)html+=`<p>Extreme Endurance: ${b.endurance.energy==='cold'?'cold':'hot'} environments as endure elements; ${b.endurance.energy??'choose an energy'} resistance ${b.endurance.resistance}. Use the highest applicable resistance.</p>`;
+ if(b.senses){const v=b.senses;html+=`<p>Keen Senses: ${[v.lowLight?'low-light vision (triple if already possessed)':'',v.darkvision?'darkvision +60 ft (or 60 ft if none)':'',v.scent?'scent':'',v.blindsense?'blindsense 30 ft':'',v.blindsight?'blindsight 30 ft':''].filter(Boolean).join('; ')}.</p>`;}
+ if(b.titanic)html+=`<p>Titanic Rage: enlarged weapon dice, ability scores, reach and size modifiers included. Costs ${b.titanic.roundCost} rage rounds per round; ending condition: ${esc(b.titanic.endCondition)}.</p>`;
+ if(b.swordAndGun)html+='<p>Sword and Gun: paired-loadout Two-Weapon Fighting benefits while raging; firearm attacks do not provoke. Reload with the melee weapon held in the other hand. Reload action cost and provocation remain unchanged.</p>';
+ if(b.grapplePenalty<1)html+=`<p>Savage Grapple: ${b.grapplePenalty===0?'ignore':'halve'} the grappled condition’s Dexterity, attack and maneuver penalties. Resolve grapple state, triggered opportunity attacks and grab/swallow-whole size eligibility at the table.</p>`;
+ }
+ for(const f of sheet.archetypeFeatures??[])html+=`<details><summary>${esc(f.archetype)}: ${esc(f.name)}</summary><p style="white-space:pre-line">${esc(f.text)}</p></details>`;
  html+=renderAbilitySummary(sheet);
  for(const [id,label]of [['alchemist-bombs','Bombs'],['cavalier-tactician','Tactician']]){const r=sheet.abilities?.resources?.[id];if(r)html+=`<p><strong>${label}:</strong> ${r.maximum} uses per day; ${r.remaining} remaining.</p>`;}
  for(const [energy,value] of Object.entries(sheet.defenses?.resistances??{}))html+=`<p>${esc(name(energy))}: ${value==='immune'?'immune':'resistance '+value}.</p>`;
@@ -90,8 +97,8 @@ export function renderClassSheet(sheet,rules){
  for(const row of sheet.sheetRows??[]){
  html+=`<p>${esc(row.label)}: attack ${row.stats.attack.total>=0?'+':''}${row.stats.attack.total}, damage modifier ${row.stats.damage.total>=0?'+':''}${row.stats.damage.total}, AC ${row.stats.ac.total}.</p>`;
  if(row.id!=='normal'){
- const affected=Object.entries(row.stats).filter(([id,stat])=>(id==='initiative'||id.startsWith('skill.'))&&stat.total!==sheet.stats[id]?.total);
- html+=`<details><summary>Conditional skills and initiative</summary>${affected.map(([id,stat])=>`<p>${esc(name(id.replace('skill.','')))}: ${stat.total>=0?'+':''}${stat.total}</p>`).join('')}</details>`;
+ const affected=Object.entries(row.stats).filter(([id,stat])=>(id==='initiative'||id.startsWith('skill.')||id.startsWith('save.')||id.startsWith('maneuver.')||id.startsWith('combatManeuver.'))&&stat.total!==sheet.stats[id]?.total);
+ html+=`<details><summary>Conditional checks, saves and initiative</summary>${affected.map(([id,stat])=>`<p>${esc(name(id.replace('skill.','')))}: ${stat.total>=0?'+':''}${stat.total}</p>`).join('')}</details>`;
  }
  }
 
@@ -148,7 +155,7 @@ function renderAbilitySummary(sheet){
  if(s.masteredSkills?.length)html+=`<p>Skill mastery (take 10 under stress): ${s.masteredSkills.map(x=>esc(name(x))).join(', ')}.</p>`;
  for(const m of s.magic??[])html+=`<p>${esc(m.name)}: ${esc(m.spell)}; caster level ${m.casterLevel}, save DC ${m.dc}, ${m.uses} uses/day.</p>`;
  if(s.resiliency)html+=`<p>Resiliency: ${s.resiliency} temporary hit points when activated; once per day, lasts 1 minute.</p>`;
- if(s.damageReduction)html+=`<p>Damage reduction while raging: ${s.damageReduction}/—.</p>`;
+ if(s.damageReduction)html+=`<p>Current damage reduction: ${s.damageReduction}/—.</p>`;
  if(s.fastHealing)html+=`<p>Fast healing ${s.fastHealing}.</p>`;
  for(const a of s.chosen)html+=`<details><summary>${esc(a.name)}</summary><p>${esc(a.text)}</p></details>`;
  return html;

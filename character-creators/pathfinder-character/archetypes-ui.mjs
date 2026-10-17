@@ -1,7 +1,7 @@
-import {FIGHTER_ARCHETYPES,archetypeIds,conflicts,fighterProgression,selectedArchetypes} from './engine/archetypes.mjs';
+import {BARBARIAN_ARCHETYPES,barbarianProgression,FIGHTER_ARCHETYPES,archetypeIds,conflicts,fighterProgression,selectedArchetypes} from './engine/archetypes.mjs';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const slot=s=>s.replace(/-/g,' ');
-export function renderArchetypes(c){
+function renderFighterArchetypes(c){
  if(!c.builder.classOrder.includes('fighter'))return '';
  const selected=archetypeIds(c),level=c.builder.classOrder.filter(x=>x==='fighter').length;
  let html=`<details class="archetype-section" ${selected.length?'open':''}><summary>Fighter archetypes${selected.length?' — '+esc(selectedArchetypes(c).map(p=>p.name).join(', ')):''}</summary><p>Select compatible archetypes. Replaced or altered features are reserved across all 20 fighter levels, including future levels. Untick a selection to release its features.</p>`;
@@ -13,4 +13,17 @@ export function renderArchetypes(c){
  html+=`<h3>Fighter progression${selected.length?' — '+esc(selectedArchetypes(c).map(p=>p.name).join(' + ')):''}</h3><p>Uses fighter class level, not total character level. Highlighted row is your current fighter level.</p><div style="overflow-x:auto"><table><thead><tr><th>Level</th><th>BAB</th><th>Fort</th><th>Ref</th><th>Will</th><th>Features after replacements</th></tr></thead><tbody>${fighterProgression(c).map(r=>`<tr ${r.level===level?'style="background:#28394a"':''}><th>${r.level}</th><td>${r.bab.map(n=>'+'+n).join('/')}</td><td>+${r.fortitude}</td><td>+${r.reflex}</td><td>+${r.will}</td><td>${r.features.map(f=>esc(f.label)+(f.origin!=='Fighter'?' <small>('+esc(f.origin)+')</small>':'')).join('<br>')||'—'}</td></tr>`).join('')}</tbody></table></div>`;
 
  return html;
+}
+
+export function renderArchetypes(c){
+ let html=renderFighterArchetypes(c);
+ const level=c.builder.classOrder.filter(id=>id==='barbarian').length;if(!level)return html;
+ const chosen=archetypeIds(c,'barbarian');
+ html+='<details class="archetype-section" '+(chosen.length?'open':'')+'><summary>Barbarian archetypes</summary><p>Select compatible archetypes. Replacements are reserved across all 20 class levels.</p>';
+ for(const p of BARBARIAN_ARCHETYPES){const checked=chosen.includes(p.id),blocked=conflicts(c,p.id),disabled=!checked&&blocked.length;
+ html+=`<div style="margin:12px 0;${disabled?'opacity:.5':''}"><label style="display:flex;align-items:center;gap:8px"><input style="width:auto" type="checkbox" data-field="archetype.${p.id}" ${checked?'checked':''} ${disabled?'disabled':''}><strong>${esc(p.name)}</strong></label><p>Replaces: ${esc(p.replacements.map(slot).join(', ')||'None')}. Alters: ${esc(p.alterations.map(slot).join(', ')||'None')}.</p>${disabled?'<p>Unavailable: '+esc(blocked.map(b=>b.name+' — '+slot(b.slot)).join('; '))+'</p>':''}<details><summary>Features</summary>${p.features.map(f=>'<p style="white-space:pre-line"><strong>Level '+f.level+': '+esc(f.name)+'</strong><br>'+esc(f.rulesText)+'</p>').join('')}</details></div>`;
+ }
+ html+='</details><h3>Barbarian progression</h3><p>Uses barbarian class level. Conditional effects are shown separately on the sheet.</p><div style="overflow-x:auto"><table><tr><th>Level</th><th>BAB</th><th>Fort / Ref / Will</th><th>Features</th></tr>';
+ for(const r of barbarianProgression(c))html+=`<tr ${r.level===level?'style="background:#28394a"':''}><td>${r.level}</td><td>${r.bab.join('/')}</td><td>${r.fortitude} / ${r.reflex} / ${r.will}</td><td>${r.features.map(f=>esc(f.label)+' ('+esc(f.origin)+')').join('<br>')}</td></tr>`;
+ return html+'</table></div>';
 }

@@ -1,3 +1,4 @@
+import {barbarianSpecs} from './barbarian-archetypes.mjs';
 import {selectableSpecs} from './selectable-abilities.mjs';
 import {martialSpecs,martialIssues} from './martial-options.mjs';
 import {dragonbornFeatures} from './racial.mjs';
@@ -16,7 +17,7 @@ export function coreChoiceSpecs(classes){
  return specs;
 }
 export function dependentSpecs(c){
- const b=c.builder?.classOptions??{},specs=[...coreChoiceSpecs(c.classes),...martialSpecs(c),...selectableSpecs(c)],add=(id,label,options)=>specs.push({id,label,options});
+ const b=c.builder?.classOptions??{},specs=[...coreChoiceSpecs(c.classes),...martialSpecs(c),...selectableSpecs(c),...barbarianSpecs(c)],add=(id,label,options)=>specs.push({id,label,options});
  if(c.classes.druid&&b['druid-bond']==='domain')add('druid-domain','Nature domain',data.domains.filter(x=>['air','animal','earth','fire','plant','water','weather'].includes(x.id)));
  for(const cls of ['druid','ranger'])if(c.classes[cls]>=(cls==='ranger'?4:1)&&b[cls+'-bond']==='companion')add(cls+'-companion','Animal companion',data.companions.filter(x=>cls!=='ranger'||['badger-wolverine','bird-eagle-hawk-owl','camel','cat-small-cheetah-leopard','dog','horse','pony','snake-viper','wolf'].includes(x.id)));
  if(c.classes.cavalier)add('cavalier-mount','Mount',data.companions.filter(x=>['horse','pony'].includes(x.id)));

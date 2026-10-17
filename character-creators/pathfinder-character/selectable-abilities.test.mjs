@@ -32,8 +32,8 @@ test('rage changes physical statistics, HP and saves; conditional Superstition d
 });
 test('repeatable powers cap at three and disappear as levels are removed',()=>{
  const c=make('barbarian',8);for(const n of [2,4,6])choose(c,'barbarian-ability-'+n,'swift-foot');assert.throws(()=>choose(c,'barbarian-ability-8','swift-foot'));
- choose(c,'barbarian-raging','on');assert.equal(equipmentSheet(c,rules).stats['speed.bonus'].total,15);
- c.builder.classOrder=Array(2).fill('barbarian');assert.equal(equipmentSheet(c,rules).stats['speed.bonus'].total,5);
+ choose(c,'barbarian-raging','on');assert.equal(equipmentSheet(c,rules).stats['speed.bonus'].total,25);
+ c.builder.classOrder=Array(2).fill('barbarian');assert.equal(equipmentSheet(c,rules).stats['speed.bonus'].total,15);
 });
 test('mutagen and feral discovery affect the sheet without reducing permanent skill-rank budget',()=>{
  const c=make('alchemist',2);c.builder.baseScores.int=16;choose(c,'alchemist-ability-2','feral-mutagen');const budget=calculateSkills(c,calculate(c)).normal;const before=equipmentSheet(c,rules);

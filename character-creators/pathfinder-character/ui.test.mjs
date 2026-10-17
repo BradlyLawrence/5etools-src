@@ -5,7 +5,7 @@ import {readRoster} from './roster.mjs';
 test('all tabs remain accessible on an incomplete draft and edited choices save',async()=>{
  const catalogue=JSON.parse(await readFile(new URL('../pathfinder/data/catalogue.json',import.meta.url),'utf8'));
  const ids=['message','roster','home','editor','title','steps','panel','new','load','saved-heading','import','file','save','download','back'];
- const nodes=new Map(ids.map(id=>[id,{innerHTML:'',textContent:'',hidden:false,children:[],replaceChildren(){this.children=[];},append(c){this.children.push(c);},focus(){}}]));
+ const nodes=new Map(ids.map(id=>[id,{innerHTML:'',textContent:'',hidden:false,children:[],querySelectorAll(){return [];},replaceChildren(){this.children=[];},append(c){this.children.push(c);},focus(){}}]));
  const map=new Map();globalThis.localStorage={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)};
  globalThis.document={getElementById:id=>nodes.get(id),createElement:()=>({append(){}})};
  globalThis.window={addEventListener(){}};

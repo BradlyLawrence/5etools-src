@@ -1,3 +1,4 @@
+import {hasBarbarian,barbarianLevel,swordGunActive} from './barbarian-archetypes.mjs';
 import {archetypeGrants} from './archetypes.mjs';
 import {featSlotWaives,featSlots,slotAllows} from './feat-progression.mjs';
 /** Pure, browser-compatible evaluator for the approved class-grant package.
@@ -104,6 +105,7 @@ function checkPrerequisites(def, selection, sources, c, active, pkg) {
     if(p.kind==='caster-level'){let actual=p.arcane?(c.arcaneCasterLevel??0):Math.max(c.casterLevel??0,c.arcaneCasterLevel??0);if(p.masterCraftsman&&[...active.values()].some(f=>f.featId==='master-craftsman'))actual=Math.max(actual,c.craftingRanks??0);return {...p,actual,met:actual>=p.minimum};}
 
     if (p.kind === 'ability') {
+      if(p.ability==='dex'&&hasBarbarian(c,'titan-mauler')&&barbarianLevel(c)>=({'improved-two-weapon-fighting':11,'greater-two-weapon-fighting':16}[def.id]??99))return {...p,met:true,waived:true};
       const actual = c.abilities[p.ability];
       let effective = actual;
       const exceptions = [];
@@ -126,7 +128,7 @@ function checkPrerequisites(def, selection, sources, c, active, pkg) {
     if (p.kind === 'class-level') return { ...p, actual: c.classes[p.classId] ?? 0, met: (c.classes[p.classId] ?? 0) >= p.minimum };
     if(p.kind==='weapon-proficiency'&&p.fromFeat)return {...p,met:[...active.values()].some(f=>f.featId===p.fromFeat&&f.weaponId&&(c.proficientWeapons.includes(f.weaponId)||[...active.values()].some(proficiency=>['martial-weapon-proficiency','exotic-weapon-proficiency'].includes(proficiency.featId)&&proficiency.weaponId===f.weaponId)))};
     if (p.kind === 'weapon-proficiency') return { ...p, weaponId: selection ?? null, met: !!selection && (c.proficientWeapons.includes(selection)||[...active.values()].some(f=>['martial-weapon-proficiency','exotic-weapon-proficiency'].includes(f.featId)&&f.weaponId===selection)) };
-    return { ...p, met: [...active.values()].some(f => f.featId === p.featId && (!p.sameWeapon || !!selection && f.weaponId === selection)) };
+    return { ...p, met: [...active.values()].some(f => f.featId === p.featId && !f.sources.every(s=>s.id==='sword-and-gun') && (!p.sameWeapon || !!selection && f.weaponId === selection)) };
   });
 }
 
@@ -158,8 +160,11 @@ export function evaluateClassGrants(pkg, input, context = {}) {
     if(feat.creatorSlot?.startsWith('ranger-bonus-')&&c.equipment?.armorId&&pkg.equipment?.items.find(x=>x.id===c.equipment.armorId)?.category==='heavy')continue;
     add(feat.featId, feat.weaponId, { id: `selection:${index}`, kind: 'selected',creatorSlot:feat.creatorSlot,slotWaiver:def&&featSlotWaives(c,feat,def) },feat.count??1);
   }
+  if(swordGunActive(c,pkg.equipment?.items.find(w=>w.id===c.context?.weapon?.id)))add('two-weapon-fighting',undefined,{id:'sword-and-gun',kind:'class-grant',classId:'barbarian',classLevel:2,waivePrerequisites:['ability']});
   for(const grant of archetypeGrants(c))add(grant.featId,undefined,{id:'archetype:'+grant.name+':'+grant.featId,kind:'class-grant',classId:'fighter',classLevel:grant.level,slotWaiver:grant.featId==='pinpoint-targeting',waivedFeatIds:grant.featId==='stand-still'?['combat-reflexes']:[],waivePrerequisites:definitions.get(grant.featId)?.prerequisites.map(p=>p.kind)??[]});
+  if(hasBarbarian(c,'armored-hulk'))add('armor-proficiency-heavy',undefined,{id:'armored-hulk-proficiency',kind:'class-grant',classId:'barbarian',classLevel:1,waivePrerequisites:[]});
   for (const grant of pkg.grants) {
+    if(grant.classId==='barbarian'&&grant.featId==='armor-proficiency-medium'&&(hasBarbarian(c,'urban-barbarian')||hasBarbarian(c,'savage-technologist')))continue;
     if ((c.classes[grant.classId] ?? 0) < grant.classLevel) continue;
     const weaponId = grant.selectionFrom ? c.deity?.favoredWeaponId : undefined;
     add(grant.featId, weaponId, { id: grant.id, kind: 'class-grant', classId: grant.classId,
