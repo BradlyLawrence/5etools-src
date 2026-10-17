@@ -1,4 +1,6 @@
+import {validateArchetypes} from './engine/archetypes.mjs';
 import {validateSpellcasting} from './engine/spellcasting.mjs';
+import {migrateBowCharacter} from './engine/bows.mjs';
 import {permanentAbilityBonus} from './engine/selectable-abilities.mjs';
 import {featSlots} from './engine/feat-progression.mjs';
 import {optionIssues} from './engine/core-options.mjs';
@@ -30,7 +32,7 @@ const FLEX=['humans','half-elves','half-orcs'];
 // Standard multiclassing: sum each class table’s rounded BAB and save bonuses.
 const CHASSIS={fighter:[1,['fortitude']],barbarian:[1,['fortitude']],ironwright:[1,['fortitude']],gunslinger:[1,['fortitude','reflex']],cavalier:[1,['fortitude']],paladin:[1,['fortitude','will']],ranger:[1,['fortitude','reflex']],rogue:[.75,['reflex']],bard:[.75,['reflex','will']],cleric:[.75,['fortitude','will']],druid:[.75,['fortitude','will']],monk:[.75,['fortitude','reflex','will']],alchemist:[.75,['fortitude','reflex']],inquisitor:[.75,['fortitude','will']],wizard:[.5,['will']],sorcerer:[.5,['will']]};
 export function prepare(c){
- const out=structuredClone(c);
+ const out=migrateBowCharacter(c);
  if(!out.builder)out.builder={version:1,targetLevel:Math.max(1,Object.values(c.classes).reduce((a,b)=>a+b,0)),classOrder:Object.entries(c.classes).flatMap(([id,n])=>Array(n).fill(id)),orderConfirmed:Object.keys(c.classes).length<=1,raceId:'',flexAbility:'',method:'manual',budget:15,baseScores:{...Object.fromEntries(ABILITIES.map(a=>[a,10])),...c.abilities},increases:[],identity:{}};
  out.builder.skills??=Object.fromEntries(Object.entries(c.skillRanks??{}).map(([id,n])=>[id,{normal:n,background:0}]));
  return out;
@@ -49,7 +51,7 @@ export function calculate(c){
   return [save,total];
  }));
  const spent=ABILITIES.reduce((n,a)=>n+(COST[b.baseScores[a]]??NaN),0);
- const issues=[...backgroundDetails(c.background).issues,...optionIssues({...c,classes,abilities})];
+ const issues=[...backgroundDetails(c.background,c).issues,...optionIssues({...c,classes,abilities})];
  issues.push(...hitPoints(c,abilities).issues);
  if(['half-elves','gnomes'].includes(b.raceId)&&!replacedTrait(c,'adaptability')&&!b.racialSkill)issues.push('Choose your racial skill on the Race tab.');
  if(!b.favoredClasses?.[0])issues.push('Choose a favoured class on the Classes tab.');
@@ -70,6 +72,7 @@ export function calculate(c){
 export function materialize(c){c=structuredClone(c);c.feats=c.feats.filter(f=>!f.racialGrant);if(c.builder.raceId==='half-elves'&&!replacedTrait(c,'adaptability')&&c.builder.racialSkill){c.feats.push({featId:'skill-focus',racialGrant:true});c.ruleState??={choices:{},spent:{},toggles:{},conditions:{}};c.ruleState.choices['skill-focus-skill']=c.builder.racialSkill;}const r=calculate(c);const skills=calculateSkills(c,r);return {...c,feats:c.feats.filter(f=>!f.creatorSlot||featSlots(c).some(slot=>slot.id===f.creatorSlot)),classes:r.classes,arcaneCasterLevel:Math.max(0,...['wizard','sorcerer','bard'].map(id=>r.classes[id]??0)),casterLevel:Math.max(0,...['wizard','sorcerer','bard','cleric','druid','inquisitor','alchemist'].map(id=>r.classes[id]??0),...['paladin','ranger'].map(id=>Math.max(0,(r.classes[id]??0)-3))),abilities:r.abilities,bab:r.bab,baseSaves:r.saves,skillRanks:skills.skillRanks,classSkills:skills.classSkills};}
 export function validateBuilder(b){
  validateSpellcasting(b.spellcasting);
+ validateArchetypes({builder:b});
  if(b.classOptions!==undefined&&(!b.classOptions||Array.isArray(b.classOptions)||typeof b.classOptions!=='object'||Object.values(b.classOptions).some(v=>typeof v!=='string')))throw Error('Invalid class options.');
  validateRacial(b);validateAdvancement(b);
  if(b.gunslinger!==undefined&&(!b.gunslinger||typeof b.gunslinger!=='object'||Array.isArray(b.gunslinger)||Object.entries(b.gunslinger).some(([k,v])=>!['primary','secondary'].includes(k)||!['pistol','rifle','trenchgun','handcannon'].includes(v))||b.gunslinger.secondary&&b.gunslinger.primary===b.gunslinger.secondary))throw Error('Invalid gunslinger families.');

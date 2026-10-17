@@ -1,23 +1,50 @@
+import {featSlots,slotAllows} from './feat-progression.mjs';
 import data from './selectable-abilities-data.mjs';
 import {SKILLS} from './skills.mjs';
 export const SELECTABLE_ABILITIES=data.abilities;
 const labels={rogue:'Rogue talent',barbarian:'Rage power',alchemist:'Discovery',paladin:'Mercy'};
-export function abilitySlots(c){
+export function abilitySlots(c,baseOnly=false){
  const slots=[];
  for(const cls of Object.keys(labels)){
   const step=cls==='paladin'?3:2,max=Math.min(c.classes?.[cls]??0,cls==='alchemist'?18:20);
   for(let level=step;level<=max;level+=step)slots.push({id:`${cls}-ability-${level}`,classId:cls,level,label:`${labels[cls]} (class level ${level})`});
  }
  if(c.classes?.alchemist>=20)for(const suffix of ['a','b','grand'])slots.push({id:'alchemist-ability-20-'+suffix,classId:'alchemist',level:20,grand:suffix==='grand',label:suffix==='grand'?'Grand discovery':'Discovery (class level 20)'});
+ if(!baseOnly){
+  const defs={'extra-discovery':'alchemist','extra-rage-power':'barbarian','extra-rogue-talent':'rogue'},order=c.builder?.classOrder,baseSlots=order?featSlots(c,true):[];
+  const seen=new Set(),processed=new Set();let changed=true;
+  while(changed){changed=false;
+  for(const [index,f]of (c.feats??[]).entries()){
+   if(processed.has(index))continue;
+   const cls=defs[f.featId];if(!cls)continue;
+   const origin=f.creatorSlot?baseSlots.find(s=>s.id===f.creatorSlot):null;
+   if(f.creatorSlot&&(!origin||!slotAllows(origin,{id:f.featId,combat:false,name:f.featId})))continue;
+   if(f.creatorSlot&&seen.has(f.creatorSlot))continue;
+   if(f.creatorSlot)seen.add(f.creatorSlot);
+   const level=origin?order.slice(0,origin.level).filter(id=>id===cls).length:c.classes?.[cls]??0;
+   if(level<2)continue;
+   processed.add(index);changed=true;
+   const count=Math.min(100,Math.max(1,f.count??1));
+   for(let n=0;n<count;n++)slots.push({id:`${cls}-ability-extra-${f.creatorSlot??index}-${n}`,classId:cls,level,characterLevel:origin?.level,extra:true,label:`${labels[cls]} (${f.featId.replaceAll('-',' ')}${origin?' at character level '+origin.level:''})`});
+  }
+  slots.sort((a,b)=>a.classId.localeCompare(b.classId)||a.level-b.level||Number(!!a.extra)-Number(!!b.extra));
+  // A legal advanced rogue talent can itself grant a feat. Resolve only from
+  // already available slots, so a circular saved selection cannot unlock itself.
+  const selected=[];
+  for(const slot of slots){const a=allowed(c,slot,selected).find(a=>a.id===c.builder?.classOptions?.[slot.id]);if(!a)continue;selected.push(a);
+   if(slot.extra&&a.classId==='rogue'&&a.id==='feat'){const id='rogue-talent-feat-'+slot.id;if(!baseSlots.some(s=>s.id===id))baseSlots.push({id,level:slot.characterLevel});}
+  }
+  }
+ }
  return slots;
 }
 function allowed(c,slot,previous){
  const b=c.builder?.classOptions??{};
  return data.abilities.filter(a=>a.classId===slot.classId&&a.minimumLevel<=slot.level&&!!a.grand===!!slot.grand&&a.id!=='finesse-rogue'&&previous.filter(x=>x.classId===a.classId&&x.id===a.id).length<a.maximum&&a.requires.every(id=>previous.some(x=>x.classId===a.classId&&x.id===id))&&(!a.intelligence||(c.abilities?.int??c.builder?.baseScores?.int??10)>=a.intelligence)&&(a.id!=='night-vision'||previous.some(x=>x.id==='low-light-vision')||['elves','half-elves','gnomes'].includes(c.builder?.raceId)));
 }
-export function selectedAbilities(c){
+export function selectedAbilities(c,baseOnly=false){
  const selected=[];
- for(const slot of abilitySlots(c)){const a=allowed(c,slot,selected).find(a=>a.id===c.builder?.classOptions?.[slot.id]);if(a)selected.push({...a,slot});}
+ for(const slot of abilitySlots(c,baseOnly)){const a=allowed(c,slot,selected).find(a=>a.id===c.builder?.classOptions?.[slot.id]);if(a)selected.push({...a,slot});}
  return selected;
 }
 export function selectableSpecs(c){
@@ -35,7 +62,7 @@ export function selectableSpecs(c){
  for(const a of selected){
   if(['minor-magic','major-magic'].includes(a.id))add(a.slot.id+'-spell',a.name+' spell',data.spells.filter(x=>x.level===(a.id==='minor-magic'?0:1)));
   if(a.id==='skill-mastery')for(let n=1;n<=Math.max(0,3+Math.floor(((c.abilities?.int??10)-10)/2));n++){
-   const field=a.slot.id+'-skill-'+n,other=new Set(Object.entries(b).filter(([id])=>id!==field&&/-ability-\d+-skill-\d+$/.test(id)).map(([,v])=>v));
+   const field=a.slot.id+'-skill-'+n,other=new Set(Object.entries(b).filter(([id])=>id!==field&&/-ability-.+-skill-\d+$/.test(id)).map(([,v])=>v));
    add(field,'Skill mastery: skill '+n,Object.keys({...SKILLS,...c.skillRanks}).filter(id=>!['craft','perform','profession','lore','artistry'].includes(id)&&!other.has(id)).map(id=>({id,name:id.replace(/-/g,' ')})));
   }
  }

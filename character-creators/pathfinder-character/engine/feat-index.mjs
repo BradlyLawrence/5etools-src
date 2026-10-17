@@ -2,6 +2,23 @@ import {FEAT_THEMES} from './feat-themes.mjs';
 // Search metadata only: never used to grant feats or determine eligibility.
 const normalize = value => String(value ?? '').toLowerCase().replace(/\([^)]*\)/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 const topics = ['sneak attack', 'feint', 'trip', 'disarm', 'grapple', 'bull rush', 'overrun', 'sunder'];
+const classes=['alchemist','barbarian','bard','cavalier','cleric','druid','fighter','gunslinger','inquisitor','ironwright','monk','oracle','paladin','ranger','rogue','sorcerer','summoner','witch','wizard'];
+const featureClasses={'bardic-performance':['bard'],'rage':['barbarian'],'ki-pool':['monk'],'drunken-ki':['monk'],'lay-on-hands':['paladin'],'mercy':['paladin'],'wild-shape':['druid'],'wild-empathy':['druid','ranger'],'sneak-attack':['rogue'],'bomb':['alchemist'],'bombs':['alchemist'],'discovery':['alchemist'],'hex':['witch'],'revelation':['oracle'],'tactician':['cavalier'],'eidolon':['summoner'],'channel-energy':['cleric','paladin'],'channel-positive-energy':['cleric','paladin'],'channel-negative-energy':['cleric']};
+function contextualThemes(record){
+ const themes=new Set();
+ if(/\([^)]*\bteamwork\b/i.test(record.name))themes.add('teamwork');
+ const prerequisiteText=(record.text??record.description??'').match(/Prerequisites?:([^\n]*)/i)?.[1]?.toLowerCase()??'';
+ // Read only requirements, not flavour or targets; half-orc must not accidentally match orc.
+ for(const race of prerequisiteText.match(/(?<![a-z-])(?:half-elf|half-orc|dwarf|elf|gnome|halfling|human|orc)(?![a-z-])/g)??[])themes.add(race);
+ for(const cls of classes)if(new RegExp(`\\b${cls}\\b`).test(prerequisiteText))themes.add(cls);
+ for(const [feature,tags]of Object.entries(featureClasses))if(prerequisiteText.includes(feature.replace(/-/g,' ')))tags.forEach(tag=>themes.add(tag));
+ for(const p of Array.isArray(record.prerequisites)?record.prerequisites:[]){
+  if(p.kind==='race')for(const race of p.anyOf??[])themes.add(race);
+  if(p.kind==='class-level')themes.add(p.classId);
+  if(p.kind==='class-feature')for(const tag of featureClasses[p.feature]??[])themes.add(tag);
+ }
+ return [...themes].filter(theme=>Object.hasOwn(FEAT_THEMES,theme));
+}
 export function buildFeatIndex(records) {
  const nodes = new Map(), aliases = new Map();
  for (const record of records) {
@@ -11,6 +28,8 @@ export function buildFeatIndex(records) {
  }
  for (const node of nodes.values()) for (const record of node.records) {
   for(const [theme,names] of Object.entries(FEAT_THEMES)) if([...names].some(name=>normalize(name)===node.key)) node.themes.add(theme);
+  for(const theme of record.navigationThemes??[])if(Object.hasOwn(FEAT_THEMES,theme))node.themes.add(theme);
+  for(const theme of contextualThemes(record))node.themes.add(theme);
   // Saved homebrew has no curated reference entry; derive themes from authored effects.
   if(record.id.startsWith('homebrew:')) for(const effect of record.effects??[]) {
    if((effect.target??'').startsWith('skill.')) node.themes.add('skills');

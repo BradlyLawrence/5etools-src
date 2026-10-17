@@ -25,6 +25,7 @@ export function renderEquipment(c,rules,view={}){
  if(!c.builder.classOrder.some(Boolean))return html+'<p>Assign a class level to calculate equipment statistics.</p>';
  try{
   const sheet=equipmentSheet(c,rules),e=sheet.equipment;
+  if(e.bow)html+=`<p>Bow Strength rating: +${e.bow.strengthRating} (STR ${e.bow.strengthRequired}) · Strength damage: ${signed(e.bow.strengthDamage)} · ${e.bow.attackPenalty?'Below draw requirement: −2 attack included.':'Draw requirement met.'} Range increment: ${e.rangeIncrementFt} ft.</p>`;
   html+=`<label><input type="checkbox" data-field="equipment.fightingDefensively" ${c.equipment?.fightingDefensively?'checked':''}> Fight defensively (−4 attack; +2 dodge AC, or +3 with 3 Acrobatics ranks)</label>`;
   if(e.darkvisionFt)html+=`<p>Darkvision: ${e.darkvisionFt} ft.</p>`;
   if(e.gauntletAttack)html+=`<p>Integrated gauntlet: attack ${signed(e.gauntletAttack.attack)} · Damage ${esc(e.gauntletAttack.dice?.join(" / "))} ${signed(e.gauntletAttack.damageBonus)} bludgeoning (lethal).</p>`;

@@ -1,0 +1,11 @@
+import {archetypeIds} from './archetypes.mjs';
+import data from './martial-options-data.mjs';
+export const crossbowmanLevel=c=>archetypeIds(c).includes('crossbowman')?(c.classes.fighter??0):0;
+export const crossbowWeapon=w=>!!w&&!w.firearm&&(w.tech?.family==='crossbows'||data.weaponGroups.find(g=>g.id==='crossbows').weapons.includes(w.id));
+export function crossbowmanEffects(c,w,conditions={}){const n=crossbowmanLevel(c),out=[],add=(target,value,name)=>out.push({kind:'modifier',target,value,name,bonusType:'untyped',featId:'archetype.'+name});if(n>=9&&conditions['class-option.crossbow-sniping'])add('skill.stealth',Math.floor(n/2),'Quick Sniper');if(!crossbowWeapon(w))return out;
+ if(n>=5)for(const t of ['attack.weapon','damage.weapon'])add(t,1+Math.floor((n-5)/4),'Crossbow Expert');
+ if(n>=3&&conditions['class-option.crossbow-readied'])add('damage.weapon',Math.max(1,Math.floor(Math.floor((c.abilities.dex-10)/2)/(n>=11?1:2))),n>=11?'Greater Deadshot':'Deadshot');
+ if(n>=17&&conditions['class-option.meteor-shot'])add('attack.weapon',-4,'Meteor Shot');
+ if(n>=19&&conditions['class-option.penetrating-shot'])add('attack.weapon',-4,'Penetrating Shot — first secondary target');return out;}
+export function crossbowmanScenarios(c,w){const n=crossbowmanLevel(c),rows=[],add=(id,label)=>rows.push({id,label,conditions:{['class-option.'+id]:true}});if(n>=9)add('crossbow-sniping','Quick Sniper — Stealth when sniping; apply normal sniping penalty separately');if(!crossbowWeapon(w))return rows;if(n>=3)add('crossbow-readied','Readied crossbow attack'+(n>=7?' — target denied Dexterity bonus to AC':''));if(n>=17)add('meteor-shot','Meteor Shot — one standard-action attack; use same roll for bull rush or trip on hit');if(n>=19)add('penetrating-shot','Penetrating Shot — first secondary target after confirmed critical; add range penalties');return rows;}
+export function crossbowmanSummary(c,w){const n=crossbowmanLevel(c);if(!n)return null;const crossbow=crossbowWeapon(w);return {crossbow,deadshot:crossbow&&n>=3?Math.max(1,Math.floor(Math.floor((c.abilities.dex-10)/2)/(n>=11?1:2))):0,deniesDex:crossbow&&n>=7,snipingBonus:n>=9?Math.floor(n/2):0,countershot:crossbow&&n>=9,safeShot:crossbow&&n>=13,pinpoint:n>=15,meteor:crossbow&&n>=17,penetrating:crossbow&&n>=19,weaponMastery:crossbow&&n>=20&&c.builder?.classOptions?.['crossbowman-mastery']===w.id};}

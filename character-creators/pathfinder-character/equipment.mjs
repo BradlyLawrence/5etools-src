@@ -1,9 +1,11 @@
 import {firearmReload} from './engine/gunslinger.mjs';
+import {bowId,migrateBowCharacter} from './engine/bows.mjs';
 import {dragonbornFeatures} from './engine/racial.mjs';
 import {hitPoints} from './advancement.mjs';
 import {DEFAULT_CHARACTER,evaluateCharacter,applyTechEvent} from './engine/homebrew.mjs';
 import {materialize} from './character.mjs';
 export function sheetCharacter(c){
+ c=migrateBowCharacter(c);
  const out={...structuredClone(DEFAULT_CHARACTER),...materialize(c)};
  out.proficientWeapons=c.proficientWeapons??[];
  out.context=c.context??{attackType:'melee',weapon:{id:'unarmed-strike',finesseEligible:true},featToggles:{}};
@@ -11,6 +13,7 @@ export function sheetCharacter(c){
  return out;
 }
 export function equip(c,rules,slot,id){
+ id=bowId(id);
  if(!['weaponId','armorId','shieldId'].includes(slot))throw Error('Unknown equipment slot.');
  for(const i of c.craftedItems??[])if(i.design.slot+'Id'===slot)i.equipped=false;
  const kind={weaponId:'weapon',armorId:'armor',shieldId:'shield'}[slot];
@@ -20,7 +23,7 @@ export function equip(c,rules,slot,id){
  if(slot!=='weaponId'&&c.techEquipment)c.techEquipment[slot==='armorId'?'armorInstanceId':'shieldInstanceId']=null;
  if(slot==='weaponId'){
   if(c.techEquipment)c.techEquipment.selectedInstanceId=null;
-  delete c.equipment.damageMode;delete c.equipment.thrown;
+  delete c.equipment.damageMode;delete c.equipment.thrown;delete c.equipment.bowStrengthRating;
  }
  const item=rules.equipment.items.find(x=>x.id===id);
  if(item?.tech){

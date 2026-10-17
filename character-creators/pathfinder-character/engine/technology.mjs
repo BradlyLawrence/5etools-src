@@ -1,3 +1,4 @@
+import {archetypeGrants} from './archetypes.mjs';
 /** Per-item resources and declarative powered profiles; no turns or enemy records. */
 const check=(ok,message)=>{if(!ok)throw new Error(message);};
 const integer=(n,min=0,max=100)=>Number.isInteger(n)&&n>=min&&n<=max;
@@ -44,7 +45,7 @@ export function validateTechState(c,rules){
  check(state.selectedInstanceId===undefined||state.selectedInstanceId===null||ids.has(state.selectedInstanceId),'Unknown selected tech item');
 }
 export function techProficient(c,item){
- return (c.classes.ironwright??0)>0||(c.proficientWeapons??[]).includes(item.id)||(c.feats??[]).some(f=>f.featId===(item.kind==='weapon'?'tech-melee-proficiency':'tech-armour-proficiency'));
+ return (item.kind==='weapon'&&archetypeGrants(c).some(f=>f.featId==='tech-melee-proficiency'))||(c.classes.ironwright??0)>0||(c.proficientWeapons??[]).includes(item.id)||(c.feats??[]).some(f=>f.featId===(item.kind==='weapon'?'tech-melee-proficiency':'tech-armour-proficiency'));
 }
 export function selectedTech(rules,c){
  validateTechState(c,rules);

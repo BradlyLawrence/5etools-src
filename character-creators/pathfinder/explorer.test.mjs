@@ -6,8 +6,8 @@ const data=JSON.parse(await readFile(new URL('./data/catalogue.json',import.meta
 test('published catalogue preserves unique IDs, prerequisites and indexes',()=>{
  for(const entries of [data.feats,data.equipment.items])assert.equal(new Set(entries.map(e=>e.id)).size,entries.length);
  for(const feat of data.feats){assert.ok(Array.isArray(feat.prerequisites));assert.ok(Array.isArray(feat.index.themes));}
- assert.equal(data.equipment.items.length,109);
- assert.equal(data.equipment.items.filter(e=>e.tech).length,5);
+ assert.equal(data.equipment.items.length,148);
+ for(const item of data.equipment.items)assert.ok(item.recovery,item.id);
  assert.equal(data.character,undefined);
 });
 test('prerequisite chain search and linked descendants agree',()=>{
@@ -21,7 +21,7 @@ test('prerequisite chain search and linked descendants agree',()=>{
 test('themes and equipment filters combine with search',()=>{
  assert.ok(filterEntries(data,'feats','counterspell','defensive').length);
  assert.ok(filterEntries(data,'feats','','skills').every(e=>e.index.themes.includes('skills')));
- assert.equal(filterEntries(data,'equipment','reservoir','tech-melee').length,5);
+ assert.equal(filterEntries(data,'equipment','reservoir','tech-melee').length,8);
  assert.equal(filterEntries(data,'equipment','steam axe','martial').length,0);
  assert.equal(filterEntries(data,'feats','nonexistentexample').length,0);
 });
@@ -42,7 +42,7 @@ test('all detail pages render and search controls run against the published data
   globalThis.location={hash:''};
   globalThis.fetch=async()=>({ok:true,json:async()=>data});
   await import('./app.mjs');
-  assert.match(elements.get('count').textContent,/179 matching feats/);
+  assert.equal(elements.get('count').textContent,`${data.feats.length} matching feats`);
   for(const [kind,entries] of [['feats',data.feats],['equipment',data.equipment.items],['services',data.services.items],['classes',data.classes.items],['races',data.races.items]])for(const entry of entries){
    globalThis.location.hash=`#${kind}/${encodeURIComponent(entry.id)}`;
    events.hashchange();
@@ -55,6 +55,11 @@ test('all detail pages render and search controls run against the published data
   assert.match(elements.get('detail').innerHTML,/Pressure Strike/);
   assert.match(elements.get('detail').innerHTML,/Reservoir 4/);
   assert.doesNotMatch(elements.get('detail').innerHTML,/Ironwright specialist benefits/);
+  globalThis.location.hash='#equipment/caltrops';events.hashchange();
+  assert.match(elements.get('detail').innerHTML,/Requires Recycle/);
+  assert.match(elements.get('detail').innerHTML,/Rapid Fabrication/);
+  globalThis.location.hash='#equipment/alchemists-fire-flask';events.hashchange();
+  assert.match(elements.get('detail').innerHTML,/Consumed on use/);
   globalThis.location.hash='#feats/missing';events.hashchange();
   assert.match(elements.get('detail').innerHTML,/Entry not found/);
  }finally{Object.assign(globalThis,old);}
@@ -68,10 +73,12 @@ test('services distinguish purchases, fares and unset campaign prices',()=>{
  assert.equal(filterEntries(data,'services','','Technology services').length,2);
 });
 
-test('classes include core, approved additions and a labelled Ironwright draft',()=>{
+test('classes include core, approved additions and the Ironwright playtest',()=>{
  assert.equal(data.classes.items.length,16);
  assert.equal(filterEntries(data,'classes','','Core classes').length,11);
- assert.equal(data.classes.items.find(c=>c.id==='ironwright').status,'draft');
+ assert.equal(data.classes.items.find(c=>c.id==='ironwright').status,'playtest');
+ assert.match(data.classes.items.find(c=>c.id==='ironwright').rulesHtml,/Rapid Fabrication/);
+ assert.match(data.classes.items.find(c=>c.id==='ironwright').rulesHtml,/Recycle/);
  assert.ok(data.classes.items.find(c=>c.id==='gunslinger').definition);
  for(const c of data.classes.items){assert.ok(c.rulesHtml);assert.doesNotMatch(c.rulesHtml,/<script|javascript:| onerror=/i);}
 });

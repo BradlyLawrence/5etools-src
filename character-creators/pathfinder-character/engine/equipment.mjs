@@ -1,4 +1,6 @@
 /** Equipment catalogue validation and safe, explicit derivation. No combat state. */
+import {validateRecovery} from './item-recovery.mjs';
+import {validateBowRating} from './bows.mjs';
 const assert=(ok,message)=>{if(!ok)throw new Error(message);};
 const finite=v=>typeof v==='number'&&Number.isFinite(v);
 const nullable=(v,test)=>v===null||test(v);
@@ -9,11 +11,14 @@ export function validateEquipment(catalogue,traitCatalogue){
  for(const item of catalogue.items){
   assert(typeof item.id==='string'&&/^[a-z0-9-]+$/.test(item.id)&&!ids.has(item.id),'Invalid or duplicate item ID');ids.add(item.id);
   assert(typeof item.name==='string'&&item.name.length>0,'Missing name');
+  if(item.recovery)validateRecovery(item.recovery);
+  if(item.craftingClassification)assert(['mundane','device','alchemical'].every(k=>typeof item.craftingClassification[k]==='boolean'),'Invalid crafting classification');
   assert(['weapon','armor','shield','ammunition','armor-addon','tool'].includes(item.kind),'Invalid item kind');
   assert(item.cost&&nullable(item.cost.gp,n=>finite(n)&&n>=0),'Invalid cost');
   assert(nullable(item.weightLb,n=>finite(n)&&n>=0),'Invalid weight');
   assert(Array.isArray(item.traits)&&item.traits.every(t=>traits.has(t)),'Unknown weapon trait');
   if(item.kind==='weapon'){
+   if(item.bow){validateBowRating(item.bow.strengthRating);assert(item.handling==='ranged','Bows must be ranged weapons');}
    assert(['simple','martial','exotic','tech-melee','tech-ranged'].includes(item.proficiency),'Invalid proficiency');
    assert(['unarmed','light','one-handed','two-handed','ranged'].includes(item.handling),'Invalid weapon handling');
    for(const size of ['small','medium'])assert(nullable(item.damage?.[size],a=>Array.isArray(a)&&a.length>0&&a.every(d=>/^(\d+d\d+|\d+)$/.test(d))),'Invalid damage dice');

@@ -1,3 +1,4 @@
+import {archetypeGrants} from './archetypes.mjs';
 import {featSlotWaives,featSlots,slotAllows} from './feat-progression.mjs';
 /** Pure, browser-compatible evaluator for the approved class-grant package.
  * No I/O, eval, mutations of character state, or external dependencies.
@@ -6,9 +7,10 @@ import {featSlotWaives,featSlots,slotAllows} from './feat-progression.mjs';
 const CONDITIONS = new Set(['always', 'selected-weapon', 'melee-only', 'ranged-only', 'expertise-active',
   'expertise-active-and-dodge-allowed', 'finesse-selected-and-eligible']);
 const VALUE_OPS = new Set(['shield-armor-check-penalty', 'expertise-scaling', 'rank-threshold', 'scale']);
-const PREREQUISITES = new Set(['ability', 'feat', 'bab', 'weapon-proficiency', 'class-level', 'skill-ranks', 'feat-count', 'character-level', 'class-feature', 'sheet-choice','caster-level','confirmed','craft-ranks','weapon-choice']);
+const PREREQUISITES = new Set(['ability', 'feat', 'bab', 'weapon-proficiency', 'class-level', 'skill-ranks', 'feat-count', 'character-level', 'class-feature', 'sheet-choice','caster-level','confirmed','craft-ranks','weapon-choice','race','base-save']);
+const RACE_TYPES={dwarves:['dwarf'],elves:['elf'],gnomes:['gnome'],'half-elves':['half-elf','elf','human'],'half-orcs':['half-orc','orc','human'],halflings:['halfling'],humans:['human'],dragonborn:['dragonborn']};
 export const baseSneakAttackDice = c => c.sneakAttackDice ?? Math.floor(((c.classes.rogue ?? 0) + 1) / 2);
-export const BONUS_TYPES = ['untyped', 'morale', 'luck', 'enhancement', 'competence', 'insight', 'sacred', 'profane', 'resistance', 'deflection', 'dodge', 'armor', 'shield', 'circumstance'];
+export const BONUS_TYPES = ['untyped', 'morale', 'luck', 'enhancement', 'competence', 'insight', 'sacred', 'profane', 'resistance', 'deflection', 'dodge', 'armor', 'shield', 'circumstance','racial','natural-armor'];
 const integer = (v, min = 0) => Number.isInteger(v) && v >= min;
 const keyOf = (id, weaponId) => JSON.stringify([id, weaponId ?? null]);
 const modifier = score => Math.floor((score - 10) / 2);
@@ -25,11 +27,14 @@ export function validatePackage(pkg) {
     if (typeof feat.combat !== 'boolean' || !Array.isArray(feat.prerequisites) || !Array.isArray(feat.effects))
       throw new Error(`Invalid feat ${feat.id}`);
     for (const p of feat.prerequisites) {
+      if(p.kind==='race'&&(!Array.isArray(p.anyOf)||!p.anyOf.length||p.anyOf.some(r=>!Object.values(RACE_TYPES).flat().includes(r))))throw new Error('Invalid race prerequisite');
+      if(p.kind==='base-save'&&(!['fortitude','reflex','will'].includes(p.save)||!integer(p.minimum,1)))throw new Error('Invalid base save prerequisite');
+      if(p.kind==='sneak-attack-dice'&&!integer(p.minimum,1))throw new Error('Invalid sneak attack prerequisite');
       if(p.kind==='confirmed'&&(typeof p.key!=='string'||typeof p.description!=='string'))throw new Error('Invalid confirmation');
       if(p.kind==='weapon-choice'&&!Array.isArray(p.options))throw new Error('Invalid weapon choices');
       if(['caster-level','craft-ranks'].includes(p.kind)&&!integer(p.minimum))throw new Error('Invalid minimum');
       if(p.kind==='feat-count'&&(!Array.isArray(p.featIds)||new Set(p.featIds).size!==p.featIds.length||!integer(p.minimum,1)||p.minimum>p.featIds.length))throw new Error('Invalid feat count prerequisite');
-      if(p.kind==='class-feature'&&!['channel-energy','channel-positive-energy','channel-negative-energy','rage','bardic-performance','ki-pool','lay-on-hands','mercy','wild-shape','sneak-attack'].includes(p.feature))throw new Error('Unsupported class feature');
+      if(p.kind==='class-feature'&&!['channel-energy','channel-positive-energy','channel-negative-energy','rage','bardic-performance','ki-pool','lay-on-hands','mercy','wild-shape','sneak-attack','bomb','discovery','rage-power','rogue-talent','tactician'].includes(p.feature))throw new Error('Unsupported class feature');
       if(p.kind==='sheet-choice'&&(!/^[a-z-]+$/.test(p.choiceId)||typeof p.option!=='string'))throw new Error('Invalid choice prerequisite');
       if (!PREREQUISITES.has(p.kind)) throw new Error(`Unsupported prerequisite ${p.kind}`);
       if (['ability', 'bab', 'character-level'].includes(p.kind) && !integer(p.minimum)) throw new Error('Invalid prerequisite minimum');
@@ -88,7 +93,10 @@ function normalizeCharacter(input) {
 function checkPrerequisites(def, selection, sources, c, active, pkg) {
   const waived = new Set(sources.flatMap(s => s.waivePrerequisites ?? []));
   return def.prerequisites.map(p => {
+    if(p.kind==='feat'&&sources.some(s=>s.waivedFeatIds?.includes(p.featId)))return {...p,met:true,waived:true};
     if(sources.some(s=>s.slotWaiver))return {...p,met:true,waived:true};
+    if(p.kind==='race'){const actual=RACE_TYPES[c.builder?.raceId]??[];return {...p,actual,met:p.anyOf.some(r=>actual.includes(r))};}
+    if(p.kind==='base-save'){const actual=c.baseSaves?.[p.save]??0;return {...p,actual,met:actual>=p.minimum};}
     if(def.id==='stunning-fist'&&(c.classes.monk??0)>=1)return {...p,met:true,waived:true};
     if(p.kind==='confirmed')return {...p,met:c.qualifications?.[p.key]===true};
     if(p.kind==='weapon-choice')return {...p,met:p.options.includes(selection)};
@@ -109,7 +117,7 @@ function checkPrerequisites(def, selection, sources, c, active, pkg) {
       return { ...p, met: waived.has(p.ability) || (effective != null && effective >= p.minimum),
         actual: actual ?? null, effective: effective ?? null, waived: waived.has(p.ability), exceptions };
     }
-    if(p.kind==='class-feature'){if(p.feature==='sneak-attack')return {...p,met:baseSneakAttackDice(c)>0};const features={'rage':['barbarian',1],'bardic-performance':['bard',1],'ki-pool':['monk',4],'lay-on-hands':['paladin',2],'mercy':['paladin',3],'wild-shape':['druid',4]};if(features[p.feature]){const [classId,minimum]=features[p.feature];return {...p,met:(c.classes[classId]??0)>=minimum};}const cleric=(c.classes.cleric??0)>=1,paladin=(c.classes.paladin??0)>=4,energy=c.ruleState?.choices?.['cleric-channel-energy'];return {...p,met:p.feature==='channel-energy'?cleric||paladin:p.feature==='channel-positive-energy'?paladin||cleric&&energy==='positive':cleric&&energy==='negative'};}
+    if(p.kind==='class-feature'){if(p.feature==='sneak-attack')return {...p,met:baseSneakAttackDice(c)>0};const features={'bomb':['alchemist',1],'discovery':['alchemist',2],'rage-power':['barbarian',2],'rogue-talent':['rogue',2],'tactician':['cavalier',1],'rage':['barbarian',1],'bardic-performance':['bard',1],'ki-pool':['monk',4],'lay-on-hands':['paladin',2],'mercy':['paladin',3],'wild-shape':['druid',4]};if(features[p.feature]){const [classId,minimum]=features[p.feature];return {...p,met:(c.classes[classId]??0)>=minimum};}const cleric=(c.classes.cleric??0)>=1,paladin=(c.classes.paladin??0)>=4,energy=c.ruleState?.choices?.['cleric-channel-energy'];return {...p,met:p.feature==='channel-energy'?cleric||paladin:p.feature==='channel-positive-energy'?paladin||cleric&&energy==='positive':cleric&&energy==='negative'};}
     if(p.kind==='sheet-choice')return {...p,actual:c.ruleState?.choices?.[p.choiceId]??null,met:c.ruleState?.choices?.[p.choiceId]===p.option};
     if(p.kind==='character-level'){const actual=Object.values(c.classes).reduce((a,b)=>a+b,0);return {...p,actual,met:actual>=p.minimum};}
     if(p.kind==='skill-ranks')return {...p,actual:c.skillRanks[p.skill]??0,met:(c.skillRanks[p.skill]??0)>=p.minimum};
@@ -150,6 +158,7 @@ export function evaluateClassGrants(pkg, input, context = {}) {
     if(feat.creatorSlot?.startsWith('ranger-bonus-')&&c.equipment?.armorId&&pkg.equipment?.items.find(x=>x.id===c.equipment.armorId)?.category==='heavy')continue;
     add(feat.featId, feat.weaponId, { id: `selection:${index}`, kind: 'selected',creatorSlot:feat.creatorSlot,slotWaiver:def&&featSlotWaives(c,feat,def) },feat.count??1);
   }
+  for(const grant of archetypeGrants(c))add(grant.featId,undefined,{id:'archetype:'+grant.name+':'+grant.featId,kind:'class-grant',classId:'fighter',classLevel:grant.level,slotWaiver:grant.featId==='pinpoint-targeting',waivedFeatIds:grant.featId==='stand-still'?['combat-reflexes']:[],waivePrerequisites:definitions.get(grant.featId)?.prerequisites.map(p=>p.kind)??[]});
   for (const grant of pkg.grants) {
     if ((c.classes[grant.classId] ?? 0) < grant.classLevel) continue;
     const weaponId = grant.selectionFrom ? c.deity?.favoredWeaponId : undefined;

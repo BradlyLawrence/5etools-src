@@ -22,7 +22,7 @@ export function availableStartingFeats(c,rules,slotId,sheet=null){
   return weapons.some(weapon=>{try{selectStartingFeat(structuredClone(c),rules,slotId,f.id,weapon,choices);return true;}catch{return false;}});
  });
 }
-export const featChoices=(rules,id)=>id?rules.abilities.rules.filter(r=>r.acquisition.kind==='feat'&&r.acquisition.featId===id).flatMap(r=>r.choices??[]):[];
+export const featChoices=(rules,id)=>id?rules.abilities.rules.filter(r=>r.acquisition.kind==='feat'&&r.acquisition.featId===id).flatMap(r=>r.choices??[]).filter(choice=>choice.creation!==false):[];
 export function selectStartingFeat(c,rules,slotId,featId,weaponId,choices={}){
  const slot=startingSlots(c).find(s=>s.id===slotId);if(!slot)throw Error('This feat slot is not available.');
  const others=c.feats.filter(f=>f.creatorSlot!==slotId);
@@ -71,5 +71,11 @@ export function renderFeatReview(c,rules){
   html+=`<li>${esc(slot.name)}: ${esc(def?.name??chosen.featId)}${chosen.weaponId?' ('+esc(chosen.weaponId)+')':''}${issue?' — '+esc(issue):''}${def?.description?`<details><summary>Rules</summary><p>${esc(def.description)}</p></details>`:''}</li>`;
  }
  for(const f of c.feats.filter(f=>f.creatorSlot&&!slots.some(s=>s.id===f.creatorSlot)))html+=`<li>${esc(f.featId)}: its feat slot is no longer available.</li>`;
- return html+'</ul>';
+ html+='</ul>';
+ const maneuvers=['dirty-trick','drag','reposition','steal'];
+ const sheet=equipmentSheet(c,rules);
+ if(sheet.feats.some(f=>f.active&&maneuvers.some(m=>f.featId==='improved-'+m||f.featId==='greater-'+m))){
+  html+='<h3>Combat maneuvers</h3><table><thead><tr><th>Maneuver</th><th>Check</th><th>Defense</th></tr></thead><tbody>'+maneuvers.map(m=>{const check=sheet.stats['maneuver.'+m+'.check'].total;return `<tr><th>${esc(m.replace(/-/g,' ').replace(/^./,s=>s.toUpperCase()))}</th><td>${check>=0?'+':''}${check}</td><td>${sheet.stats['maneuver.'+m+'.defense'].total}</td></tr>`;}).join('')+'</tbody></table>';
+ }
+ return html;
 }

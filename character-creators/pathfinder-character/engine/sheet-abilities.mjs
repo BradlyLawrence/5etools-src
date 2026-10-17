@@ -6,18 +6,18 @@ const check=(ok,message)=>{if(!ok)throw new Error(message);};
 const object=x=>x && typeof x==='object' && !Array.isArray(x);
 const id=x=>typeof x==='string' && /^[a-z][a-z0-9:.-]{0,149}$/.test(x);
 const fields=(x,keys)=>check(object(x) && Object.keys(x).every(k=>keys.includes(k)),'Unknown or invalid sheet rule field');
-const stats=new Set(['attack.all','attack.weapon','attack.melee','attack.ranged','damage.melee','damage.ranged','ac','save.fortitude','save.reflex','save.will','initiative','combatManeuver.check']);
-for(const maneuver of ['trip','disarm','bull-rush','overrun','sunder','grapple'])for(const stat of ['check','defense'])stats.add(`maneuver.${maneuver}.${stat}`);
+const stats=new Set(['attack.all','attack.weapon','attack.melee','attack.ranged','attack.rollOnly','damage.melee','damage.ranged','ac','save.fortitude','save.reflex','save.will','initiative','combatManeuver.check']);
+for(const maneuver of ['trip','disarm','bull-rush','overrun','sunder','grapple','dirty-trick','drag','reposition','steal'])for(const stat of ['check','defense'])stats.add(`maneuver.${maneuver}.${stat}`);
 for(const skill of Object.keys(SKILLS)) stats.add('skill.'+skill);
 for(const stat of ['hitPoints.bonus','concentration.bonus','reach.bonus','opportunity.extra','critical.saveDC','speed.bonus','spell.slotAdjustment','endurance.constitutionBonus','unarmed.saveDC','scorpion.duration','damageReduction.typedBypass','damageReduction.untypedBypass','channel.dcBonus','channel.excludedTargets','leadership.baseScore','shield.acBonus','crafting.skillBonus','spell.armorFailureReduction','stunning.saveDC','spell.resistanceBonus','combatManeuver.defense','attack.confirm','sneakAttack.dice'])stats.add(stat);
 for(const school of SPELL_SCHOOLS)stats.add('spell.dc.'+school);
-const references=/^(bab|level|sneakAttackDice|casterLevel|arcaneCasterLevel|rank\.[a-z-]+|class\.[a-z]+|ability\.(str|dex|con|int|wis|cha)|choice\.[a-z.-]+|condition\.[a-z0-9.-]+|toggle\.[a-z:.-]+|context\.(attackType|meleeDamageMode))$/;
+const references=/^(bab|level|sneakAttackDice|casterLevel|arcaneCasterLevel|rank\.[a-z-]+|feat\.[a-z-]+|class\.[a-z]+|ability\.(str|dex|con|int|wis|cha)|choice\.[a-z.-]+|condition\.[a-z0-9.-]+|toggle\.[a-z:.-]+|context\.(attackType|meleeDamageMode))$/;
 export function validateExpression(x,depth=0){
   check(depth<16,'Expression too deeply nested');
   if(typeof x==='number'){check(Number.isFinite(x)&&Math.abs(x)<=10000,'Invalid number');return 'number';}
   if(['boolean','string'].includes(typeof x))return typeof x;
   check(object(x),'Invalid expression');
-  if(Object.hasOwn(x,'ref')){fields(x,['ref']);check(references.test(x.ref),'Unsupported reference');return /^(condition|toggle)\./.test(x.ref)?'boolean':/^(bab|level|sneakAttackDice|casterLevel|arcaneCasterLevel|rank\.[a-z-]+|class\.|ability\.)/.test(x.ref)?'number':'string';}
+  if(Object.hasOwn(x,'ref')){fields(x,['ref']);check(references.test(x.ref),'Unsupported reference');return /^(condition|toggle)\./.test(x.ref)?'boolean':/^(bab|level|sneakAttackDice|casterLevel|arcaneCasterLevel|rank\.[a-z-]+|feat\.|class\.|ability\.)/.test(x.ref)?'number':'string';}
   fields(x,['op','args']);const arity={add:[2,10],subtract:[2,2],multiply:[2,2],floorDivide:[2,2],min:[2,10],max:[2,10],eq:[2,2],ne:[2,2],gte:[2,2],all:[1,10],any:[1,10]};
   check(Object.hasOwn(arity,x.op)&&Array.isArray(x.args),'Unsupported operator');const [lo,hi]=arity[x.op];check(x.args.length>=lo&&x.args.length<=hi,'Invalid expression arity');
   const types=x.args.map(a=>validateExpression(a,depth+1));
@@ -30,6 +30,7 @@ export function expression(x,c,state,conditions=state.conditions){
   if(x.ref){const [kind,...parts]=x.ref.split('.'),key=parts.join('.');
     if(kind==='casterLevel')return Math.max(c.casterLevel??0,c.arcaneCasterLevel??0);if(kind==='arcaneCasterLevel')return c.arcaneCasterLevel??0;if(kind==='bab')return c.bab;if(kind==='level')return Object.values(c.classes).reduce((a,b)=>a+b,0);
     if(kind==='sneakAttackDice')return baseSneakAttackDice(c);
+    if(kind==='feat')return c.activeFeatCounts?.[key]??0;
     if(kind==='rank')return c.skillRanks[key]??0;
     if(kind==='class')return c.classes[key]??0;if(kind==='ability')return Math.floor((c.abilities[key]-10)/2);
     if(kind==='choice')return state.choices[key];if(kind==='condition')return conditions[key]??false;
@@ -56,7 +57,7 @@ export function validateAbilities(pkg){
     if(r.acquisition.kind==='class')check(id(r.acquisition.classId)&&Number.isInteger(r.acquisition.level)&&r.acquisition.level>=1,'Invalid class grant');else check(id(r.acquisition.featId),'Invalid feat grant');
     check(validateExpression(r.requires)==='boolean'&&typeof r.toggle==='boolean','Invalid requirements or toggle');
     check(Array.isArray(r.choices)&&Array.isArray(r.effects)&&Array.isArray(r.variants)&&Array.isArray(r.manual)&&r.manual.every(x=>typeof x==='string'),'Invalid collections');
-    for(const ch of r.choices){fields(ch,['id','label','options']);check(id(ch.id)&&!choices.has(ch.id)&&typeof ch.label==='string'&&Array.isArray(ch.options)&&ch.options.length&&ch.options.every(id)&&new Set(ch.options).size===ch.options.length,'Invalid choice');choices.add(ch.id);}
+    for(const ch of r.choices){fields(ch,['id','label','options','creation']);check((ch.creation===undefined||typeof ch.creation==='boolean')&&id(ch.id)&&!choices.has(ch.id)&&typeof ch.label==='string'&&Array.isArray(ch.options)&&ch.options.length&&ch.options.every(id)&&new Set(ch.options).size===ch.options.length,'Invalid choice');choices.add(ch.id);}
     if(r.resource){fields(r.resource,['id','maximum','recovery','unit']);check(r.resource.unit===undefined||['uses','rounds','points'].includes(r.resource.unit),'Invalid resource unit');check(id(r.resource.id)&&!resources.has(r.resource.id)&&r.resource.recovery==='daily'&&validateExpression(r.resource.maximum)==='number','Invalid resource');resources.add(r.resource.id);}
     if(r.acquisition.selectedWeapon!==undefined)check(r.acquisition.kind==='feat'&&typeof r.acquisition.selectedWeapon==='boolean','Invalid selected weapon acquisition');
     if(r.acquisition.weaponFeat!==undefined)check(r.acquisition.kind==='feat'&&id(r.acquisition.weaponFeat),'Invalid weapon feat requirement');
@@ -73,7 +74,7 @@ export function validateAbilities(pkg){
 }
 export function validateAbilityLinks(pkg,classes,featIds){
   validateAbilities(pkg);
-  const visit=x=>{if(!object(x))return;if(x.ref?.startsWith('class.'))check(classes.includes(x.ref.slice(6)),'Unknown formula class');x.args?.forEach(visit);};
+  const visit=x=>{if(!object(x))return;if(x.ref?.startsWith('class.'))check(classes.includes(x.ref.slice(6)),'Unknown formula class');if(x.ref?.startsWith('feat.'))check(featIds.has(x.ref.slice(5)),'Unknown formula feat');x.args?.forEach(visit);};
   for(const r of pkg.rules){check(r.acquisition.kind==='class'?classes.includes(r.acquisition.classId):featIds.has(r.acquisition.featId),'Unknown acquisition');visit(r.requires);if(r.resource)visit(r.resource.maximum);for(const e of r.effects){visit(e.when);if(e.kind==='modifier')visit(e.amount);}}
 }
 export const emptyRuleState=()=>({choices:{},spent:{},toggles:{},conditions:{}});
@@ -102,6 +103,7 @@ export function evaluateAbilities(pkg,c,legacy,overrides={}){
   const conditions={...Object.fromEntries(pkg.conditions.map(c=>[c.id,c.default])),...state.conditions};
   for(const [k,v]of Object.entries(overrides)){check(pkg.conditions.some(c=>c.id===k)&&typeof v==='boolean','Invalid conditional row');conditions[k]=v;}
   const activeFeats=new Set(legacy.feats.filter(f=>f.active).map(f=>f.featId));
+  c={...c,activeFeatCounts:Object.fromEntries(legacy.feats.filter(f=>f.active).map(f=>[f.featId,f.count??1]))};
   const rules=[],effects=[],explanations=[],notes=[],resources={},choices=[],axes=[],actionCandidates=[];
   for(const r of pkg.rules){
     const purchaseCount=r.acquisition.kind==='feat'?Math.max(1,...legacy.feats.filter(f=>f.active&&f.featId===r.acquisition.featId).map(f=>f.count??1)):1;

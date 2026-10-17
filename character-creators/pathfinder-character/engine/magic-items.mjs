@@ -1,4 +1,5 @@
 import {craftingPlan} from './crafting.mjs';
+import {validateBowRating} from './bows.mjs';
 import GADGETS from './gadgets-data.mjs';
 export {GADGETS};
 import {MINOR_ADAPTATIONS,adaptationCost,adaptationSlots,adaptationAllowed,adaptationGroup} from './minor-adaptations.mjs';
@@ -12,6 +13,7 @@ export const SLOTS=['weapon','armor','shield','head','headband','eyes','neck','s
 const check=(ok,msg)=>{if(!ok)throw Error(msg);};
 const num=(n,min,max)=>typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max;
 export function validateMagicItem(d){
+ if(d?.bowStrengthRating!==undefined)validateBowRating(d.bowStrengthRating);
  check(d&&typeof d==='object'&&!Array.isArray(d),'Invalid magic item.');
  check(typeof d.id==='string'&&/^[a-zA-Z0-9-]{1,80}$/.test(d.id),'Invalid item ID.');
  check(typeof d.name==='string'&&d.name.trim()&&d.name.length<=120,'Give the item a name (up to 120 characters).');

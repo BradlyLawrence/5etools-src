@@ -1,3 +1,16 @@
+import {fighterBaseSummary} from './fighter-base.mjs';
+import {drillSummary} from './drill-sergeant.mjs';
+import {crossbowmanEffects,crossbowmanScenarios,crossbowmanSummary} from './crossbowman.mjs';
+import {roughriderEffects,roughriderScenarios,roughriderSummary} from './roughrider.mjs';
+import {polearmEffects,polearmScenarios,polearmSummary} from './polearm-master.mjs';
+import {shieldedEffects,shieldedSummary,shieldedScenarios} from './shielded-fighter.mjs';
+import {siegeSummary} from './siegebreaker.mjs';
+import {brawlerEffects,brawlerScenarios,brawlerSummary} from './brawler.mjs';
+import {archerEffects,archerScenarios,archerSummary} from './archer.mjs';
+import {armorMasterDefense,armorMasterDR} from './armor-master.mjs';
+import {mobileEffects,mobileScenarios,mobileSummary} from './mobile-fighter.mjs';
+import {phalanxEffects,phalanxScenarios} from './phalanx.mjs';
+import {validateArchetypes,archetypeSkills,archetypeIds,selectedArchetypes} from './archetypes.mjs';
 import {validateCraftedItems,craftedAbilityScores,craftedEffects} from './magic-items.mjs';
 import {activeAbilityScores,selectableEffects,selectableScenarios,selectableSummary} from './selectable-abilities.mjs';
 import {martialEffects,martialScenarios} from './martial-options.mjs';
@@ -7,6 +20,7 @@ import {validateBackground,backgroundDetails,backgroundEffects} from './backgrou
 import {overloadActive,techBroken,validateTechState,reservoirMaximum,poweredBenefits,applyTechEvent} from './technology.mjs';
 export {applyTechEvent};
 import {prepareEquipment,equipmentEffects,equipmentSummary} from './equipped-items.mjs';
+import {migrateBowCharacter,validateBowRating} from './bows.mjs';
 import {SPELL_SCHOOLS} from './spell-schools.mjs';
 import {SKILLS} from './skills.mjs';
 import { BONUS_TYPES, baseSneakAttackDice, validatePackage, evaluateClassGrants } from './class-grants.mjs';
@@ -115,12 +129,14 @@ export const DEFAULT_CHARACTER = {
   name: 'Aldren • test adventurer', classes: { fighter: 1 }, bab: 1,
   abilities: { str: 16, dex: 14, con: 14, int: 8, wis: 12, cha: 10 },
   skillRanks: { heal: 0, survival: 0, perception: 0, stealth: 0, acrobatics: 0, diplomacy: 0 },
-  proficientWeapons: ['longsword','rapier','longbow'], feats: [],
+  proficientWeapons: ['longsword','rapier','war-bow'], feats: [],
   baseSaves: { fortitude: 2, reflex: 0, will: 0 }, armorBonus: 0,
   context: { attackType: 'melee', weapon: { id: 'longsword', finesseEligible: false }, featToggles: {} }
 };
 
 export function validateCharacter(c) {
+  c=migrateBowCharacter(c);
+  if(c?.equipment?.bowStrengthRating!==undefined)validateBowRating(c.equipment.bowStrengthRating);
   validateTechState(c);
   validateCraftedItems(c);
   validateBackground(c.background);
@@ -145,21 +161,24 @@ export function validateCharacter(c) {
   validateAbilityContext(c);
   if(c.combatSizeModifier!==undefined&&![ -8,-4,-2,-1,0,1,2,4,8 ].includes(c.combatSizeModifier))fail('Invalid combat maneuver size modifier.');
   if(c.context.weapon.damageMode!==undefined&&!['standard','two-handed','off-hand'].includes(c.context.weapon.damageMode))fail('Invalid melee damage handling.');
+  validateArchetypes(c);
   return migrateSheetCharacter(c);
 }
 
 export function evaluateCharacter(rules, input, rowConditions = null, techActionId = null) {
   const prepared=prepareEquipment(rules,activeAbilityScores(craftedAbilityScores(validateCharacter(input))),techActionId);
   const c=prepared.character;
-  const background=backgroundDetails(c.background);
+  if(archetypeSkills(c).length)c.classSkills=[...new Set([...(c.classSkills??[]),...archetypeSkills(c)])];
+  const background=backgroundDetails(c.background,c);
   const result = evaluateClassGrants(rules, c, c.context);
   if(prepared.equipment){if(prepared.equipment.armor&&prepared.equipment.armor.category!=='light')c.ruleState.conditions['fleet-eligible']=false;
   if(['shield-light','shield-heavy','spiked-shield-light','spiked-shield-heavy'].includes(prepared.equipment.weapon?.id)&&!result.feats.some(f=>f.active&&f.featId==='improved-shield-bash'))c.ruleState.conditions['shield-bonus-applies']=false;}
   if(rules.abilities)validateAbilityLinks(rules.abilities,CLASSES,new Set(rules.feats.map(f=>f.id)));
   const abilities = rules.abilities ? evaluateAbilities(rules.abilities, c, result, Object.fromEntries(Object.entries(rowConditions??{}).filter(([k])=>!k.startsWith('class-option.')))) : null;
   if (abilities) result.effects.push(...abilities.effects);
-  result.effects.push(...equipmentEffects(prepared.equipment,c,result,abilities),...craftedEffects(c));
-  result.effects.push(...backgroundEffects(c.background,abilities?.conditions ?? rowConditions ?? {}),...racialEffects(c),...optionEffects(c),...selectableEffects(c,rowConditions??{}),...martialEffects(c,rowConditions??{},prepared.equipment?.weapon));
+  result.effects.push(...equipmentEffects(prepared.equipment,c,result,abilities),...craftedEffects(c),...crossbowmanEffects(c,prepared.equipment?.weapon,rowConditions??{}),...roughriderEffects(c,prepared.equipment,{...abilities?.conditions,...rowConditions}),...polearmEffects(c,prepared.equipment?.weapon,rowConditions??{}),...shieldedEffects(c,prepared.equipment,rowConditions??{},result.feats),...phalanxEffects(c,prepared.equipment,rowConditions??{}),...mobileEffects(c,rowConditions??{}),...archerEffects(c,prepared.equipment?.weapon,rowConditions??{}),...brawlerEffects(c,prepared.equipment?.weapon,rowConditions??{}));
+  result.effects.push(...backgroundEffects(c.background,abilities?.conditions ?? rowConditions ?? {},c),...racialEffects(c),...optionEffects(c),...selectableEffects(c,rowConditions??{}),...martialEffects(c,rowConditions??{},prepared.equipment?.weapon,result.effects));
+  if(archetypeIds(c).includes('tech-fighter')&&(c.classes.fighter??0)>=2){const value=1+Math.floor((c.classes.fighter-2)/4);for(const target of ['skill.tech-use',...(prepared.equipment?.weapon?.proficiency==='tech-melee'?['maneuver.disarm.defense','maneuver.sunder.defense']:[])])result.effects.push({kind:'modifier',target,value,bonusType:target.startsWith('skill.')?'competence':'untyped',featId:'archetype.technical-handling',name:'Technical Handling'});}
   const mod = ability => Math.floor((c.abilities[ability] - 10) / 2);
   const dexAC = c.context.deniedDexToAC ? Math.min(0, mod('dex')) : mod('dex');
   const maxDex=prepared.equipment?Math.min(...[prepared.equipment.armor,prepared.equipment.shield].filter(Boolean).map(i=>i.defense.maxDexBonus??Infinity)):Infinity;
@@ -178,11 +197,11 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
   for (const [skill, ability] of Object.entries(skillAbilities)) bases[`skill.${skill}`] = (c.skillRanks[skill] ?? 0) + mod(ability) + ((c.skillRanks[skill]??0)>0 && (c.classSkills?.includes(skill)||background.classSkills.includes(skill)) ? 3 : 0);
   if(prepared.equipment){
     for(const [skill,ability]of Object.entries(skillAbilities))if(['str','dex'].includes(ability))result.effects.push({kind:'modifier',featId:'equipment.armor-check',name:'Equipment armor check penalty',target:'skill.'+skill,bonusType:'untyped',value:prepared.equipment.skillPenalty??0});
-    const w=prepared.equipment.weapon;if(w&&c.context.attackType==='ranged'){if(c.equipment.thrown||['dart','javelin','sling','sling-staff-halfling','shuriken-5'].includes(w.id))bases.damage=mod('str');else if(['longbow','shortbow','longbow-composite','shortbow-composite'].includes(w.id))bases.damage=Math.min(0,mod('str'));}
+    const w=prepared.equipment.weapon;if(w&&c.context.attackType==='ranged'){if(c.equipment.thrown||['dart','javelin','sling','sling-staff-halfling','shuriken-5'].includes(w.id))bases.damage=mod('str');else if(prepared.equipment.bow)bases.damage=prepared.equipment.bow.strengthDamage;}
   }
   bases['combatManeuver.check']+=c.combatSizeModifier??0;
   bases['combatManeuver.defense']=10+c.bab+mod('str')+dexAC+(c.combatSizeModifier??0);
-  for(const maneuver of ['trip','disarm','bull-rush','overrun','sunder','grapple']){
+  for(const maneuver of ['trip','disarm','bull-rush','overrun','sunder','grapple','dirty-trick','drag','reposition','steal']){
     bases[`maneuver.${maneuver}.check`]=c.bab+(c.context.attackType==='melee'&&['trip','disarm','sunder'].includes(maneuver)?(agile?.replacementModifier??attackAbility):maneuverAbility)+(c.combatSizeModifier??0);
     bases[`maneuver.${maneuver}.defense`]=bases['combatManeuver.defense'];
   }
@@ -202,7 +221,7 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
     const maneuverCheck=target.startsWith('maneuver.')&&target.endsWith('.check');
     const matches = e => target==='skill.feint' ? e.target==='skill.feint'||e.target==='skill.bluff' : cmd ? e.target===target || e.target==='combatManeuver.defense' || e.target==='ac'&&(e.value<0||['circumstance','deflection','dodge','insight','luck','morale','profane','sacred'].includes(e.bonusType))
       : maneuverCheck ? e.target===target || e.target==='combatManeuver.check' || e.target==='attack.all' || c.context.attackType==='melee'&&(e.target==='attack.melee'||e.target==='attack.weapon'&&['maneuver.trip.check','maneuver.disarm.check','maneuver.sunder.check'].includes(target))
-      : (target === 'attack'||target==='attack.confirm') ? (target==='attack.confirm'&&e.target==='attack.confirm')||['attack.all', 'attack.weapon', `attack.${c.context.attackType}`].includes(e.target)
+      : (target === 'attack'||target==='attack.confirm') ? (target==='attack.confirm'&&e.target==='attack.confirm')||['attack.all', 'attack.weapon','attack.rollOnly', `attack.${c.context.attackType}`].includes(e.target)
       : target === 'damage' ? e.target === 'damage.weapon' || e.target === `damage.${c.context.attackType}` : e.target === target;
     const eligible = modifiers.filter(matches); 
     const suppressed = c.context.deniedDexToAC ? eligible.filter(e => e.bonusType === 'dodge' && e.value > 0) : [];
@@ -210,11 +229,32 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
     stacked.breakdown.push(...suppressed.map(e => ({ ...e, applied: false, reason: 'Dodge bonus lost while denied Dexterity to AC' })));
     stats[target] = { base, total: base + stacked.total, modifier: stacked.total, breakdown: stacked.breakdown };
   }
-  const output = { ...result, stats, defenses:optionDefenses(c),effectiveAbilities:c.abilities,classAbilities:selectableSummary(c), equipment:equipmentSummary(prepared.equipment,c,result,stats), ...(abilities ? { abilities } : {}), manualEffects: result.effects.filter(e => e.kind === 'manual') };
+  const output = { ...result, mobileFighter:mobileSummary(c), archetypeFeatures:selectedArchetypes(c).flatMap(p=>p.features.filter(f=>f.level<=(c.classes.fighter??0)).map(f=>({name:f.name,archetype:p.name,text:f.rulesText}))), stats, defenses:optionDefenses(c),effectiveAbilities:c.abilities,classAbilities:selectableSummary(c), equipment:equipmentSummary(prepared.equipment,c,result,stats), ...(abilities ? { abilities } : {}), manualEffects: result.effects.filter(e => e.kind === 'manual') };
+  output.drillSergeant=drillSummary(c,prepared.equipment?.weapon,result.feats,rules.feats);
+  output.crossbowman=crossbowmanSummary(c,prepared.equipment?.weapon);
+  if(output.crossbowman?.weaponMastery&&output.equipment?.critical)for(const critical of output.equipment.critical)critical.multiplier+=1;
+  output.roughrider=roughriderSummary(c,prepared.equipment,{...abilities?.conditions,...rowConditions});
+  if(output.roughrider?.damageReduction&&output.equipment){output.equipment.untypedDamageReduction=Math.max(output.equipment.untypedDamageReduction??0,5);output.equipment.physicalProtection={nonmagical:Math.max(5,output.equipment.damageReduction?.amount??0),magical:5};}
+  output.polearmMaster=polearmSummary(c,prepared.equipment?.weapon,stats);
+  if(output.polearmMaster?.shortGrip&&rowConditions?.['class-option.short-grip']&&output.equipment)output.equipment.reachFt=5;
+  if(output.polearmMaster?.parry&&rowConditions?.['class-option.polearm-parry']&&output.equipment)output.equipment.conditionalDamageReduction={amount:5,bypass:'none',scope:'This one melee attack from a threatened nonadjacent enemy; use the highest applicable DR.'};
+  if(output.polearmMaster?.weaponMastery&&output.equipment?.critical)for(const critical of output.equipment.critical)critical.multiplier+=1;
+  output.shieldedFighter=shieldedSummary(c,prepared.equipment,rowConditions??{},result.feats);
+  if(output.shieldedFighter?.held){const sh=output.shieldedFighter;if(sh.ward){const touch=stackModifiers(stats.ac.breakdown.filter(e=>!['armor','shield','natural-armor'].includes(e.bonusType)&&e.applied));output.stats['ac.touch']={base:stats.ac.base,total:stats.ac.base+touch.total+sh.wardBonus,modifier:touch.total+sh.wardBonus,breakdown:[...touch.breakdown,{name:'Shield Ward',value:sh.wardBonus,applied:true,bonusType:'untyped'}]};}if(output.equipment){output.equipment.untypedDamageReduction=sh.damageReduction;output.equipment.physicalProtection={nonmagical:Math.max(sh.damageReduction,output.equipment.damageReduction?.amount??0),magical:sh.damageReduction};}}
+  output.siegebreaker=siegeSummary(c,prepared.equipment,result.feats);
+  output.brawler=brawlerSummary(c,prepared.equipment?.weapon,rowConditions??{});
+  if(output.brawler?.weaponMastery&&output.equipment?.critical)for(const critical of output.equipment.critical)critical.multiplier+=1;
+  output.archer=archerSummary(c,prepared.equipment,stats);
+  if(output.archer?.weaponMastery&&output.equipment?.critical)for(const critical of output.equipment.critical)critical.multiplier+=1;
+  const armorMaster=armorMasterDefense(c,prepared.equipment,rowConditions??{});
+  if(armorMaster){output.armorMaster=armorMaster;const touch=stackModifiers(stats.ac.breakdown.filter(e=>!['armor','shield','natural-armor'].includes(e.bonusType)&&e.applied));output.stats['ac.touch']={base:stats.ac.base,total:stats.ac.base+touch.total+armorMaster.deflectiveShield,modifier:touch.total+armorMaster.deflectiveShield,breakdown:[...touch.breakdown,{name:'Deflective Shield',value:armorMaster.deflectiveShield,applied:true,bonusType:'untyped'}]};if(output.equipment){output.equipment.fortificationPercent=Math.max(output.equipment.fortificationPercent,armorMaster.fortificationPercent);output.equipment.untypedDamageReduction=armorMaster.damageReduction;output.equipment.physicalProtection={nonmagical:armorMasterDR(armorMaster,output.equipment.damageReduction),magical:armorMasterDR(armorMaster,output.equipment.damageReduction,{magical:true})};}}
+  output.fighterBase=fighterBaseSummary(c,prepared.equipment);
+  if(output.fighterBase?.weaponMastery&&output.equipment?.critical)for(const critical of output.equipment.critical)critical.multiplier+=1;
+  if(output.fighterBase?.armorMastery&&output.equipment){output.equipment.untypedDamageReduction=Math.max(5,output.equipment.untypedDamageReduction??0);output.equipment.physicalProtection={nonmagical:Math.max(output.equipment.untypedDamageReduction,output.equipment.damageReduction?.amount??0),magical:output.equipment.untypedDamageReduction};}
   if(output.equipment)output.equipment.traitDefinitions=rules.equipmentTraits?.traits??[];
   if(abilities && rowConditions===null){
     const ordinaryRows=sheetScenarios(abilities);
-    const extraRows=ordinaryRows.flatMap(base=>[...martialScenarios(c),...selectableScenarios(c)].map(row=>({...row,id:base.id+'|'+row.id,label:(base.id==='normal'?'':base.label+' + ')+row.label,conditions:{...base.conditions,...row.conditions}})));
+    const extraRows=ordinaryRows.flatMap(base=>[...martialScenarios(c,prepared.equipment?.weapon),...phalanxScenarios(c,prepared.equipment),...mobileScenarios(c),...archerScenarios(c),...brawlerScenarios(c),...crossbowmanScenarios(c,prepared.equipment?.weapon),...roughriderScenarios(c,prepared.equipment),...polearmScenarios(c,prepared.equipment?.weapon),...shieldedScenarios(c,prepared.equipment),...selectableScenarios(c)].map(row=>({...row,id:base.id+'|'+row.id,label:(base.id==='normal'?'':base.label+' + ')+row.label,conditions:{...base.conditions,...row.conditions}})));
     output.sheetRows=[...ordinaryRows,...extraRows].map(row=>{
       const evaluated=row.id==='normal'?output:evaluateCharacter(rules,input,row.conditions);
       return {...row,weaponId:c.context.weapon.id,attackType:c.context.attackType,stats:evaluated.stats,notes:evaluated.abilities.notes};

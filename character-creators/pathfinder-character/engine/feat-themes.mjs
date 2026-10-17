@@ -6,7 +6,7 @@ const groups = {
  melee: `Agile Maneuvers|Catch Off-Guard|Channel Smite|Cleave|Combat Expertise|Combat Reflexes|Dazzling Display|Deadly Stroke|Disruptive|Double Slice|Gorgon's Fist|Great Cleave|Greater Bull Rush|Greater Disarm|Greater Feint|Greater Grapple|Greater Overrun|Greater Sunder|Greater Trip|Greater Two-Weapon Fighting|Improved Bull Rush|Improved Disarm|Improved Feint|Improved Grapple|Improved Overrun|Improved Shield Bash|Improved Sunder|Improved Trip|Improved Two-Weapon Fighting|Improved Unarmed Strike|Lunge|Medusa's Wrath|Power Attack|Ride-By Attack|Scorpion Style|Shield Master|Shield Slam|Spellbreaker|Spirited Charge|Spring Attack|Stand Still|Step Up|Strike Back|Stunning Fist|Trample|Two-Weapon Defense|Two-Weapon Fighting|Two-Weapon Rend|Unseat|Weapon Finesse|Whirlwind Attack|Broken Wing Gambit|Coordinated Charge|Coordinated Maneuvers|Deceptive Exchange|Feint Partner|Improved Feint Partner|Mounted Skirmisher|Outflank|Pack Attack|Paired Opportunists|Precise Strike|Seize the Moment|Sword and Pistol|Tandem Trip`,
  ranged: `Deadly Aim|Far Shot|Improved Precise Shot|Manyshot|Mounted Archery|Pinpoint Targeting|Point-Blank Shot|Precise Shot|Rapid Reload|Rapid Shot|Shot on the Run|Throw Anything|Amateur Gunslinger|Close-Quarters Thrower|Deft Shootist Deed|Enfilading Fire|Extra Bombs|Extra Grit|Gunsmithing|Leaping Shot Deed|Prone Shooter|Prone Slinger|Ricochet Shot Deed|Secret Stash Deed|Signature Deed|Snap Shot|Sword and Pistol|Target of Opportunity`
 };
-// New theme names require user approval. Approved additions: spellcasting, utility, critical, leadership, skills, channeling.
+// Approved navigation themes, including teamwork, individual races and relevant classes.
 // Approved class themes for class-specific feat browsing.
 groups.melee += '|Tech Melee Proficiency';
 groups.rogue = `Accomplished Sneak Attacker`;
@@ -20,6 +20,26 @@ groups.crafting = `Craft Technological Equipment|Brew Potion|Craft Magic Arms an
 groups.familiars = `Improved Familiar`;
 groups.druid = `Natural Spell`;
 
+// Class relevance is broader than a requirement to belong to that class.
+groups.alchemist = `Extra Bombs|Extra Discovery|Master Alchemist`;
+groups.ranger = `Favored Defense|Focused Shot|Parting Shot|Point-Blank Master|Aspect of the Beast`;
+groups.cavalier = `Practiced Tactician`;
+groups.gunslinger = `Amateur Gunslinger|Deft Shootist Deed|Extra Grit|Gunsmithing|Leaping Shot Deed|No Name|Secret Stash Deed|Signature Deed`;
+groups.inquisitor = `Channeling Scourge|Double Bane|Extra Bane|Intimidating Bane|Menacing Bane|Merciful Bane|Spell Bane`;
+groups.ironwright = `Craft Technological Equipment|Field Repair|Technical Knack`;
+groups.wizard = `Spell Mastery`;
+groups.barbarian += '|Extra Rage Power|Raging Vitality';
+groups.rogue += '|Extra Rogue Talent|Dastardly Finish';
+groups.druid += '|Aspect of the Beast|Vermin Heart';
+groups.ranger += '|Vermin Heart';
+groups.witch = `Extra Hex`;
+groups.oracle = `Extra Revelation`;
+groups.summoner = `Summoner's Call`;
+groups.teamwork = `Outflank|Lookout|Swap Places`;
+for(const theme of ['cleric','fighter','sorcerer','dwarf','elf','gnome','half-elf','half-orc','halfling','human','orc'])groups[theme]??='';
+// This racial chain names its earlier feat rather than repeating the race requirement.
+groups.dwarf = `Stone Sense`;
+
 groups.channeling = `Alignment Channel|Elemental Channel|Channel Smite|Command Undead|Extra Channel|Improved Channel|Selective Channeling|Turn Undead|Channeling Scourge`;
 groups.leadership = `Leadership`;
 groups.critical = `Critical Focus|Critical Mastery|Improved Critical|Bleeding Critical|Blinding Critical|Deafening Critical|Exhausting Critical|Sickening Critical|Staggering Critical|Stunning Critical|Tiring Critical|Improvised Weapon Mastery|Outflank|Seize the Moment`;
@@ -31,4 +51,4 @@ groups.skills = `Acrobatic|Alertness|Animal Affinity|Athletic|Deceitful|Deft Han
 // These feats can apply to either weapon style, subject to their own rules.
 const shared = `Arcane Strike|Bleeding Critical|Blind-Fight|Blinding Critical|Critical Focus|Critical Mastery|Deadly Stroke|Deafening Critical|Exhausting Critical|Exotic Weapon Proficiency|Greater Penetrating Strike|Greater Vital Strike|Greater Weapon Focus|Greater Weapon Specialization|Improved Critical|Improved Vital Strike|Improvised Weapon Mastery|Martial Weapon Proficiency|Penetrating Strike|Quick Draw|Shatter Defenses|Sickening Critical|Simple Weapon Proficiency|Staggering Critical|Stunning Critical|Tiring Critical|Vital Strike|Weapon Focus|Weapon Specialization|Branded for Retribution|Double Bane|Extra Bane|Intimidating Bane|Menacing Bane|Merciful Bane|Spell Bane`;
 for (const theme of ['melee','ranged']) groups[theme] += '|'+shared;
-export const FEAT_THEMES = Object.fromEntries(Object.entries(groups).map(([theme,names])=>[theme,new Set(names.toLowerCase().split('|'))]));
+export const FEAT_THEMES = Object.fromEntries(Object.entries(groups).map(([theme,names])=>[theme,new Set(names.toLowerCase().split('|').filter(Boolean))]));

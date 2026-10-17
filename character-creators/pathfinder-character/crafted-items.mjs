@@ -1,9 +1,10 @@
 import {boilerOutput} from './engine/boilers.mjs';
+import {migrateBowDesign} from './engine/bows.mjs';
 import {MINOR_ADAPTATIONS,adaptationCost,adaptationSlots,validateAdaptationBase} from './engine/minor-adaptations.mjs';
 import {validateMagicItem,priceMagicItem,EFFECTS,validateCraftedItems} from './engine/magic-items.mjs';
 import {equip,techEvent} from './equipment.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export function addCraftedItem(c,design,id=crypto.randomUUID()){priceMagicItem(design);const next=structuredClone(c);next.craftedItems??=[];next.craftedItems.push({instanceId:id,design:structuredClone(design),equipped:false});validateCraftedItems(next);c.craftedItems=next.craftedItems;}
+export function addCraftedItem(c,design,id=crypto.randomUUID()){design=migrateBowDesign(design);priceMagicItem(design);const next=structuredClone(c);next.craftedItems??=[];next.craftedItems.push({instanceId:id,design:structuredClone(design),equipped:false});validateCraftedItems(next);c.craftedItems=next.craftedItems;}
 export function craftedAction(c,rules,id,action){const i=c.craftedItems?.find(i=>i.instanceId===id);if(!i)throw Error('Item not found.');
  if(action==='remove'){if(i.equipped&&['weapon','armor','shield'].includes(i.design.slot))equip(c,rules,i.design.slot+'Id','');if(i.techInstanceId&&c.techEquipment?.items.some(x=>x.instanceId===i.techInstanceId))techEvent(c,rules,{type:'remove',instanceId:i.techInstanceId});c.craftedItems=c.craftedItems.filter(x=>x!==i);return;}
  if(action!=='equip')throw Error('Unknown action.');
