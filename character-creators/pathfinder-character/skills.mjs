@@ -1,3 +1,6 @@
+import {bardEffects,bardSummary,VERSATILE} from './engine/bard-archetypes.mjs';
+import {rangerClassSkills,rangerEffects} from './engine/ranger-archetypes.mjs';
+import {rogueEffects} from './engine/rogue-archetypes.mjs';
 import {barbarianSkills} from './engine/barbarian-archetypes.mjs';
 import {archetypeSkills} from './engine/archetypes.mjs';
 import {optionClassSkills,optionEffects} from './engine/core-options.mjs';
@@ -22,7 +25,7 @@ export function calculateSkills(c,r){
  const breakdown=Object.entries(r.classes).map(([id,levels])=>({id,levels,base:CLASSES[id]?.ranks??0,perLevel:Math.max(1,(CLASSES[id]?.ranks??0)+intMod)+human}));
  const normal=breakdown.reduce((n,x)=>n+x.levels*x.perLevel,0)+c.builder.classOrder.filter((_,i)=>favoredBonus(c,i)==='skill').length,backgroundBudget=r.level*2;
  const bg=backgroundDetails(c.background,c);
- const classSet=new Set([...archetypeSkills({...c,classes:r.classes}),...optionClassSkills({...c,classes:r.classes}),...bg.classSkills,'lore',...Object.keys(r.classes).flatMap(id=>id==='barbarian'?barbarianSkills({...c,classes:r.classes},CLASSES[id]?.skills??[]):CLASSES[id]?.skills??[])]);
+ const classSet=new Set([...archetypeSkills({...c,classes:r.classes}),...optionClassSkills({...c,classes:r.classes}),...bg.classSkills,'lore',...Object.keys(r.classes).flatMap(id=>id==='ranger'?rangerClassSkills({...c,classes:r.classes},CLASSES[id]?.skills??[]):id==='barbarian'?barbarianSkills({...c,classes:r.classes},CLASSES[id]?.skills??[]):CLASSES[id]?.skills??[])]);
  if(classSet.has('craft')||classSet.has('perform'))classSet.add('artistry');
  const allocations=c.builder.skills??{},ids=[...new Set([...Object.keys(SKILLS).filter(id=>!SPECIALTIES.includes(id)),...Object.keys(allocations),...(c.builder.racialSkill?[c.builder.racialSkill]:[]),...bg.effects.filter(e=>e.target.startsWith('skill.')).map(e=>e.target.slice(6))])].sort();
  let normalSpent=0,backgroundSpent=0;const issues=[];
@@ -33,11 +36,13 @@ export function calculateSkills(c,r){
   if(ranks>r.level)issues.push(`${skillName(id)} exceeds the ${r.level}-rank limit.`);
   if(allocation.background&&!info.background)issues.push(`${skillName(id)} cannot use background ranks.`);
   if(SPECIALTIES.includes(id)&&ranks)issues.push(`Choose a specialty for ${skillName(id)}.`);
-  const classSkill=classSet.has(info.base),ability=Math.floor((r.abilities[info.ability]-10)/2),classBonus=classSkill&&ranks>0?3:0;
+  const classSkill=classSet.has(info.base)||!!bardSummary({...c,classes:r.classes})?.allClassSkills,ability=Math.floor((r.abilities[info.ability]-10)/2),classBonus=classSkill&&ranks>0?3:0;
   const backgroundBonus=Math.max(0,...bg.effects.filter(e=>e.target==='skill.'+id).map(e=>e.value));
   const racialBonus=racialEffects(c).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0);
-  return {id,racialBonus,backgroundBonus,...info,isBackground:info.background,...allocation,ranks,classSkill,abilityBonus:ability,classBonus,total:ranks+ability+classBonus+backgroundBonus+racialBonus+optionEffects({...c,classes:r.classes}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)};
+  return {id,racialBonus,backgroundBonus,...info,isBackground:info.background,...allocation,ranks,classSkill,abilityBonus:ability,classBonus,total:ranks+ability+classBonus+backgroundBonus+racialBonus+bardEffects({...c,classes:r.classes,abilities:r.abilities}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)+rangerEffects({...c,classes:r.classes,abilities:r.abilities}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)+rogueEffects({...c,classes:r.classes}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)+optionEffects({...c,classes:r.classes}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)};
  }).filter(Boolean);
+ const bard=bardSummary({...c,classes:r.classes,abilities:r.abilities});
+ for(const row of rows){if(bard?.untrainedAll||r.classes.bard&&!bard.replaced.includes('bardic-knowledge')&&row.id.startsWith('knowledge-'))row.trained=false;for(const type of bard?.versatile??[])if(VERSATILE[type]?.includes(row.id)){const a=allocations['perform:'+type]??{normal:0,background:0},ranks=a.normal+a.background,bonus=ranks+Math.floor((r.abilities.cha-10)/2)+(ranks?3:0);if(bonus>row.total){row.total=bonus;row.versatile=type;row.trained=false;}}}
  if(normalSpent>normal)issues.push(`Normal skill ranks exceed the budget by ${normalSpent-normal}.`);
  if(backgroundSpent>backgroundBudget)issues.push(`Background skill ranks exceed the budget by ${backgroundSpent-backgroundBudget}.`);
  if(normalSpent<normal)issues.push(`${normal-normalSpent} normal skill ranks remain.`);

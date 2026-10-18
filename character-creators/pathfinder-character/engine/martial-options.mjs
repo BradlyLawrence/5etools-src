@@ -1,3 +1,4 @@
+import {replacedRangerSlot} from './ranger-archetypes.mjs';
 import {replacedFighterSlot,archetypeIds} from './archetypes.mjs';
 import data from './martial-options-data.mjs';
 export const MARTIAL_OPTIONS=data;
@@ -6,6 +7,7 @@ const thresholds={enemy:[1,5,10,15,20],terrain:[3,8,13,18]};
 export function martialSpecs(c){
  const b=c.builder?.classOptions??{},specs=[],add=(id,label,options)=>specs.push({id,label,options});
  for(const [kind,levels] of Object.entries(thresholds)){
+  if(replacedRangerSlot(c,kind==='enemy'?'favored-enemy':'favored-terrain'))continue;
   const pool=names(data[kind==='enemy'?'enemies':'terrains']);
   for(const level of levels.filter(l=>l<=(c.classes.ranger??0))){
    add(`ranger-${kind}-${level}`,`Favoured ${kind} (ranger level ${level})`,pool);
@@ -24,6 +26,7 @@ export function martialIssues(c){
  return issues;
 }
 export function favoredBonuses(c,kind){
+ if(replacedRangerSlot(c,kind==='enemy'?'favored-enemy':'favored-terrain'))return {};
  const b=c.builder?.classOptions??{},levels=thresholds[kind].filter(l=>l<=(c.classes.ranger??0)),pool=data[kind==='enemy'?'enemies':'terrains'],out={};
  for(const level of levels){
   const id=b[`ranger-${kind}-${level}`];if(pool.includes(id)&&!out[id])out[id]=2;

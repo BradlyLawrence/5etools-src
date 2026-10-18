@@ -1,3 +1,5 @@
+import {bardBonusSpells} from './bard-archetypes.mjs';
+import {replacedRangerSlot} from './ranger-archetypes.mjs';
 import data from './spellcasting-data.mjs';
 export const SPELLCASTING=data;
 const byId=new Map(data.spells.map(s=>[s.id,s]));
@@ -18,13 +20,14 @@ export function validateSpellcasting(value){
 export function spellcasting(c,r){
  const result=[],choices=c.builder?.classOptions??{};
  for(const [cls,level] of Object.entries(r.classes)){
+  if(cls==='ranger'&&replacedRangerSlot(c,'spells'))continue;
   const def=data.classes[cls];if(!def||!level)continue;
   const state=c.builder?.spellcasting?.[cls]??{},score=r.abilities[def.ability],abilityMod=mod(score),table=def.daily[level-1],known=def.known[level-1]??{},issues=[],rows=[];
   const opposition=cls==='wizard'&&choices['wizard-school']!=='universalist'?[choices['wizard-opposition-1'],choices['wizard-opposition-2']].filter(Boolean):[];
   const domains=cls==='cleric'?[choices['cleric-domain-1'],choices['cleric-domain-2']]:cls==='druid'&&choices['druid-bond']==='domain'?[choices['druid-domain']]:[];
   const bloodline=cls==='sorcerer'?data.bonus.bloodlines[choices['sorcerer-bloodline']]??{}:{};
   const auto=Object.entries(bloodline).filter(([n])=>+n<=level).map(([n,id])=>({id,level:(+n-1)/2}));
-  const arcaneBonus=[];
+  const arcaneBonus=cls==='bard'?bardBonusSpells({...c,classes:r.classes,abilities:r.abilities}):[];
   if(cls==='sorcerer'&&choices['sorcerer-bloodline']==='arcane')for(const [index,at] of [9,13,17].entries())if(level>=at){const maximum=Math.max(...Object.entries(def.daily[at-1]).filter(([,v])=>v!==null).map(([n])=>+n)),options=data.spells.filter(s=>s.levels.sorcerer<=maximum),id=list(state,'arcane',0)[index];if(!options.some(s=>s.id===id))issues.push(`Choose the New Arcana spell gained at sorcerer level ${at}.`);else arcaneBonus.push({id,level:byId.get(id).levels.sorcerer});}
   const levels=[...new Set([...Object.keys(table),...Object.keys(known)])].map(Number).sort((a,b)=>a-b);
   for(const n of levels){
@@ -36,6 +39,7 @@ export function spellcasting(c,r){
    const bookAuto=cls==='wizard'&&n===0?options.filter(s=>!opposition.includes(s.school)).map(s=>s.id):[];
    const valid=selected.filter(id=>options.some(s=>s.id===id)),available=def.mode==='prepared'?options.map(s=>s.id):[...new Set([...valid,...automatic,...bookAuto])];
    if(selected.some(id=>id&&!valid.includes(id)))issues.push(`${cls}: a level ${n} spell is no longer on this class list.`);
+   if(valid.some(id=>automatic.includes(id)))issues.push(`${cls}: a bonus spell is also selected as a normal spell known.`);
    if(new Set(valid).size!==valid.length)issues.push(`${cls}: duplicate level ${n} spells known or book entries.`);
    if(def.mode==='known'&&valid.length!==knownCount)issues.push(`${cls}: choose ${knownCount} level ${n} spells known (${valid.length} selected).`);
    let special=[];

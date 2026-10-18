@@ -1,3 +1,5 @@
+import {bardSpecs} from './bard-archetypes.mjs';
+import {rangerSpecs,rangerIssues,replacedRangerSlot} from './ranger-archetypes.mjs';
 import {barbarianSpecs} from './barbarian-archetypes.mjs';
 import {selectableSpecs} from './selectable-abilities.mjs';
 import {martialSpecs,martialIssues} from './martial-options.mjs';
@@ -17,9 +19,9 @@ export function coreChoiceSpecs(classes){
  return specs;
 }
 export function dependentSpecs(c){
- const b=c.builder?.classOptions??{},specs=[...coreChoiceSpecs(c.classes),...martialSpecs(c),...selectableSpecs(c),...barbarianSpecs(c)],add=(id,label,options)=>specs.push({id,label,options});
+ const b=c.builder?.classOptions??{},specs=[...coreChoiceSpecs(c.classes).filter(s=>s.id!=='ranger-bond'||!replacedRangerSlot(c,'hunters-bond')), ...bardSpecs(c),...rangerSpecs(c),...martialSpecs(c),...selectableSpecs(c),...barbarianSpecs(c)],add=(id,label,options)=>specs.push({id,label,options});
  if(c.classes.druid&&b['druid-bond']==='domain')add('druid-domain','Nature domain',data.domains.filter(x=>['air','animal','earth','fire','plant','water','weather'].includes(x.id)));
- for(const cls of ['druid','ranger'])if(c.classes[cls]>=(cls==='ranger'?4:1)&&b[cls+'-bond']==='companion')add(cls+'-companion','Animal companion',data.companions.filter(x=>cls!=='ranger'||['badger-wolverine','bird-eagle-hawk-owl','camel','cat-small-cheetah-leopard','dog','horse','pony','snake-viper','wolf'].includes(x.id)));
+ for(const cls of ['druid','ranger'])if(c.classes[cls]>=(cls==='ranger'?4:1)&&b[cls+'-bond']==='companion'&&(cls!=='ranger'||!replacedRangerSlot(c,'hunters-bond')))add(cls+'-companion','Animal companion',data.companions.filter(x=>cls!=='ranger'||['badger-wolverine','bird-eagle-hawk-owl','camel','cat-small-cheetah-leopard','dog','horse','pony','snake-viper','wolf'].includes(x.id)));
  if(c.classes.cavalier)add('cavalier-mount','Mount',data.companions.filter(x=>['horse','pony'].includes(x.id)));
  if(c.classes.paladin>=5&&b['paladin-bond']==='mount')add('paladin-mount','Mount',data.companions.filter(x=>['horse','pony'].includes(x.id)));
  if(c.classes.wizard&&b['wizard-school']&&b['wizard-school']!=='universalist')for(const n of [1,2])add('wizard-opposition-'+n,'Opposition school '+n,data.schools.filter(x=>x.id!=='universalist'&&x.id!==b['wizard-school']));
@@ -93,8 +95,8 @@ export function optionDefenses(c){
  return {resistances,sources};
 }
 export function optionIssues(c){
- const b=c.builder?.classOptions??{},issues=[...martialIssues(c)];
- for(const spec of dependentSpecs(c))if(!spec.options.some(x=>x.id===b[spec.id]))issues.push('Choose '+spec.label.toLowerCase()+'.');
+ const b=c.builder?.classOptions??{},issues=[...martialIssues(c),...rangerIssues(c)];
+ for(const spec of dependentSpecs(c))if(spec.freeText?!String(b[spec.id]??'').trim():!spec.options.some(x=>x.id===b[spec.id]))issues.push('Choose '+spec.label.toLowerCase()+'.');
  if(c.classes.cleric&&b['cleric-domain-1']&&b['cleric-domain-1']===b['cleric-domain-2'])issues.push('Choose two different cleric domains.');
  if(c.classes.wizard&&b['wizard-school']!=='universalist'&&b['wizard-opposition-1']&&b['wizard-opposition-1']===b['wizard-opposition-2'])issues.push('Choose two different opposition schools.');
  return issues;

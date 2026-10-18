@@ -1,4 +1,4 @@
-import {renderArchetypes} from './archetypes-ui.mjs?v=barbarian-archetypes-1';
+import {renderArchetypes} from './archetypes-ui.mjs?v=bard-archetypes-1';
 import {setArchetype} from './engine/archetypes.mjs';
 import {addSpecialty,cleanupRacialSpecialties} from './skills.mjs';
 import {renderAdditionalTraits} from './additional-traits.mjs';
@@ -7,7 +7,7 @@ import {renderCrafted,craftedAction} from './crafted-items.mjs';
 import {renderOverload,renderDefensiveTech} from './defensive-tech-ui.mjs';
 import {renderSpellcasting} from './spellcasting-ui.mjs';
 import {setSpell} from './engine/spellcasting.mjs';
-import {renderClassSelections,renderClassChoices,setClassChoice,gunslingerSummary,renderClassSheet,toggleClassEffect} from './class-choices.mjs?v=barbarian-archetypes-1';
+import {renderClassSelections,renderClassChoices,setClassChoice,gunslingerSummary,renderClassSheet,toggleClassEffect} from './class-choices.mjs?v=bard-archetypes-1';
 import {renderDragonborn} from './dragonborn-ui.mjs';
 import {racialOptions,advancementUI} from './advancement-ui.mjs?v=gnome-specialty-4';
 import {renderFeatReview,renderStartingFeats,selectStartingFeat,featChoices} from './feats.mjs?v=apg-feats-1';

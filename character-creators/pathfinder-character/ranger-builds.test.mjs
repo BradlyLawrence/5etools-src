@@ -1,0 +1,64 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {newCharacter,calculate} from './character.mjs';
+import {equip,equipmentSheet,techEvent} from './equipment.mjs';
+import {setArchetype} from './engine/archetypes.mjs';
+import {setClassChoice} from './class-choices.mjs';
+import {exportCharacter,parseCharacter} from './roster.mjs';
+const rules=JSON.parse(await readFile(new URL('rules.json',import.meta.url),'utf8'));
+function build(level,ids){const c=newCharacter();c.builder.method='manual';c.builder.baseScores={str:16,dex:18,con:14,int:12,wis:16,cha:10};c.builder.targetLevel=level;c.builder.classOrder=Array(level).fill('ranger');c.builder.raceId='';for(const id of ids)setArchetype(c,id,true);return c;}
+const sheet=c=>equipmentSheet(c,rules),row=(s,id)=>s.sheetRows.find(r=>r.id.endsWith('|'+id));
+test('level 11 city guide: longbow, focus, community, Inspired Moment and keen-equivalent criticals',()=>{
+ const c=build(11,['guide','urban-ranger','skirmisher']);
+ for(const [id,value] of Object.entries({'ranger-community-3':'Forge Town','ranger-community-8':'Dockside','ranger-community-boost-8':'ranger-community-3','ranger-trick-5':'hateful-attack','ranger-trick-7':'defensive-bow-stance','ranger-trick-9':'hobbling-attack','ranger-trick-11':'skill-sage'}))setClassChoice(c,rules,id,value);
+ equip(c,rules,'weaponId','long-bow');equip(c,rules,'armorId','riveted-strider-suit');
+ const untrained=sheet(c);assert.equal(untrained.stats.attack.total,10,'Tech armour applies its nonproficiency penalty');
+ c.feats.push({featId:'improved-critical',weaponId:'long-bow'},{featId:'tech-armour-proficiency'});
+ const s=sheet(c),focus=row(s,'ranger-focus'),moment=row(s,'ranger-inspired-focus');
+ assert.equal(s.stats.attack.total,15);assert.equal(s.stats.damage.total,2);
+ assert.equal(focus.stats.attack.total,21);assert.equal(focus.stats.damage.total,8);
+ assert.equal(moment.stats.attack.total,25);assert.equal(moment.stats.damage.total,8);
+ assert.equal(moment.stats.ac.total-s.stats.ac.total,4);
+ assert.equal(s.ranger.tricks.uses,8);assert.equal(s.ranger.focus.uses,4);
+ assert.equal(s.equipment.rangeIncrementFt,120);assert.equal(s.equipment.bow.mountedUse,false);
+ assert.equal(s.ranger.hatefulCritical[0].threatMin,19);
+ assert.equal(row(s,'ranger-community-3').stats.initiative.total-s.stats.initiative.total,4);
+ const combined=row(s,'ranger-inspired-focus+ranger-community-3');assert.ok(combined,'Simultaneous focus, Inspired Moment and community bonuses need a usable sheet row');
+ assert.equal(combined.stats.attack.total,25);assert.equal(combined.stats.initiative.total-s.stats.initiative.total,8);
+ assert.deepEqual(sheet(parseCharacter(exportCharacter(c))).ranger,s.ranger);
+ console.log('City guide L11: longbow attack +15, focus +21, Inspired + focus +25; damage +2/+8/+8; 8 tricks/day, 4 focuses/day.');
+});
+test('level 10 mine trapper: tech axe and armour preserve fuel, penalties and proficiency rules',()=>{
+ const c=build(10,['trapper','deep-walker']);
+ for(const [id,value] of Object.entries({'ranger-trap-5':'fire-trap','ranger-trap-7':'freezing-trap','ranger-trap-9':'poison-trap'}))setClassChoice(c,rules,id,value);
+ equip(c,rules,'weaponId','steam-handaxe');equip(c,rules,'armorId','riveted-strider-suit');equip(c,rules,'shieldId','tech-heavy-shield');
+ const untrained=sheet(c);assert.equal(untrained.equipment.proficient,false);
+ // Explicit proficiency is a build input, never supplied by the archetypes.
+ c.proficientWeapons=['steam-handaxe'];const s=sheet(c),u=row(s,'ranger-underground'),rock=row(s,'ranger-rock-hopper');
+ assert.equal(s.equipment.proficient,true);assert.equal(s.stats.attack.total-untrained.stats.attack.total,4);
+ assert.equal(s.ranger.traps.supernaturalDC,18);assert.equal(s.ranger.traps.extraordinaryDC,16);assert.equal(s.ranger.traps.uses,8);
+ assert.equal(s.ranger.traps.launch,true);assert.equal(s.ranger.deepKnowledge,5);
+ assert.equal(u.stats['skill.stealth'].total-s.stats['skill.stealth'].total,5);assert.equal(rock.stats['skill.climb'].total-s.stats['skill.climb'].total,5);
+ const before=JSON.stringify(c.techEquipment);sheet(c);assert.equal(JSON.stringify(c.techEquipment),before);
+ c.feats.push({featId:'tech-armour-proficiency'});const trained=sheet(c);
+ const penalties=['riveted-strider-suit','tech-heavy-shield'].reduce((sum,id)=>sum-rules.equipment.items.find(i=>i.id===id).defense.armorCheckPenalty,0);
+ assert.equal(trained.stats.attack.total-s.stats.attack.total,penalties,'Explicit tech armour proficiency removes only nonproficiency attack penalties');
+ assert.equal(trained.stats['skill.stealth'].total,s.stats['skill.stealth'].total,'Armour proficiency does not erase armour check penalties');
+ const instance=c.techEquipment.items.find(i=>i.instanceId===c.techEquipment.selectedInstanceId),reservoir=instance.reservoir;
+ const family=rules.technology.families.find(f=>f.id===rules.equipment.items.find(i=>i.id==='steam-handaxe').tech.family),action=family.actions.find(a=>a.cost===1);
+ assert.ok(action);techEvent(c,rules,{type:'spend',instanceId:instance.instanceId,actionId:action.id});assert.equal(c.techEquipment.items.find(i=>i.instanceId===instance.instanceId).reservoir,reservoir-1);
+ assert.deepEqual(sheet(parseCharacter(exportCharacter(c))).ranger,s.ranger);
+ c.builder.classOrder.push(...Array(5).fill('fighter'));c.builder.targetLevel=15;const multi=sheet(c);
+ assert.equal(multi.ranger.traps.supernaturalDC,20);assert.equal(multi.ranger.traps.uses,8);assert.equal(multi.ranger.traps.hours,10);
+ console.log('Mine trapper L10: trap DC 18/16, 8 uses/day, underground +5. Ranger10/Fighter5: DC20/18, unchanged uses and duration.');
+});
+test('keen and broken tech criticals retain their limits on a Guide/Skirmisher weapon',()=>{
+ const c=build(11,['guide','skirmisher']);setClassChoice(c,rules,'ranger-trick-5','hateful-attack');equip(c,rules,'weaponId','vibro-dagger');
+ const id=c.techEquipment.selectedInstanceId,plain=sheet(c);techEvent(c,rules,{type:'update',instanceId:id,field:'keen',value:true});const keen=sheet(c);
+ assert.equal(keen.ranger.hatefulCritical[0].threatMin,plain.ranger.hatefulCritical[0].threatMin);
+ assert.deepEqual(keen.equipment.damageDice,plain.equipment.damageDice);
+ const hp=rules.equipment.items.find(i=>i.id==='vibro-dagger').durability.hitPoints;
+ techEvent(c,rules,{type:'update',instanceId:id,field:'damageTaken',value:Math.ceil(hp/2)});
+ const broken=sheet(c);assert.equal(broken.ranger.focus.bonus,6);assert.equal(broken.ranger.hatefulCritical[0].threatMin,20);assert.equal(broken.ranger.hatefulCritical[0].multiplier,2);
+});

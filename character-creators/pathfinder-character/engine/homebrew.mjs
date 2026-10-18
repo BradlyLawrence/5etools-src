@@ -1,3 +1,6 @@
+import {bardEffects,bardScenarios,bardSummary,applyBardSkillSubstitutions} from './bard-archetypes.mjs';
+import {rangerEffects,rangerScenarios,rangerSummary} from './ranger-archetypes.mjs';
+import {hasRogue,rogueEffects,rogueScenarios,rogueSummary} from './rogue-archetypes.mjs';
 import {barbarianEffects,barbarianSummary,barbarianScenarios,hasBarbarian} from './barbarian-archetypes.mjs';
 import {selectedAbilities} from './selectable-abilities.mjs';
 import {fighterBaseSummary} from './fighter-base.mjs';
@@ -179,7 +182,7 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
   if(prepared.equipment?.weapon?.jotungrip&&rowConditions)rowConditions={...rowConditions,'light-off-hand':true};
   const abilities = rules.abilities ? evaluateAbilities(rules.abilities, c, result, Object.fromEntries(Object.entries(rowConditions??{}).filter(([k])=>!k.startsWith('class-option.')))) : null;
   if (abilities) result.effects.push(...abilities.effects);
-  result.effects.push(...equipmentEffects(prepared.equipment,c,result,abilities),...craftedEffects(c),...crossbowmanEffects(c,prepared.equipment?.weapon,rowConditions??{}),...roughriderEffects(c,prepared.equipment,{...abilities?.conditions,...rowConditions}),...polearmEffects(c,prepared.equipment?.weapon,rowConditions??{}),...shieldedEffects(c,prepared.equipment,rowConditions??{},result.feats),...phalanxEffects(c,prepared.equipment,rowConditions??{}),...mobileEffects(c,rowConditions??{}),...barbarianEffects(c,prepared.equipment,{...abilities?.conditions,...rowConditions},result.feats),...archerEffects(c,prepared.equipment?.weapon,rowConditions??{}),...brawlerEffects(c,prepared.equipment?.weapon,rowConditions??{}));
+  result.effects.push(...bardEffects(c,{...abilities?.conditions,...rowConditions}),...rangerEffects(c,{...abilities?.conditions,...rowConditions}),...rogueEffects(c,{...abilities?.conditions,...rowConditions}),...equipmentEffects(prepared.equipment,c,result,abilities),...craftedEffects(c),...crossbowmanEffects(c,prepared.equipment?.weapon,rowConditions??{}),...roughriderEffects(c,prepared.equipment,{...abilities?.conditions,...rowConditions}),...polearmEffects(c,prepared.equipment?.weapon,rowConditions??{}),...shieldedEffects(c,prepared.equipment,rowConditions??{},result.feats),...phalanxEffects(c,prepared.equipment,rowConditions??{}),...mobileEffects(c,rowConditions??{}),...barbarianEffects(c,prepared.equipment,{...abilities?.conditions,...rowConditions},result.feats),...archerEffects(c,prepared.equipment?.weapon,rowConditions??{}),...brawlerEffects(c,prepared.equipment?.weapon,rowConditions??{}));
   result.effects.push(...backgroundEffects(c.background,abilities?.conditions ?? rowConditions ?? {},c),...racialEffects(c),...optionEffects(c),...selectableEffects(c,rowConditions??{}),...martialEffects(c,rowConditions??{},prepared.equipment?.weapon,result.effects));
   if(archetypeIds(c).includes('tech-fighter')&&(c.classes.fighter??0)>=2){const value=1+Math.floor((c.classes.fighter-2)/4);for(const target of ['skill.tech-use',...(prepared.equipment?.weapon?.proficiency==='tech-melee'?['maneuver.disarm.defense','maneuver.sunder.defense']:[])])result.effects.push({kind:'modifier',target,value,bonusType:target.startsWith('skill.')?'competence':'untyped',featId:'archetype.technical-handling',name:'Technical Handling'});}
   const mod = ability => Math.floor((c.abilities[ability] - 10) / 2);
@@ -196,7 +199,7 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
     'save.will': c.baseSaves.will + mod('wis'), initiative: mod('dex'), 'combatManeuver.check': c.bab + maneuverAbility,
     damage: c.context.attackType === 'melee' ? (mod('str')>0?Math.floor(mod('str')*(c.context.weapon.damageMode==='two-handed'?1.5:c.context.weapon.damageMode==='off-hand'?0.5:1)):mod('str')) : 0
   };
-  const skillAbilities = {...SKILLS,...Object.fromEntries(Object.keys(c.skillRanks).filter(id=>id.includes(':')&&SKILLS[id.split(':')[0]]).map(id=>[id,SKILLS[id.split(':')[0]]]))};
+  const skillAbilities = {...SKILLS,...Object.fromEntries((bardSummary(c)?.versatile??[]).map(id=>['perform:'+id,'cha'])),...(hasRogue(c,'poisoner')?{'craft:alchemy':'int'}:{}),...Object.fromEntries(Object.keys(c.skillRanks).filter(id=>id.includes(':')&&SKILLS[id.split(':')[0]]).map(id=>[id,SKILLS[id.split(':')[0]]]))};
   for (const [skill, ability] of Object.entries(skillAbilities)) bases[`skill.${skill}`] = (c.skillRanks[skill] ?? 0) + mod(ability) + ((c.skillRanks[skill]??0)>0 && (c.classSkills?.includes(skill)||background.classSkills.includes(skill)) ? 3 : 0);
   if(prepared.equipment){
     for(const [skill,ability]of Object.entries(skillAbilities))if(['str','dex'].includes(ability))result.effects.push({kind:'modifier',featId:'equipment.armor-check',name:'Equipment armor check penalty',target:'skill.'+skill,bonusType:'untyped',value:prepared.equipment.skillPenalty??0});
@@ -234,7 +237,8 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
     stacked.breakdown.push(...suppressed.map(e => ({ ...e, applied: false, reason: 'Dodge bonus lost while denied Dexterity to AC' })));
     stats[target] = { base, total: base + stacked.total, modifier: stacked.total, breakdown: stacked.breakdown };
   }
-  const output = { ...result, mobileFighter:mobileSummary(c), archetypeFeatures:[...selectedArchetypes(c).map(p=>({...p,owner:'fighter'})),...selectedArchetypes(c,'barbarian').map(p=>({...p,owner:'barbarian'}))].flatMap(p=>p.features.filter(f=>f.level<=(c.classes[p.owner]??0)).map(f=>({name:f.name,archetype:p.name,text:f.rulesText}))), stats, defenses:optionDefenses(c),effectiveAbilities:c.abilities,classAbilities:selectableSummary(c), equipment:equipmentSummary(prepared.equipment,c,result,stats), ...(abilities ? { abilities } : {}), manualEffects: result.effects.filter(e => e.kind === 'manual') };
+  applyBardSkillSubstitutions(c,stats);
+  const output = { ...result, mobileFighter:mobileSummary(c), archetypeFeatures:[...selectedArchetypes(c).map(p=>({...p,owner:'fighter'})),...selectedArchetypes(c,'barbarian').map(p=>({...p,owner:'barbarian'})),...selectedArchetypes(c,'ranger').map(p=>({...p,owner:'ranger'})),...selectedArchetypes(c,'rogue').map(p=>({...p,owner:'rogue'}))].flatMap(p=>p.features.filter(f=>f.level<=(c.classes[p.owner]??0)).map(f=>({name:f.name,archetype:p.name,text:f.rulesText}))), stats, defenses:optionDefenses(c),effectiveAbilities:c.abilities,classAbilities:selectableSummary(c), equipment:equipmentSummary(prepared.equipment,c,result,stats), ...(abilities ? { abilities } : {}), manualEffects: result.effects.filter(e => e.kind === 'manual') };
   output.drillSergeant=drillSummary(c,prepared.equipment?.weapon,result.feats,rules.feats);
   output.crossbowman=crossbowmanSummary(c,prepared.equipment?.weapon);
   if(output.crossbowman?.weaponMastery&&output.equipment?.critical)for(const critical of output.equipment.critical)critical.multiplier+=1;
@@ -257,6 +261,13 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
   if(output.fighterBase?.weaponMastery&&output.equipment?.critical)for(const critical of output.equipment.critical)critical.multiplier+=1;
   if(output.fighterBase?.armorMastery&&output.equipment){output.equipment.untypedDamageReduction=Math.max(5,output.equipment.untypedDamageReduction??0);output.equipment.physicalProtection={nonmagical:Math.max(output.equipment.untypedDamageReduction,output.equipment.damageReduction?.amount??0),magical:output.equipment.untypedDamageReduction};}
   if(output.equipment)output.equipment.traitDefinitions=rules.equipmentTraits?.traits??[];
+  output.bard=bardSummary(c);
+  output.ranger=rangerSummary(c,{...abilities?.conditions,...rowConditions});
+  if(output.ranger?.tricks?.known.some(o=>o.id==='hateful-attack')&&prepared.equipment?.weapon?.critical){
+    output.ranger.hatefulCritical=prepared.equipment.weapon.critical.map((p,i)=>({...p,threatMin:Math.max(2,Math.min(output.equipment.critical?.[i]?.threatMin??p.threatMin,21-(21-p.threatMin)*2)),multiplier:output.equipment.critical?.[i]?.multiplier??p.multiplier}));
+    if(prepared.equipment.tech&&techBroken(prepared.equipment.tech.item,prepared.equipment.tech.instance))output.ranger.hatefulCritical=structuredClone(output.equipment.critical);
+  }
+  output.rogue=rogueSummary(c,prepared.equipment?.weapon,stats['sneakAttack.dice'].total);
   output.barbarian=barbarianSummary(c,prepared.equipment,selectedAbilities(c));
   if(output.barbarian){const b=output.barbarian;output.classAbilities.damageReduction=b.damageReduction;
     if(b.endurance?.energy){output.defenses.resistances??={};const old=output.defenses.resistances[b.endurance.energy];if(old!=='immune')output.defenses.resistances[b.endurance.energy]=Math.max(old??0,b.endurance.resistance);}
@@ -265,7 +276,7 @@ export function evaluateCharacter(rules, input, rowConditions = null, techAction
   }
   if(abilities && rowConditions===null){
     const ordinaryRows=sheetScenarios(abilities);
-    const extraRows=ordinaryRows.flatMap(base=>[...martialScenarios(c,prepared.equipment?.weapon),...phalanxScenarios(c,prepared.equipment),...mobileScenarios(c),...barbarianScenarios(c),...archerScenarios(c),...brawlerScenarios(c),...crossbowmanScenarios(c,prepared.equipment?.weapon),...roughriderScenarios(c,prepared.equipment),...polearmScenarios(c,prepared.equipment?.weapon),...shieldedScenarios(c,prepared.equipment),...selectableScenarios(c)].map(row=>({...row,id:base.id+'|'+row.id,label:(base.id==='normal'?'':base.label+' + ')+row.label,conditions:{...base.conditions,...row.conditions}})));
+    const extraRows=ordinaryRows.flatMap(base=>[...martialScenarios(c,prepared.equipment?.weapon),...phalanxScenarios(c,prepared.equipment),...mobileScenarios(c),...barbarianScenarios(c),...rogueScenarios(c),...bardScenarios(c),...rangerScenarios(c),...archerScenarios(c),...brawlerScenarios(c),...crossbowmanScenarios(c,prepared.equipment?.weapon),...roughriderScenarios(c,prepared.equipment),...polearmScenarios(c,prepared.equipment?.weapon),...shieldedScenarios(c,prepared.equipment),...selectableScenarios(c)].map(row=>({...row,id:base.id+'|'+row.id,label:(base.id==='normal'?'':base.label+' + ')+row.label,conditions:{...base.conditions,...row.conditions}})));
     output.sheetRows=[...ordinaryRows,...extraRows].map(row=>{
       const evaluated=row.id==='normal'?output:evaluateCharacter(rules,input,row.conditions);
       return {...row,weaponId:c.context.weapon.id,attackType:c.context.attackType,stats:evaluated.stats,notes:evaluated.abilities.notes};

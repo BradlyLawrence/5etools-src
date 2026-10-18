@@ -1,4 +1,5 @@
 import {hasBarbarian,barbarianLevel,swordGunActive} from './barbarian-archetypes.mjs';
+import {replacedRangerSlot} from './ranger-archetypes.mjs';
 import {archetypeGrants} from './archetypes.mjs';
 import {featSlotWaives,featSlots,slotAllows} from './feat-progression.mjs';
 /** Pure, browser-compatible evaluator for the approved class-grant package.
@@ -161,9 +162,11 @@ export function evaluateClassGrants(pkg, input, context = {}) {
     add(feat.featId, feat.weaponId, { id: `selection:${index}`, kind: 'selected',creatorSlot:feat.creatorSlot,slotWaiver:def&&featSlotWaives(c,feat,def) },feat.count??1);
   }
   if(swordGunActive(c,pkg.equipment?.items.find(w=>w.id===c.context?.weapon?.id)))add('two-weapon-fighting',undefined,{id:'sword-and-gun',kind:'class-grant',classId:'barbarian',classLevel:2,waivePrerequisites:['ability']});
+  if((c.classes?.bard??0)>0&&c.builder?.archetypes?.bard?.includes('magician'))add('improved-counterspell',undefined,{id:'archetype:magician:improved-counterspell',kind:'class-grant',classId:'bard',classLevel:1});
   for(const grant of archetypeGrants(c))add(grant.featId,undefined,{id:'archetype:'+grant.name+':'+grant.featId,kind:'class-grant',classId:'fighter',classLevel:grant.level,slotWaiver:grant.featId==='pinpoint-targeting',waivedFeatIds:grant.featId==='stand-still'?['combat-reflexes']:[],waivePrerequisites:definitions.get(grant.featId)?.prerequisites.map(p=>p.kind)??[]});
   if(hasBarbarian(c,'armored-hulk'))add('armor-proficiency-heavy',undefined,{id:'armored-hulk-proficiency',kind:'class-grant',classId:'barbarian',classLevel:1,waivePrerequisites:[]});
   for (const grant of pkg.grants) {
+    if(grant.classId==='ranger'&&grant.featId==='endurance'&&replacedRangerSlot(c,'endurance'))continue;
     if(grant.classId==='barbarian'&&grant.featId==='armor-proficiency-medium'&&(hasBarbarian(c,'urban-barbarian')||hasBarbarian(c,'savage-technologist')))continue;
     if ((c.classes[grant.classId] ?? 0) < grant.classLevel) continue;
     const weaponId = grant.selectionFrom ? c.deity?.favoredWeaponId : undefined;
