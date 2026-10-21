@@ -1,4 +1,10 @@
+import {validateDeity} from './deity-setup.mjs';
+import {validateOffHand} from './engine/weapon-hands.mjs';
+import {validateSheetPreferences} from './sheet-presets.mjs';
+import {validateDebuffs} from './engine/debuffs.mjs';
+import {validateBuffs} from './engine/buffs.mjs';
 import {validateCraftedItems} from './engine/magic-items.mjs';
+import {validateSpellUse} from './engine/spell-use.mjs';
 import {validateBackground} from './backgrounds.mjs';
 import {validateBuilder} from './character.mjs';
 export const KEY='character-creators/pathfinder/roster-v1';
@@ -14,7 +20,13 @@ export function parseCharacter(input){
  if(!Array.isArray(c.feats))throw Error('The character is missing its feat list.');
  if(c.carriedEquipment!==undefined&&(!c.carriedEquipment||typeof c.carriedEquipment!=='object'||Array.isArray(c.carriedEquipment)||Object.entries(c.carriedEquipment).some(([id,n])=>!id||!Number.isInteger(n)||n<0||n>999)))throw Error('Invalid carried equipment quantities.');
  validateCraftedItems(c);
+ validateOffHand(c);
+ validateSpellUse(c.spellUse);
+ validateBuffs(c.buffs);
+ validateSheetPreferences(c.sheetPreferences);
+ validateDebuffs(c.debuffs);
  validateBackground(c.background);
+ validateDeity(c);
  if(c.builder)validateBuilder(c.builder);
  return structuredClone(c);
 }

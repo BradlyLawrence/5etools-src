@@ -1,3 +1,5 @@
+import {clearOffHand} from './engine/weapon-hands.mjs';
+import {attackRoutine} from './engine/attack-routine.mjs';
 import {firearmReload} from './engine/gunslinger.mjs';
 import {bowId,migrateBowCharacter} from './engine/bows.mjs';
 import {dragonbornFeatures} from './engine/racial.mjs';
@@ -12,10 +14,19 @@ export function sheetCharacter(c){
  out.equipment={weaponId:'unarmed-strike',size:['gnomes','halflings'].includes(c.builder.raceId)?'small':'medium',baseSpeed:['dwarves','gnomes','halflings'].includes(c.builder.raceId)?20:30,...c.equipment};
  return out;
 }
+export function freeOffHand(c,rules){
+ clearOffHand(c);
+ const shield=c.equipment?.shieldId;if(!shield)return;
+ if(!c.craftedItems?.some(i=>i.equipped&&i.design.slot==='shield')&&!c.techEquipment?.shieldInstanceId){c.carriedEquipment??={};c.carriedEquipment[shield]=(c.carriedEquipment[shield]??0)+1;}
+ equip(c,rules,'shieldId','');
+}
 export function equip(c,rules,slot,id){
  id=bowId(id);
  if(!['weaponId','armorId','shieldId'].includes(slot))throw Error('Unknown equipment slot.');
  for(const i of c.craftedItems??[])if(i.design.slot+'Id'===slot)i.equipped=false;
+ const incoming=rules.equipment.items.find(x=>x.id===id);
+ if(id&&slot==='shieldId')clearOffHand(c);
+ if(id&&slot==='weaponId'&&['two-handed','ranged'].includes(incoming?.handling))freeOffHand(c,rules);
  const kind={weaponId:'weapon',armorId:'armor',shieldId:'shield'}[slot];
  if(id&&!rules.equipment.items.some(x=>x.id===id&&x.kind===kind))throw Error('Unknown equipment.');
  for(const i of c.techEquipment?.items??[])if(i.overloaded&&c.equipment?.[slot]===i.itemId)techEvent(c,rules,{type:'overload-end',instanceId:i.instanceId});
@@ -52,4 +63,5 @@ export function equipmentSheet(c,rules,action=null){const input=sheetCharacter(c
  const evaluated=evaluateCharacter({...rules,equipment:{...rules.equipment,items:[...rules.equipment.items,natural]}},draft);
  attack.attack=evaluated.stats.attack.total-(attack.secondary?5:0);attack.damageBonus=evaluated.stats.damage.total;attack.dice=draft.equipment.size==='small'?attack.small:attack.medium;
  }
+ sheet.attackRoutine=attackRoutine(input,sheet,rules,evaluateCharacter);
  sheet.hitPoints=hitPoints(c,sheet.effectiveAbilities??input.abilities,sheet.stats['hitPoints.bonus'].total);return sheet;}

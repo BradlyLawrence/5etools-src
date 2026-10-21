@@ -1,3 +1,4 @@
+import {paladinSpecs,paladinBond,hasPaladin,paladinCovenant} from './paladin-archetypes.mjs';
 import {bardSpecs} from './bard-archetypes.mjs';
 import {rangerSpecs,rangerIssues,replacedRangerSlot} from './ranger-archetypes.mjs';
 import {barbarianSpecs} from './barbarian-archetypes.mjs';
@@ -19,11 +20,11 @@ export function coreChoiceSpecs(classes){
  return specs;
 }
 export function dependentSpecs(c){
- const b=c.builder?.classOptions??{},specs=[...coreChoiceSpecs(c.classes).filter(s=>s.id!=='ranger-bond'||!replacedRangerSlot(c,'hunters-bond')), ...bardSpecs(c),...rangerSpecs(c),...martialSpecs(c),...selectableSpecs(c),...barbarianSpecs(c)],add=(id,label,options)=>specs.push({id,label,options});
+ const b=c.builder?.classOptions??{},specs=[...coreChoiceSpecs(c.classes).filter(s=>(s.id!=='ranger-bond'||!replacedRangerSlot(c,'hunters-bond'))&&(s.id!=='paladin-bond'||!['shining-knight','divine-defender','oath-of-charity'].some(id=>hasPaladin(c,id)))), ...paladinSpecs(c),...bardSpecs(c),...rangerSpecs(c),...martialSpecs(c),...selectableSpecs(c),...barbarianSpecs(c)],add=(id,label,options)=>specs.push({id,label,options});
  if(c.classes.druid&&b['druid-bond']==='domain')add('druid-domain','Nature domain',data.domains.filter(x=>['air','animal','earth','fire','plant','water','weather'].includes(x.id)));
  for(const cls of ['druid','ranger'])if(c.classes[cls]>=(cls==='ranger'?4:1)&&b[cls+'-bond']==='companion'&&(cls!=='ranger'||!replacedRangerSlot(c,'hunters-bond')))add(cls+'-companion','Animal companion',data.companions.filter(x=>cls!=='ranger'||['badger-wolverine','bird-eagle-hawk-owl','camel','cat-small-cheetah-leopard','dog','horse','pony','snake-viper','wolf'].includes(x.id)));
  if(c.classes.cavalier)add('cavalier-mount','Mount',data.companions.filter(x=>['horse','pony'].includes(x.id)));
- if(c.classes.paladin>=5&&b['paladin-bond']==='mount')add('paladin-mount','Mount',data.companions.filter(x=>['horse','pony'].includes(x.id)));
+ if(c.classes.paladin>=5&&paladinBond(c)==='mount')add('paladin-mount','Mount',[...data.companions.filter(x=>['horse','pony'].includes(x.id)),{id:'muralis',name:'Muralis',text:'Approved Large climbing reptile companion. See paladin summary for advancement and load limits.'}]);
  if(c.classes.wizard&&b['wizard-school']&&b['wizard-school']!=='universalist')for(const n of [1,2])add('wizard-opposition-'+n,'Opposition school '+n,data.schools.filter(x=>x.id!=='universalist'&&x.id!==b['wizard-school']));
  if(c.classes.wizard&&b['wizard-bond']==='object')add('wizard-object','Bonded object',['amulet','ring','staff','wand','weapon'].map(id=>({id,name:id})));
  if(c.classes.wizard&&b['wizard-bond']==='familiar')add('wizard-familiar','Familiar',['bat','cat','hawk','lizard','owl','rat','raven','snake','toad','weasel'].map(id=>({id,name:id})));
@@ -67,7 +68,7 @@ export function optionEffects(c){
  return effects;
 }
 export function optionClassSkills(c){
- const b=c.builder?.classOptions??{},out=[];
+ const b=c.builder?.classOptions??{},out=[];if(hasPaladin(c,'holy-guide'))out.push('knowledge-geography','survival');
  if(c.classes.sorcerer){const skill=data.bloodlines.find(x=>x.id===b['sorcerer-bloodline'])?.classSkill;if(skill==='knowledge-any-one'){if(/^knowledge-(arcana|dungeoneering|engineering|geography|history|local|nature|nobility|planes|religion)$/.test(b['bloodline-knowledge']??''))out.push(b['bloodline-knowledge']);}else if(skill)out.push(skill);}
  if(c.classes.cleric&&[b['cleric-domain-1'],b['cleric-domain-2']].includes('knowledge')||c.classes.inquisitor&&b['inquisitor-domain']==='knowledge')out.push(...['arcana','dungeoneering','engineering','geography','history','local','nature','nobility','planes','religion'].map(x=>'knowledge-'+x));
  for(const [,domains] of selectedDomains(c)){if(domains.includes('animal'))out.push('knowledge-nature');if(domains.includes('trickery'))out.push('bluff','disguise','stealth');}
@@ -77,6 +78,7 @@ export function optionClassSkills(c){
 export function optionDefenses(c){
  const b=c.builder?.classOptions??{},resistances={},sources=[];
  const add=(energy,value,source)=>{if(!energy)return;const old=resistances[energy]??0;resistances[energy]=old==='immune'||value==='immune'?'immune':Math.max(old,value);sources.push({energy,value,source});};
+ const covenant=paladinCovenant(c);if(covenant?.resistance)add(covenant.energy,covenant.resistance,'Draconic Covenant');
  const racial=dragonbornFeatures(c)?.resistance;if(racial)add(racial.energy,racial.value,'Dragonborn');
  const energy={air:'electricity',earth:'acid',fire:'fire',water:'cold'};
  for(const [cls,domains] of selectedDomains(c))for(const domain of new Set(domains)){const level=c.classes[cls];if(energy[domain]&&level>=6)add(energy[domain],level>=20?'immune':level>=12?20:10,cls+' '+domain+' domain');}

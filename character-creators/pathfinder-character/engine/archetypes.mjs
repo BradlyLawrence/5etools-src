@@ -1,3 +1,5 @@
+import paladinPacks from './paladin-archetypes-data.mjs';
+export const PALADIN_ARCHETYPES=paladinPacks;
 import bardPacks from './bard-archetypes-data.mjs';
 export const BARD_ARCHETYPES=bardPacks;
 import rangerPacks from './ranger-archetypes-data.mjs';
@@ -9,13 +11,14 @@ import packs from './archetypes-data.mjs';
 export const FIGHTER_ARCHETYPES=packs;
 
 export const BARBARIAN_ARCHETYPES=barbarianPacks.map(p=>({...p,role:p.role??'Approved campaign barbarian archetype.',features:(p.features??p.approvedFeatures).map(f=>({...f,name:f.name??f.id.replaceAll('-',' ').replace(/\b\w/g,x=>x.toUpperCase()),rulesText:f.rulesText??({'big-game-hunter':'Gain +1 on melee attack rolls and +1 dodge AC against creatures larger than you.','evade-reach':"As a swift action, choose a creature in line of sight. Reduce its reach against you by 5 feet until the end of your turn, increasing by 5 feet at levels 10, 15 and 20.",'massive-weapons':p.mandatoryGrip?.rulesText+' '+p.penaltyRule+' Maximum size difference: one at level 3, two at 9, three at 15; reduce the penalty by 1 at level 3 and every three levels thereafter, to a minimum of zero.','jotungrip':p.jotungrip?.rulesText+' '+p.jotungrip?.offHandStrength?.rulesText,'titans-coordination':p.titansCoordination?.rulesText,'titanic-rage':p.titanicRage?.rulesText}[f.id])??f.name??f.id,replaces:f.replaces??[],alters:f.alters??[],parameters:f.parameters??{},scaling:f.scaling??[]}))}));
-const catalogue=cls=>cls==='bard'?BARD_ARCHETYPES:cls==='ranger'?RANGER_ARCHETYPES:cls==='rogue'?ROGUE_ARCHETYPES:cls==='barbarian'?BARBARIAN_ARCHETYPES:packs;
-const classFor=id=>BARD_ARCHETYPES.some(p=>p.id===id)?'bard':RANGER_ARCHETYPES.some(p=>p.id===id)?'ranger':ROGUE_ARCHETYPES.some(p=>p.id===id)?'rogue':BARBARIAN_ARCHETYPES.some(p=>p.id===id)?'barbarian':'fighter';
+const catalogue=cls=>cls==='paladin'?PALADIN_ARCHETYPES:cls==='bard'?BARD_ARCHETYPES:cls==='ranger'?RANGER_ARCHETYPES:cls==='rogue'?ROGUE_ARCHETYPES:cls==='barbarian'?BARBARIAN_ARCHETYPES:packs;
+const classFor=id=>PALADIN_ARCHETYPES.some(p=>p.id===id)?'paladin':BARD_ARCHETYPES.some(p=>p.id===id)?'bard':RANGER_ARCHETYPES.some(p=>p.id===id)?'ranger':ROGUE_ARCHETYPES.some(p=>p.id===id)?'rogue':BARBARIAN_ARCHETYPES.some(p=>p.id===id)?'barbarian':'fighter';
 export const archetypeIds=(c,cls='fighter')=>c.builder?.archetypes?.[cls]??[];
 export const selectedArchetypes=(c,cls='fighter')=>catalogue(cls).filter(p=>archetypeIds(c,cls).includes(p.id));
 export const occupiedSlots=p=>[...p.replacements,...p.alterations];
-export function conflicts(c,id){const cls=classFor(id),p=catalogue(cls).find(p=>p.id===id);return p?selectedArchetypes(c,cls).filter(x=>x.id!==id).flatMap(x=>occupiedSlots(x).filter(s=>occupiedSlots(p).includes(s)).map(slot=>({slot,name:x.name}))):[];}
-export function validateArchetypes(c){const a=c.builder?.archetypes;if(a===undefined)return;if(!a||Array.isArray(a)||typeof a!=='object'||Object.keys(a).some(k=>!['fighter','barbarian','rogue','ranger','bard'].includes(k)))throw Error('Invalid archetype selections.');for(const cls of ['fighter','barbarian','rogue','ranger','bard']){const ids=a[cls]??[];if(!Array.isArray(ids)||new Set(ids).size!==ids.length||ids.some(id=>!catalogue(cls).some(p=>p.id===id)))throw Error('Unknown or duplicate '+cls+' archetype.');for(const id of ids)if(conflicts(c,id).length)throw Error('Archetypes replace or alter the same feature.');}}
+const occupiedFor=(c,p)=>[...occupiedSlots(p),...(p.id==='holy-guide'?[9,12,15,18].filter(n=>c.builder?.classOptions?.['paladin-exchange-mercy-'+n]==='terrain').map(n=>'mercy-'+n):[])];
+export function conflicts(c,id){const cls=classFor(id),p=catalogue(cls).find(p=>p.id===id);return p?selectedArchetypes(c,cls).filter(x=>x.id!==id).flatMap(x=>occupiedFor(c,x).filter(s=>occupiedFor(c,p).includes(s)).map(slot=>({slot,name:x.name}))):[];}
+export function validateArchetypes(c){const a=c.builder?.archetypes;if(a===undefined)return;if(!a||Array.isArray(a)||typeof a!=='object'||Object.keys(a).some(k=>!['fighter','barbarian','rogue','ranger','bard','paladin'].includes(k)))throw Error('Invalid archetype selections.');for(const cls of ['fighter','barbarian','rogue','ranger','bard','paladin']){const ids=a[cls]??[];if(!Array.isArray(ids)||new Set(ids).size!==ids.length||ids.some(id=>!catalogue(cls).some(p=>p.id===id)))throw Error('Unknown or duplicate '+cls+' archetype.');for(const id of ids)if(conflicts(c,id).length)throw Error('Archetypes replace or alter the same feature.');}}
 export function setArchetype(c,id,enabled){const cls=classFor(id);if(!catalogue(cls).some(p=>p.id===id))throw Error('Unknown archetype.');if(enabled&&conflicts(c,id).length)throw Error('This archetype conflicts with a selected archetype.');c.builder.archetypes={...c.builder.archetypes,[cls]:enabled?[...new Set([...archetypeIds(c,cls),id])]:archetypeIds(c,cls).filter(x=>x!==id)};}
 export const replacedBarbarianSlot=(c,id)=>selectedArchetypes(c,'barbarian').some(p=>occupiedSlots(p).includes(id));
 export function barbarianProgression(c){return Array.from({length:20},(_,i)=>{
@@ -61,4 +64,13 @@ export function bardProgression(c){
   const base=new Map();for(const p of BARD_ARCHETYPES)for(const f of p.progression[i].features)if(f.origin==='base'&&!occupied.has(f.id))base.set(f.id,{...f,origin:'Bard'});
   const row=BARD_ARCHETYPES[0].progression[i];return {level:i+1,bab:row.bab,...row.baseSaves,features:[...base.values(),...chosen.flatMap(p=>p.progression[i].features.filter(f=>f.origin==='archetype').map(f=>({...f,origin:p.name})))]};
  });
+}
+
+export function paladinProgression(c){
+ const chosen=selectedArchetypes(c,'paladin'),occupied=new Set(chosen.flatMap(occupiedSlots));
+ if(chosen.some(p=>p.id==='holy-guide'))for(const at of [9,12,15,18])if(c.builder?.classOptions?.['paladin-exchange-mercy-'+at]==='terrain')occupied.add('mercy-'+at);
+ return Array.from({length:20},(_,i)=>{const base=new Map();for(const p of PALADIN_ARCHETYPES)for(const f of p.progression[i].features)if(f.origin==='base'&&!occupied.has(f.id))base.set(f.id,{...f,origin:'Paladin'});
+ const features=[...base.values(),...chosen.flatMap(p=>p.progression[i].features.filter(f=>f.origin==='archetype').map(f=>({...f,origin:p.name})))];
+ if(chosen.some(p=>p.id==='holy-guide')&&[9,12,15,18].includes(i+1)&&c.builder?.classOptions?.['paladin-exchange-mercy-'+(i+1)]==='terrain')features.push({id:'terrain-'+(i+1),label:'Favoured terrain exchange',origin:'Holy Guide'});
+ const row=PALADIN_ARCHETYPES[0].progression[i];return {level:i+1,bab:row.bab,...row.baseSaves,features};});
 }

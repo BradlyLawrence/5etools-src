@@ -1,3 +1,4 @@
+import {paladinSlotTaken,paladinHasChannel} from './paladin-archetypes.mjs';
 import {hasBarbarian,barbarianLevel,swordGunActive} from './barbarian-archetypes.mjs';
 import {replacedRangerSlot} from './ranger-archetypes.mjs';
 import {archetypeGrants} from './archetypes.mjs';
@@ -120,7 +121,7 @@ function checkPrerequisites(def, selection, sources, c, active, pkg) {
       return { ...p, met: waived.has(p.ability) || (effective != null && effective >= p.minimum),
         actual: actual ?? null, effective: effective ?? null, waived: waived.has(p.ability), exceptions };
     }
-    if(p.kind==='class-feature'){if(p.feature==='sneak-attack')return {...p,met:baseSneakAttackDice(c)>0};const features={'bomb':['alchemist',1],'discovery':['alchemist',2],'rage-power':['barbarian',2],'rogue-talent':['rogue',2],'tactician':['cavalier',1],'rage':['barbarian',1],'bardic-performance':['bard',1],'ki-pool':['monk',4],'lay-on-hands':['paladin',2],'mercy':['paladin',3],'wild-shape':['druid',4]};if(features[p.feature]){const [classId,minimum]=features[p.feature];return {...p,met:(c.classes[classId]??0)>=minimum};}const cleric=(c.classes.cleric??0)>=1,paladin=(c.classes.paladin??0)>=4,energy=c.ruleState?.choices?.['cleric-channel-energy'];return {...p,met:p.feature==='channel-energy'?cleric||paladin:p.feature==='channel-positive-energy'?paladin||cleric&&energy==='positive':cleric&&energy==='negative'};}
+    if(p.kind==='class-feature'){if(p.feature==='mercy')return {...p,met:[3,6,9,12,15,18].some(n=>n<=(c.classes.paladin??0)&&!paladinSlotTaken(c,'mercy-'+n))};if(p.feature==='sneak-attack')return {...p,met:baseSneakAttackDice(c)>0};const features={'bomb':['alchemist',1],'discovery':['alchemist',2],'rage-power':['barbarian',2],'rogue-talent':['rogue',2],'tactician':['cavalier',1],'rage':['barbarian',1],'bardic-performance':['bard',1],'ki-pool':['monk',4],'lay-on-hands':['paladin',2],'mercy':['paladin',3],'wild-shape':['druid',4]};if(features[p.feature]){const [classId,minimum]=features[p.feature];return {...p,met:(c.classes[classId]??0)>=minimum};}const cleric=(c.classes.cleric??0)>=1,paladin=paladinHasChannel(c),energy=c.ruleState?.choices?.['cleric-channel-energy'];return {...p,met:p.feature==='channel-energy'?cleric||paladin:p.feature==='channel-positive-energy'?paladin||cleric&&energy==='positive':cleric&&energy==='negative'};}
     if(p.kind==='sheet-choice')return {...p,actual:c.ruleState?.choices?.[p.choiceId]??null,met:c.ruleState?.choices?.[p.choiceId]===p.option};
     if(p.kind==='character-level'){const actual=Object.values(c.classes).reduce((a,b)=>a+b,0);return {...p,actual,met:actual>=p.minimum};}
     if(p.kind==='skill-ranks')return {...p,actual:c.skillRanks[p.skill]??0,met:(c.skillRanks[p.skill]??0)>=p.minimum};
@@ -217,8 +218,8 @@ export function evaluateClassGrants(pkg, input, context = {}) {
         case 'melee-only': applies = context.attackType === 'melee'; break;
         case 'ranged-only': applies = context.attackType === 'ranged'; break;
         case 'selected-weapon': applies = context.weapon?.id === f.weaponId; break;
-        case 'expertise-active': applies = !!context.combatExpertiseActive; break;
-        case 'expertise-active-and-dodge-allowed': applies = !!context.combatExpertiseActive && !context.deniedDexToAC; break;
+        case 'expertise-active': applies = !!context.combatExpertiseActive && !c.equipment?.totalDefense; break;
+        case 'expertise-active-and-dodge-allowed': applies = !!context.combatExpertiseActive && !c.equipment?.totalDefense && !context.deniedDexToAC; break;
         case 'finesse-selected-and-eligible': applies = !!context.useWeaponFinesse && !!context.weapon?.finesseEligible &&
           context.attackType === 'melee' && c.abilities.str != null && c.abilities.dex != null; break;
       }

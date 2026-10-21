@@ -1,3 +1,4 @@
+import {hasPaladin,paladinSummary} from './paladin-archetypes.mjs';
 import {SPELL_SCHOOLS} from './spell-schools.mjs';
 import {SKILLS} from './skills.mjs';
 /** Character-sheet rules: declarations, counters, toggles and conditional calculations. */
@@ -107,13 +108,13 @@ export function evaluateAbilities(pkg,c,legacy,overrides={}){
   const rules=[],effects=[],explanations=[],notes=[],resources={},choices=[],axes=[],actionCandidates=[];
   for(const r of pkg.rules){
     const purchaseCount=r.acquisition.kind==='feat'?Math.max(1,...legacy.feats.filter(f=>f.active&&f.featId===r.acquisition.featId).map(f=>f.count??1)):1;
-    const owned=r.acquisition.kind==='class'?(c.classes[r.acquisition.classId]??0)>=r.acquisition.level:activeFeats.has(r.acquisition.featId);
+    const owned=r.id==='paladin.smite-evil'&&hasPaladin(c,'oath-of-loyalty')?false:r.acquisition.kind==='class'?(c.classes[r.acquisition.classId]??0)>=r.acquisition.level:activeFeats.has(r.acquisition.featId);
     const focusedWeapon=!r.acquisition.weaponFeat||legacy.feats.some(f=>f.active&&f.featId===r.acquisition.weaponFeat&&f.weaponId===c.context.weapon.id);
     const weaponEligible=focusedWeapon&&(!r.acquisition.selectedWeapon||legacy.feats.some(f=>f.active&&f.featId===r.acquisition.featId&&f.weaponId===c.context.weapon.id));
     const eligible=owned&&weaponEligible&&expression(r.requires,c,state,conditions)===true,enabled=eligible&&(!r.toggle||state.toggles[r.id]===true);
     rules.push({id:r.id,name:r.name,owned,eligible,enabled,toggle:r.toggle,resourceId:r.resource?.id,manual:r.manual});if(!owned)continue;
     choices.push(...r.choices.map(ch=>({...ch,selected:state.choices[ch.id]??null})));
-    if(r.resource){const maximum=purchaseCount*expression(r.resource.maximum,c,state,conditions);check(Number.isInteger(maximum)&&maximum>=0,'Invalid maximum');resources[r.resource.id]={maximum,spent:state.spent[r.resource.id]??0,remaining:Math.max(0,maximum-(state.spent[r.resource.id]??0)),recovery:r.resource.recovery,...(r.resource.unit?{unit:r.resource.unit}:{})};}
+    if(r.resource){const maximum=r.id==='paladin.smite-evil'&&hasPaladin(c,'hospitaler')?paladinSummary(c).smiteUses:purchaseCount*expression(r.resource.maximum,c,state,conditions);check(Number.isInteger(maximum)&&maximum>=0,'Invalid maximum');resources[r.resource.id]={maximum,spent:state.spent[r.resource.id]??0,remaining:Math.max(0,maximum-(state.spent[r.resource.id]??0)),recovery:r.resource.recovery,...(r.resource.unit?{unit:r.resource.unit}:{})};}
     if(enabled&&r.variants.length)axes.push({ruleId:r.id,variants:r.variants});
     for(const e of r.effects){const applies=enabled&&expression(e.when,c,state,conditions)===true;
       explanations.push({sourceId:r.id,effectId:e.id,name:r.name,applied:applies,reason:!eligible?'Requirements not met':!enabled?'Toggle off':applies?'Applies':'Does not apply in this row'});

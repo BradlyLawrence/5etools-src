@@ -1,8 +1,12 @@
+import paladinExtraSpells from './paladin-spells-data.mjs';
+import {hasPaladin,paladinOathSpells} from './paladin-archetypes.mjs';
+import {craftedAbilityScores} from './magic-items.mjs';
 import {bardBonusSpells} from './bard-archetypes.mjs';
 import {replacedRangerSlot} from './ranger-archetypes.mjs';
 import data from './spellcasting-data.mjs';
-export const SPELLCASTING=data;
-const byId=new Map(data.spells.map(s=>[s.id,s]));
+const allSpells=[...data.spells,...paladinExtraSpells.filter(s=>!data.spells.some(x=>x.id===s.id))];
+export const SPELLCASTING={...data,spells:allSpells};
+const byId=new Map(allSpells.map(s=>[s.id,s]));
 export const spellById=id=>byId.get(id);
 const mod=score=>Math.floor((score-10)/2);
 const list=(state,kind,level)=>state?.[kind]?.[level]??[];
@@ -18,11 +22,12 @@ export function validateSpellcasting(value){
  }
 }
 export function spellcasting(c,r){
- const result=[],choices=c.builder?.classOptions??{};
+ const result=[],choices=c.builder?.classOptions??{},effective=craftedAbilityScores({...c,abilities:r.abilities}).abilities;
  for(const [cls,level] of Object.entries(r.classes)){
+  if(cls==='paladin'&&hasPaladin(c,'warrior-of-the-holy-light'))continue;
   if(cls==='ranger'&&replacedRangerSlot(c,'spells'))continue;
   const def=data.classes[cls];if(!def||!level)continue;
-  const state=c.builder?.spellcasting?.[cls]??{},score=r.abilities[def.ability],abilityMod=mod(score),table=def.daily[level-1],known=def.known[level-1]??{},issues=[],rows=[];
+  const state=c.builder?.spellcasting?.[cls]??{},score=r.abilities[def.ability],abilityMod=mod(score),effectiveScore=effective[def.ability],effectiveMod=mod(effectiveScore),table=def.daily[level-1],known=def.known[level-1]??{},issues=[],rows=[];
   const opposition=cls==='wizard'&&choices['wizard-school']!=='universalist'?[choices['wizard-opposition-1'],choices['wizard-opposition-2']].filter(Boolean):[];
   const domains=cls==='cleric'?[choices['cleric-domain-1'],choices['cleric-domain-2']]:cls==='druid'&&choices['druid-bond']==='domain'?[choices['druid-domain']]:[];
   const bloodline=cls==='sorcerer'?data.bonus.bloodlines[choices['sorcerer-bloodline']]??{}:{};
@@ -33,7 +38,7 @@ export function spellcasting(c,r){
   for(const n of levels){
    const base=table[n]??null,knownCount=known[n]??0;if(base===null&&!knownCount)continue;
    const eligible=score>=10+n,bonus=n>0&&base!==null&&abilityMod>=n?1+Math.floor((abilityMod-n)/4):0;
-   const slots=eligible?(base??0)+bonus:0,options=data.spells.filter(s=>s.levels[cls]===n);
+   const slots=eligible?(base??0)+bonus:0,options=allSpells.filter(s=>s.levels[cls]===n||cls==='paladin'&&paladinOathSpells(c).some(x=>x.level===n&&x.id===s.id));
    const automatic=[...auto,...arcaneBonus].filter(x=>x.level===n).map(x=>x.id);
    const selected=list(state,def.mode==='book'?'book':'known',n);
    const bookAuto=cls==='wizard'&&n===0?options.filter(s=>!opposition.includes(s.school)).map(s=>s.id):[];
@@ -56,13 +61,13 @@ export function spellcasting(c,r){
     if(prepared.some(id=>id&&!available.includes(id)))issues.push(`${cls}: a prepared level ${n} spell is not available in this spellbook or class list.`);
     if(specialPrepared.filter(Boolean).length>specialSlots||specialPrepared.some(id=>id&&!special.some(s=>s.id===id)))issues.push(`${cls}: review the level ${n} domain or specialist preparation.`);
    }
-   rows.push({level:n,base,bonus,slots,eligible,knownCount,selected,automatic,available,options,bookAuto,special,specialSlots,prepared,specialPrepared,used,cost,dc:10+n+abilityMod,atWill:n===0});
+   rows.push({level:n,base,bonus,slots,eligible,knownCount,selected,automatic,available,options,bookAuto,special,specialSlots,prepared,specialPrepared,used,cost,dc:10+n+effectiveMod,atWill:n===0});
   }
   for(const kind of ['known','prepared','special','book'])for(const [n,ids] of Object.entries(state[kind]??{}))if(!rows.some(row=>row.level===+n)&&ids.some(Boolean))issues.push(`${cls}: saved level ${n} ${kind} selections are unavailable at this class level.`);
   const bookMinimum=def.mode==='book'?Math.max(0,(cls==='wizard'?3:2)+abilityMod)+(cls==='wizard'?2:1)*(level-1):0;
   const bookCount=rows.filter(row=>row.level>0).reduce((n,row)=>n+row.selected.filter(id=>row.options.some(s=>s.id===id)).length,0);
   if(def.mode==='book'&&bookCount<bookMinimum)issues.push(`${cls}: add spells or formulae to the book (${bookCount} entered; ${bookMinimum} gained from starting Intelligence and class levels).`);
-  result.push({id:cls,name:def.name,level,mode:def.mode,ability:def.ability,score,abilityMod,casterLevel:['paladin','ranger'].includes(cls)?Math.max(0,level-3):level,concentration:(['paladin','ranger'].includes(cls)?Math.max(0,level-3):level)+abilityMod,rows,issues,bookMinimum,bookCount,state,opposition});
+  result.push({id:cls,name:def.name,level,mode:def.mode,ability:def.ability,score:effectiveScore,abilityMod:effectiveMod,casterLevel:['paladin','ranger'].includes(cls)?Math.max(0,level-3):level,concentration:(['paladin','ranger'].includes(cls)?Math.max(0,level-3):level)+effectiveMod,rows,issues,bookMinimum,bookCount,state,opposition});
  }
  return result;
 }

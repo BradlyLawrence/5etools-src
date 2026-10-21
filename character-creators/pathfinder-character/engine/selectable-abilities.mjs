@@ -1,3 +1,4 @@
+import {paladinSlotTaken} from './paladin-archetypes.mjs';
 import {applyBarbarianScores,barbarianRage} from './barbarian-archetypes.mjs';
 import {featSlots,slotAllows} from './feat-progression.mjs';
 import data from './selectable-abilities-data.mjs';
@@ -8,7 +9,7 @@ export function abilitySlots(c,baseOnly=false){
  const slots=[];
  for(const cls of Object.keys(labels)){
   const step=cls==='paladin'?3:2,max=Math.min(c.classes?.[cls]??0,cls==='alchemist'?18:20);
-  for(let level=step;level<=max;level+=step)slots.push({id:`${cls}-ability-${level}`,classId:cls,level,label:`${labels[cls]} (class level ${level})`});
+  for(let level=step;level<=max;level+=step)if(cls!=='paladin'||!paladinSlotTaken(c,'mercy-'+level))slots.push({id:`${cls}-ability-${level}`,classId:cls,level,label:`${labels[cls]} (class level ${level})`});
  }
  if(c.classes?.alchemist>=20)for(const suffix of ['a','b','grand'])slots.push({id:'alchemist-ability-20-'+suffix,classId:'alchemist',level:20,grand:suffix==='grand',label:suffix==='grand'?'Grand discovery':'Discovery (class level 20)'});
  if(!baseOnly){

@@ -1,4 +1,6 @@
+import {buffAbilityEnhancement} from './buffs.mjs';
 import {craftingPlan} from './crafting.mjs';
+import {validatePurchasedEffects,purchasedEffectPrice} from './purchased-effects.mjs';
 import {validateBowRating} from './bows.mjs';
 import GADGETS from './gadgets-data.mjs';
 export {GADGETS};
@@ -52,6 +54,7 @@ export function validateMagicItem(d){
   }
  }
  for(const k of ['weapon','armor'])check(d.effects.filter(e=>e.kind===k).length<=1,'Use one enhancement entry.');
+ validatePurchasedEffects(d);
  return d;
 }
 export function priceMagicItem(input){
@@ -71,6 +74,7 @@ export function priceMagicItem(input){
   return {name:EFFECTS[e.kind],price,components,formula};
  });
  for(const id of d.adaptations??[])lines.push({name:MINOR_ADAPTATIONS[id].name,price:MINOR_ADAPTATIONS[id].price,components:0,formula:'Modification — enhancement cost '+MINOR_ADAPTATIONS[id].enhancementCost});
+ const purchasedLine=purchasedEffectPrice(d);if(purchasedLine)lines.push(purchasedLine);
  const modificationCount=d.adaptations?.length??0,integrationPairs=modificationCount*(modificationCount-1)/2;
  if(integrationPairs)lines.push({name:'Modification integration',price:20*integrationPairs,components:0,formula:integrationPairs+' pairs × 20 gp'});
  const gear=['weapon','armor','shield'].includes(d.slot),masterwork=gear?(d.slot==='weapon'?300:150):0;
@@ -96,7 +100,7 @@ export function validateCraftedItems(c){
 }
 export function activeCrafted(c){return (c.craftedItems??[]).filter(i=>i.equipped&&(!['weapon','armor','shield'].includes(i.design.slot)||c.equipment?.[i.design.slot+'Id']===i.design.baseId&&(!i.techInstanceId||c.techEquipment?.[i.design.slot==='weapon'?'selectedInstanceId':i.design.slot+'InstanceId']===i.techInstanceId)));}
 export function craftedEnhancement(c,slot){return Math.max(0,...activeCrafted(c).filter(i=>i.design.slot===slot).flatMap(i=>i.design.effects.filter(e=>e.kind==='armor').map(e=>e.value)));}
-export function craftedAbilityScores(input){const c=structuredClone(input);for(const a of ['str','dex','con','int','wis','cha']){const n=Math.max(0,...activeCrafted(c).flatMap(i=>i.design.effects.filter(e=>e.kind==='ability'&&e.target===a).map(e=>e.value)));c.abilities[a]+=n;}return c;}
+export function craftedAbilityScores(input,{includeBuffs=true}={}){const c=structuredClone(input);for(const a of ['str','dex','con','int','wis','cha']){const n=Math.max(includeBuffs?buffAbilityEnhancement(c,a):0,...activeCrafted(c).flatMap(i=>i.design.effects.filter(e=>e.kind==='ability'&&e.target===a).map(e=>e.value)));c.abilities[a]+=n;}return c;}
 export function craftedEffects(c){const result=[];for(const i of activeCrafted(c)){
  const add=(target,value,bonusType)=>result.push({kind:'modifier',target,value,bonusType,featId:'crafted.'+i.instanceId,name:i.design.name});
  if(i.design.slot==='weapon')add('attack.weapon',1,'enhancement'); // masterwork

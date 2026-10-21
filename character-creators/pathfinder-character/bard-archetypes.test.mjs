@@ -13,9 +13,9 @@ import {exportCharacter,parseCharacter} from './roster.mjs';
 const rules=JSON.parse(await readFile(new URL('rules.json',import.meta.url),'utf8'));
 const make=(n,...ids)=>{const c=newCharacter();c.builder.targetLevel=n;c.builder.classOrder=Array(n).fill('bard');c.builder.baseScores.cha=18;for(const id of ids)setArchetype(c,id,true);return c;};
 const sheet=c=>equipmentSheet(c,rules),row=(s,id)=>s.sheetRows.find(r=>r.id.includes(id));
-test('bard selector reserves individual slots, persists combinations and keeps progression outside disclosure',()=>{
+test('bard selector reserves individual slots, persists combinations and keeps progression in a separate collapsed disclosure',()=>{
  const c=make(10,'magician','sound-striker');validateArchetypes(c);assert.throws(()=>setArchetype(c,'dirge-bard',true),/conflicts/);
- const html=renderArchetypes(c);assert.match(html,/Bard archetypes/);assert.match(html,/<\/details><h3>Bard progression/);
+ const html=renderArchetypes(c);assert.match(html,/Bard archetypes/);assert.match(html,/<\/details><details class="progression-section" data-class-progression="bard"><summary>Bard progression/);
  assert.match(html,/data-field="archetype.dirge-bard"\s+disabled/);
  const p=bardProgression(c);assert.ok(p[0].features.some(f=>f.id==='improved-counterspell'));assert.ok(!p.flatMap(r=>r.features).some(f=>f.id==='inspire-courage'));
  assert.ok(p[5].features.some(f=>f.id==='weird-words'));assert.ok(p[19].features.some(f=>f.id==='deadly-performance'));

@@ -1,4 +1,4 @@
-import {BARD_ARCHETYPES,bardProgression,RANGER_ARCHETYPES,rangerProgression,ROGUE_ARCHETYPES,rogueProgression,BARBARIAN_ARCHETYPES,barbarianProgression,FIGHTER_ARCHETYPES,archetypeIds,conflicts,fighterProgression,selectedArchetypes} from './engine/archetypes.mjs';
+import {PALADIN_ARCHETYPES,paladinProgression,BARD_ARCHETYPES,bardProgression,RANGER_ARCHETYPES,rangerProgression,ROGUE_ARCHETYPES,rogueProgression,BARBARIAN_ARCHETYPES,barbarianProgression,FIGHTER_ARCHETYPES,archetypeIds,conflicts,fighterProgression,selectedArchetypes} from './engine/archetypes.mjs';
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -22,7 +22,7 @@ function renderFighterArchetypes(c){
 
  html+='</details>';
 
- html+=`<h3>Fighter progression${selected.length?' — '+esc(selectedArchetypes(c).map(p=>p.name).join(' + ')):''}</h3><p>Uses fighter class level, not total character level. Highlighted row is your current fighter level.</p><div style="overflow-x:auto"><table><thead><tr><th>Level</th><th>BAB</th><th>Fort</th><th>Ref</th><th>Will</th><th>Features after replacements</th></tr></thead><tbody>${fighterProgression(c).map(r=>`<tr ${r.level===level?'style="background:#28394a"':''}><th>${r.level}</th><td>${r.bab.map(n=>'+'+n).join('/')}</td><td>+${r.fortitude}</td><td>+${r.reflex}</td><td>+${r.will}</td><td>${r.features.map(f=>esc(f.label)+(f.origin!=='Fighter'?' <small>('+esc(f.origin)+')</small>':'')).join('<br>')||'—'}</td></tr>`).join('')}</tbody></table></div>`;
+ html+=`<details class="progression-section" data-class-progression="fighter"><summary>Fighter progression${selected.length?' — '+esc(selectedArchetypes(c).map(p=>p.name).join(' + ')):''}</summary><p>Uses fighter class level, not total character level. Highlighted row is your current fighter level.</p><div style="overflow-x:auto"><table><thead><tr><th>Level</th><th>BAB</th><th>Fort</th><th>Ref</th><th>Will</th><th>Features after replacements</th></tr></thead><tbody>${fighterProgression(c).map(r=>`<tr ${r.level===level?'style="background:#28394a"':''}><th>${r.level}</th><td>${r.bab.map(n=>'+'+n).join('/')}</td><td>+${r.fortitude}</td><td>+${r.reflex}</td><td>+${r.will}</td><td>${r.features.map(f=>esc(f.label)+(f.origin!=='Fighter'?' <small>('+esc(f.origin)+')</small>':'')).join('<br>')||'—'}</td></tr>`).join('')}</tbody></table></div></details>`;
 
 
 
@@ -32,9 +32,9 @@ function renderFighterArchetypes(c){
 
 
 
-export function renderArchetypes(c){
+function renderSupportedArchetypes(c){
 
- let html=renderFighterArchetypes(c)+renderRogueArchetypes(c)+renderRangerArchetypes(c)+renderBardArchetypes(c);
+ let html=renderPaladinArchetypes(c)+renderFighterArchetypes(c)+renderRogueArchetypes(c)+renderRangerArchetypes(c)+renderBardArchetypes(c);
 
  const level=c.builder.classOrder.filter(id=>id==='barbarian').length;if(!level)return html;
 
@@ -48,11 +48,11 @@ export function renderArchetypes(c){
 
  }
 
- html+='</details><h3>Barbarian progression</h3><p>Uses barbarian class level. Conditional effects are shown separately on the sheet.</p><div style="overflow-x:auto"><table><tr><th>Level</th><th>BAB</th><th>Fort / Ref / Will</th><th>Features</th></tr>';
+ html+='</details><details class="progression-section" data-class-progression="barbarian"><summary>Barbarian progression</summary><p>Uses barbarian class level. Conditional effects are shown separately on the sheet.</p><div style="overflow-x:auto"><table><tr><th>Level</th><th>BAB</th><th>Fort / Ref / Will</th><th>Features</th></tr>';
 
  for(const r of barbarianProgression(c))html+=`<tr ${r.level===level?'style="background:#28394a"':''}><td>${r.level}</td><td>${r.bab.join('/')}</td><td>${r.fortitude} / ${r.reflex} / ${r.will}</td><td>${r.features.map(f=>esc(f.label)+' ('+esc(f.origin)+')').join('<br>')}</td></tr>`;
 
- return html+'</table></div>';
+ return html+'</table></div></details>';
 
 }
 
@@ -66,11 +66,11 @@ function renderRogueArchetypes(c){
 
  for(const p of ROGUE_ARCHETYPES){const checked=chosen.includes(p.id),blocked=conflicts(c,p.id),disabled=!checked&&blocked.length;html+=`<div style="margin:12px 0;${disabled?'opacity:.5':''}"><label style="display:flex;align-items:center;gap:8px"><input style="width:auto" type="checkbox" data-field="archetype.${p.id}" ${checked?'checked':''} ${disabled?'disabled':''}><strong>${esc(p.name)}</strong></label><p>${esc(p.role)}</p><p>Replaces: ${esc(p.replacements.map(slot).join(', ')||'None')}. Alters: ${esc(p.alterations.map(slot).join(', ')||'None')}.</p>${disabled?'<p>Unavailable: '+esc(blocked.map(b=>b.name+' — '+slot(b.slot)).join('; '))+'</p>':''}<details><summary>Features</summary>${p.features.map(f=>'<p style="white-space:pre-line"><strong>Level '+f.level+': '+esc(f.name)+'</strong><br>'+esc(f.rulesText)+'</p>').join('')}</details></div>`;}
 
- html+='</details><h3>Rogue progression</h3><p>Uses rogue class level. Conditional bonuses appear separately on the sheet.</p><div style="overflow-x:auto"><table><tr><th>Level</th><th>BAB</th><th>Fort / Ref / Will</th><th>Features</th></tr>';
+ html+='</details><details class="progression-section" data-class-progression="rogue"><summary>Rogue progression</summary><p>Uses rogue class level. Conditional bonuses appear separately on the sheet.</p><div style="overflow-x:auto"><table><tr><th>Level</th><th>BAB</th><th>Fort / Ref / Will</th><th>Features</th></tr>';
 
  for(const r of rogueProgression(c))html+=`<tr ${r.level===level?'style="background:#28394a"':''}><td>${r.level}</td><td>${r.bab.join('/')}</td><td>${r.fortitude} / ${r.reflex} / ${r.will}</td><td>${r.features.map(f=>esc(f.label)+' ('+esc(f.origin)+')').join('<br>')}</td></tr>`;
 
- return html+'</table></div>';
+ return html+'</table></div></details>';
 
 }
 
@@ -83,11 +83,11 @@ function renderRangerArchetypes(c){
 
  for(const p of RANGER_ARCHETYPES){const checked=chosen.includes(p.id),blocked=conflicts(c,p.id),disabled=!checked&&blocked.length;html+=`<div style="margin:12px 0;${disabled?'opacity:.5':''}"><label style="display:flex;align-items:center;gap:8px"><input style="width:auto" type="checkbox" data-field="archetype.${p.id}" ${checked?'checked':''} ${disabled?'disabled':''}><strong>${esc(p.name)}</strong></label><p>${esc(p.role)}</p><p>Replaces: ${esc(p.replacements.map(slot).join(', ')||'None')}. Alters: ${esc(p.alterations.map(slot).join(', ')||'None')}.</p>${disabled?'<p>Unavailable: '+esc(blocked.map(b=>b.name+' — '+slot(b.slot)).join('; '))+'</p>':''}<details><summary>Features</summary>${p.features.map(f=>'<p style="white-space:pre-line"><strong>Level '+f.level+': '+esc(f.name)+'</strong><br>'+esc(f.rulesText)+'</p>').join('')}</details></div>`;}
 
- html+='</details><h3>Ranger progression</h3><p>Uses ranger class level. Conditional bonuses appear separately on the sheet.</p><div style="overflow-x:auto"><table><tr><th>Level</th><th>BAB</th><th>Fort / Ref / Will</th><th>Features</th></tr>';
+ html+='</details><details class="progression-section" data-class-progression="ranger"><summary>Ranger progression</summary><p>Uses ranger class level. Conditional bonuses appear separately on the sheet.</p><div style="overflow-x:auto"><table><tr><th>Level</th><th>BAB</th><th>Fort / Ref / Will</th><th>Features</th></tr>';
 
  for(const r of rangerProgression(c))html+=`<tr ${r.level===level?'style="background:#28394a"':''}><td>${r.level}</td><td>${r.bab.join('/')}</td><td>${r.fortitude} / ${r.reflex} / ${r.will}</td><td>${r.features.map(f=>esc(f.label)+' ('+esc(f.origin)+')').join('<br>')}</td></tr>`;
 
- return html+'</table></div>';
+ return html+'</table></div></details>';
 
 }
 
@@ -98,12 +98,44 @@ function renderBardArchetypes(c){
 
  const chosen=archetypeIds(c,'bard');let html='<details class="archetype-section" '+(chosen.length?'open':'')+'><summary>Bard archetypes</summary><p>Replaced and altered features are reserved across all 20 bard levels. Untick an archetype to release its features.</p>';
 
- for(const p of BARD_ARCHETYPES){const checked=chosen.includes(p.id),blocked=conflicts(c,p.id),disabled=!checked&&blocked.length;html+=`<div style="margin:12px 0;${disabled?'opacity:.5':''}"><label style="display:flex;align-items:center;gap:8px"><input style="width:auto" type="checkbox" data-field="archetype.${p.id}" ${checked?'checked':''} ${disabled?'disabled':''}><strong>${esc(p.name)}</strong></label><p>${esc(p.role)}</p><p>Replaces: ${esc(p.replacements.map(slot).join(', ')||'None')}. Alters: ${esc(p.alterations.map(slot).join(', ')||'None')}.</p>${disabled?'<p>Unavailable: '+esc(blocked.map(b=>b.name+' â€” '+slot(b.slot)).join('; '))+'</p>':''}<details><summary>Features</summary>${p.features.map(f=>'<p style="white-space:pre-line"><strong>Level '+f.level+': '+esc(f.name)+'</strong><br>'+esc(f.rulesText)+'</p>').join('')}</details></div>`;}
+ for(const p of BARD_ARCHETYPES){const checked=chosen.includes(p.id),blocked=conflicts(c,p.id),disabled=!checked&&blocked.length;html+=`<div style="margin:12px 0;${disabled?'opacity:.5':''}"><label style="display:flex;align-items:center;gap:8px"><input style="width:auto" type="checkbox" data-field="archetype.${p.id}" ${checked?'checked':''} ${disabled?'disabled':''}><strong>${esc(p.name)}</strong></label><p>${esc(p.role)}</p><p>Replaces: ${esc(p.replacements.map(slot).join(', ')||'None')}. Alters: ${esc(p.alterations.map(slot).join(', ')||'None')}.</p>${disabled?'<p>Unavailable: '+esc(blocked.map(b=>b.name+' — '+slot(b.slot)).join('; '))+'</p>':''}<details><summary>Features</summary>${p.features.map(f=>'<p style="white-space:pre-line"><strong>Level '+f.level+': '+esc(f.name)+'</strong><br>'+esc(f.rulesText)+'</p>').join('')}</details></div>`;}
 
- html+='</details><h3>Bard progression</h3><p>Uses bard class level. Conditional bonuses appear separately on the sheet.</p><div style="overflow-x:auto"><table><tr><th>Level</th><th>BAB</th><th>Fort / Ref / Will</th><th>Features</th></tr>';
+ html+='</details><details class="progression-section" data-class-progression="bard"><summary>Bard progression</summary><p>Uses bard class level. Conditional bonuses appear separately on the sheet.</p><div style="overflow-x:auto"><table><tr><th>Level</th><th>BAB</th><th>Fort / Ref / Will</th><th>Features</th></tr>';
 
  for(const r of bardProgression(c))html+=`<tr ${r.level===level?'style="background:#28394a"':''}><td>${r.level}</td><td>${r.bab.join('/')}</td><td>${r.fortitude} / ${r.reflex} / ${r.will}</td><td>${r.features.map(f=>esc(f.label)+' ('+esc(f.origin)+')').join('<br>')}</td></tr>`;
 
- return html+'</table></div>';
+ return html+'</table></div></details>';
 
+}
+
+function renderPaladinArchetypes(c){
+
+ const level=c.builder.classOrder.filter(id=>id==='paladin').length;if(!level)return '';
+
+ const chosen=archetypeIds(c,'paladin');let html='<details class="archetype-section" '+(chosen.length?'open':'')+'><summary>Paladin archetypes and mechanical oaths</summary><p>Replaced and altered features are reserved across all 20 paladin levels. Untick an archetype to release its features.</p>';
+
+ for(const p of PALADIN_ARCHETYPES){const checked=chosen.includes(p.id),blocked=conflicts(c,p.id),disabled=!checked&&blocked.length;html+=`<div style="margin:12px 0;${disabled?'opacity:.5':''}"><label style="display:flex;align-items:center;gap:8px"><input style="width:auto" type="checkbox" data-field="archetype.${p.id}" ${checked?'checked':''} ${disabled?'disabled':''}><strong>${esc(p.name)}</strong></label><p>${esc(p.role)}</p><p>Replaces: ${esc(p.replacements.map(slot).join(', ')||'None')}. Alters: ${esc(p.alterations.map(slot).join(', ')||'None')}.</p>${disabled?'<p>Unavailable: '+esc(blocked.map(b=>b.name+' — '+slot(b.slot)).join('; '))+'</p>':''}<details><summary>Features</summary>${p.features.map(f=>'<p style="white-space:pre-line"><strong>Level '+f.level+': '+esc(f.name)+'</strong><br>'+esc(f.rulesText)+'</p>').join('')}</details></div>`;}
+
+ html+='</details><details class="progression-section" data-class-progression="paladin"><summary>Paladin progression</summary><p>Uses paladin class level. Conditional bonuses appear separately on the sheet.</p><div style="overflow-x:auto"><table><tr><th>Level</th><th>BAB</th><th>Fort / Ref / Will</th><th>Features</th></tr>';
+
+ for(const r of paladinProgression(c))html+=`<tr ${r.level===level?'style="background:#28394a"':''}><td>${r.level}</td><td>${r.bab.join('/')}</td><td>${r.fortitude} / ${r.reflex} / ${r.will}</td><td>${r.features.map(f=>esc(f.label)+' ('+esc(f.origin)+')').join('<br>')}</td></tr>`;
+
+ return html+'</table></div></details>';
+
+}
+
+// Reference-only classes use their existing published progression; supported
+// archetypes retain the calculated tables above, including replacements.
+export function renderArchetypes(c, classes = []) {
+ let html = renderSupportedArchetypes(c);
+ const supported = new Set(['fighter', 'barbarian', 'rogue', 'ranger', 'bard', 'paladin']);
+ for (const id of new Set(c.builder.classOrder)) {
+  if (supported.has(id)) continue;
+  const entry = classes.find(item => item.id === id);
+  if (!entry) continue;
+  html += `<p>${esc(entry.name)} archetypes: not available in the creator yet.</p>`;
+  const table = (entry.rulesHtml || '').match(/<table\b[^>]*>[\s\S]*?<\/table>/gi)?.find(table => /<th\b[^>]*>\s*Level\s*<\/th>/i.test(table) && /Base\s+attack\s+bonus/i.test(table));
+  html += `<details class="progression-section" data-class-progression="${esc(id)}"><summary>${esc(entry.name)} progression</summary><p>Current class level: ${c.builder.classOrder.filter(value => value === id).length}. Uses class level, not total character level.</p>${table ? `<div style="overflow-x:auto">${table}</div>` : '<p>See the full class rules for progression details.</p>'}</details>`;
+ }
+ return html;
 }

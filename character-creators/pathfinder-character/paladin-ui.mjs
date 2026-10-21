@@ -1,0 +1,16 @@
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function renderPaladinSummary(p){
+ if(!p)return '';
+ let html='<h3>Paladin resources and oaths</h3><p>Smite Evil: '+p.smiteUses+'/day. '+(p.layOnHands?'Lay on Hands: '+p.layOnHands.dice+', '+p.layOnHands.uses+'/day.':'')+'</p>';
+ if(p.layOnHands&&p.layOnHands.selfMultiplier!==1)html+='<p>Charitable Hands: half healing on yourself, 150% on others; normal damage against undead. Round down.</p>';
+ if(p.immunities.length)html+='<p>Retained personal immunities: '+esc(p.immunities.join(', '))+'. Aura-based immunities require consciousness.</p>';
+ if(p.channel)html+='<p>Channel: '+p.channel.dice+'; '+(p.channel.uses!==null?p.channel.uses+'/day, separate pool':p.channel.layOnHandsCost+' Lay on Hands uses')+'.</p>';
+ for(const warning of p.warnings)html+='<p>'+esc(warning)+'</p>';
+ if(p.intercession)html+='<p>Intercession: '+p.intercession.uses+'/day; prevent '+p.intercession.prevention+' damage to another creature.</p>';
+ if(p.mercy)html+='<p>Mercy’s Reach: two Lay on Hands uses; '+p.mercy.dice+' healing in '+p.mercy.radius+' feet. Choose one condition for the whole burst: '+esc(p.mercy.conditions.join(', '))+'.</p>';
+ if(p.hospitality)html+='<p>Bread for the Road: '+p.hospitality.portions+' portions, two Lay on Hands uses including the daily gathering; magic expires after 24 hours. '+(p.hospitality.individualSelections?'Choose per portion: ':'Choose one effect for the batch: ')+esc(p.hospitality.spells.join(', '))+'.</p>';
+ if(p.holyLight)html+='<p>Power of Faith: +'+p.holyLight.bonus+' morale benefits within '+p.holyLight.radius+' feet. Shining Light: '+p.holyLight.shiningUses+'/day, '+p.holyLight.shiningDice+'; heals good and neutral creatures, sacred bonuses only for good creatures.</p>';
+ if(p.covenant){const c=p.covenant;html+='<p>Draconic Covenant: '+(c.energy?esc(c.energy)+' resistance '+c.resistance+'. '+(c.resistance?'Also protects any living mount while you ride it. ':'Protection begins at paladin level 3. '):'Choose your lasting covenant energy. ')+(c.radius?'Under Our Protection: standard action, one Lay on Hands use, chosen allies within '+c.radius+' feet for 1 minute; protection applies only inside the moving area. ':'')+'Use the highest resistance; do not add resistances together. Replaces Aura of Resolve.</p>';}
+ if(p.mount){const m=p.mount;html+='<h4>Muralis divine mount</h4><p>Effective druid level '+m.effectiveDruidLevel+'; Intelligence at least 6; summon '+m.summons+'/day as a full-round action. '+(m.celestial?'Celestial template. ':'')+(m.spellResistance?'Spell resistance '+m.spellResistance+'.':'')+'</p>';for(const t of m.traits)html+='<p><strong>'+esc(t.name)+'</strong>: '+esc(t.text)+'</p>';if(m.level5Example)html+='<p>Level-5 example with Toughness, Light Armour Proficiency, Weapon Focus (bite) and leather barding: HP 37; AC 16; bite +9 (1d8+9); Str 22, Dex 13, Con 15. Light-load capacity 519 lb.; the approved armoured-rider example totals 490 lb.</p>';}
+ return html;
+}

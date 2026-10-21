@@ -1,3 +1,5 @@
+import {hasPaladin} from './engine/paladin-archetypes.mjs';
+import {deityIssues} from './deity-setup.mjs';
 import {replacedRangerSlot} from './engine/ranger-archetypes.mjs';
 import {validateArchetypes} from './engine/archetypes.mjs';
 import {validateSpellcasting} from './engine/spellcasting.mjs';
@@ -52,7 +54,7 @@ export function calculate(c){
   return [save,total];
  }));
  const spent=ABILITIES.reduce((n,a)=>n+(COST[b.baseScores[a]]??NaN),0);
- const issues=[...backgroundDetails(c.background,c).issues,...optionIssues({...c,classes,abilities})];
+ const issues=[...deityIssues(c),...backgroundDetails(c.background,c).issues,...optionIssues({...c,classes,abilities})];
  issues.push(...hitPoints(c,abilities).issues);
  if(['half-elves','gnomes'].includes(b.raceId)&&!replacedTrait(c,'adaptability')&&!b.racialSkill)issues.push('Choose your racial skill on the Race tab.');
  if(!b.favoredClasses?.[0])issues.push('Choose a favoured class on the Classes tab.');
@@ -70,7 +72,7 @@ export function calculate(c){
  if(b.increases.slice(0,Math.floor(level/4)).filter(Boolean).length<Math.floor(level/4))issues.push('Choose your ability increases for every four character levels.');
  return {classes,level,race,increases,abilities,bab,saves,spent,issues};
 }
-export function materialize(c){c=structuredClone(c);c.feats=c.feats.filter(f=>!f.racialGrant);if(c.builder.raceId==='half-elves'&&!replacedTrait(c,'adaptability')&&c.builder.racialSkill){c.feats.push({featId:'skill-focus',racialGrant:true});c.ruleState??={choices:{},spent:{},toggles:{},conditions:{}};c.ruleState.choices['skill-focus-skill']=c.builder.racialSkill;}const r=calculate(c);const skills=calculateSkills(c,r);return {...c,feats:c.feats.filter(f=>!f.creatorSlot||featSlots(c).some(slot=>slot.id===f.creatorSlot)),classes:r.classes,arcaneCasterLevel:Math.max(0,...['wizard','sorcerer','bard'].map(id=>r.classes[id]??0)),casterLevel:Math.max(0,...['wizard','sorcerer','bard','cleric','druid','inquisitor','alchemist'].map(id=>r.classes[id]??0),...['paladin','ranger'].map(id=>id==='ranger'&&replacedRangerSlot({...c,classes:r.classes},'spells')?0:Math.max(0,(r.classes[id]??0)-3))),abilities:r.abilities,bab:r.bab,baseSaves:r.saves,skillRanks:skills.skillRanks,classSkills:skills.classSkills};}
+export function materialize(c){c=structuredClone(c);c.feats=c.feats.filter(f=>!f.racialGrant);if(c.builder.raceId==='half-elves'&&!replacedTrait(c,'adaptability')&&c.builder.racialSkill){c.feats.push({featId:'skill-focus',racialGrant:true});c.ruleState??={choices:{},spent:{},toggles:{},conditions:{}};c.ruleState.choices['skill-focus-skill']=c.builder.racialSkill;}const r=calculate(c);const skills=calculateSkills(c,r);return {...c,feats:c.feats.filter(f=>!f.creatorSlot||featSlots(c).some(slot=>slot.id===f.creatorSlot)),classes:r.classes,arcaneCasterLevel:Math.max(0,...['wizard','sorcerer','bard'].map(id=>r.classes[id]??0)),casterLevel:Math.max(0,...['wizard','sorcerer','bard','cleric','druid','inquisitor','alchemist'].map(id=>r.classes[id]??0),...['paladin','ranger'].map(id=>(id==='ranger'&&replacedRangerSlot({...c,classes:r.classes},'spells')||id==='paladin'&&hasPaladin({...c,classes:r.classes},'warrior-of-the-holy-light'))?0:Math.max(0,(r.classes[id]??0)-3))),abilities:r.abilities,bab:r.bab,baseSaves:r.saves,skillRanks:skills.skillRanks,classSkills:skills.classSkills};}
 export function validateBuilder(b){
  validateSpellcasting(b.spellcasting);
  validateArchetypes({builder:b});

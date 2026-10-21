@@ -38,3 +38,20 @@ test('Tech Fighter uses its fixed technological group rather than a stale former
  c.equipment.weaponId='gyro-shortsword';const tech=equipmentSheet(c,rules);assert.ok(tech.equipment.proficient);assert.ok(tech.stats.attack.breakdown.some(e=>e.name==='Weapon training'&&e.value===2));
  c.builder.classOrder=['rogue'];assert.ok(!equipmentSheet(c,rules).feats.some(f=>f.featId==='tech-melee-proficiency'));
 });
+
+test('multiclass archetypes are available beyond the first class and all progressions start collapsed', async () => {
+ const c=make(1);c.builder.classOrder=['sorcerer','fighter','barbarian','ironwright'];c.builder.targetLevel=4;
+ setArchetype(c,'tech-fighter',true);
+ const catalogue=JSON.parse(await readFile(new URL('../pathfinder/data/catalogue.json',import.meta.url),'utf8'));
+ const restored=parseCharacter(exportCharacter(c));
+ const html=renderArchetypes(restored,catalogue.classes.items);
+ assert.match(html,/data-field="archetype.tech-fighter" checked/);
+ assert.match(html,/Barbarian archetypes/);
+ for(const id of c.builder.classOrder){
+  assert.match(html,new RegExp('<details class="progression-section" data-class-progression="'+id+'"><summary>'));
+ }
+ assert.match(html,/Sorcerer archetypes: not available/);
+ assert.match(html,/Spells per Day/);
+ assert.match(html,/Overnight points per item/);
+ assert.deepEqual(restored.builder.archetypes,c.builder.archetypes);
+});

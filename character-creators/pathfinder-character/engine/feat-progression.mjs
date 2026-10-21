@@ -20,6 +20,7 @@ export function featSlots(c,baseOnly=false){
   if(cls==='wizard'&&n%5===0)add('Wizard bonus feat',{category:'wizard'});
   if(cls==='monk'&&[1,2,6,10,14,18].includes(n))add('Monk bonus feat',{allowed:through(monk,n),waive:true});
   if(cls==='ranger'&&[2,6,10,14,18].includes(n))add('Ranger combat style feat',{allowed:through(ranger[b.classOptions?.['ranger-style']]??{},n),waive:true,style:true});
+  if(cls==='paladin'&&n===6&&archetypeIds(c,'paladin').includes('holy-guide'))add('Holy Guide teamwork feat',{category:'teamwork'});
   if(cls==='inquisitor'&&n%3===0)add('Inquisitor teamwork feat',{category:'teamwork'});
   if(cls==='cavalier'&&n%6===0)add('Cavalier combat feat',{combat:true});
   if(cls==='cavalier'&&[1,9,17].includes(n))slots.push({id:`cavalier-teamwork-${n}`,name:`Cavalier teamwork feat (class level ${n})`,level,classId:cls,classLevel:n,category:'teamwork'});

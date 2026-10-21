@@ -21,7 +21,7 @@ test('rogue selector reserves future slots, preserves other classes and renders 
  const c=make(1,'knife-master','burglar');setArchetype(c,'weapon-master',true);setArchetype(c,'breaker',true);
  assert.throws(()=>setArchetype(c,'thug',true),/conflicts/);assert.throws(()=>setArchetype(c,'trapsmith',true),/conflicts/);
  validateArchetypes(c);assert.deepEqual(c.builder.archetypes.fighter,['weapon-master']);assert.deepEqual(c.builder.archetypes.barbarian,['breaker']);
- const html=renderArchetypes(c);assert.match(html,/Rogue archetypes/);assert.match(html,/data-field="archetype.thug"\s+disabled/);assert.match(html,/<\/details><h3>Rogue progression/);
+ const html=renderArchetypes(c);assert.match(html,/Rogue archetypes/);assert.match(html,/data-field="archetype.thug"\s+disabled/);assert.match(html,/<\/details><details class="progression-section" data-class-progression="rogue"><summary>Rogue progression/);
  const p=rogueProgression(c);assert.equal(p.length,20);assert.ok(!p[3].features.some(f=>f.id==='uncanny-dodge'));assert.ok(p[3].features.some(f=>f.id==='careful-disarm'));assert.ok(p[18].features.some(f=>f.label==='Sneak stab 10d8 / 10d4'));
  setArchetype(c,'knife-master',false);setArchetype(c,'thug',true);assert.equal(sheet(c).rogue.frightening,true);
 });

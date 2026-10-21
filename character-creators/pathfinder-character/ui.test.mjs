@@ -4,8 +4,9 @@ import {readFile} from 'node:fs/promises';
 import {readRoster} from './roster.mjs';
 test('all tabs remain accessible on an incomplete draft and edited choices save',async()=>{
  const catalogue=JSON.parse(await readFile(new URL('../pathfinder/data/catalogue.json',import.meta.url),'utf8'));
- const ids=['message','roster','home','editor','title','steps','panel','new','load','saved-heading','import','file','save','download','back'];
- const nodes=new Map(ids.map(id=>[id,{innerHTML:'',textContent:'',hidden:false,children:[],querySelectorAll(){return [];},replaceChildren(){this.children=[];},append(c){this.children.push(c);},focus(){}}]));
+ const html=await readFile(new URL('./index.html',import.meta.url),'utf8');
+ const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+ const nodes=new Map(ids.map(id=>[id,{innerHTML:'',textContent:'',hidden:false,children:[],listeners:{},addEventListener(type,fn){(this.listeners[type]??=[]).push(fn);},querySelectorAll(){return [];},replaceChildren(){this.children=[];},append(c){this.children.push(c);},focus(){}}]));
  const map=new Map();globalThis.localStorage={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)};
  globalThis.document={getElementById:id=>nodes.get(id),createElement:()=>({append(){}})};
  globalThis.window={addEventListener(){}};
@@ -15,10 +16,10 @@ test('all tabs remain accessible on an incomplete draft and edited choices save'
  try{
   await import('./app.mjs');nodes.get('new').onclick();
   assert.match(nodes.get('panel').innerHTML,/Choose a race/);
-  for(let i=0;i<8;i++){nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:String(i)}})}});assert.ok(nodes.get('panel').innerHTML);assert.doesNotMatch(nodes.get('steps').innerHTML,/disabled/);}
+  for(let i=0;i<10;i++){nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:String(i)}})}});assert.ok(nodes.get('panel').innerHTML);assert.doesNotMatch(nodes.get('steps').innerHTML,/disabled/);}
   const change=(key,value,type='select-one')=>nodes.get('panel').onchange({target:{dataset:{field:key},value,type,min:'1',max:'40'}});
   change('race','humans');change('flex','str');change('class.2','fighter');change('class.0','fighter');change('class.1','fighter');change('target','3','number');
-  nodes.get('save').onclick();assert.equal(nodes.get('message').textContent,'Draft saved in this browser.');const saved=readRoster(localStorage).characters[0].character;
+  nodes.get('save').onclick();assert.match(nodes.get('message').textContent,/Draft saved, including buffs, debuffs and sheet settings/);const saved=readRoster(localStorage).characters[0].character;
   assert.deepEqual(saved.builder.classOrder,['fighter','fighter','fighter']);assert.equal(saved.abilities.str,12);assert.equal(saved.classes.fighter,3);
   nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'3'}})}});
   change('target','6','number');change('class.5','ironwright');
@@ -93,6 +94,8 @@ test('all tabs remain accessible on an incomplete draft and edited choices save'
   const armour=readRoster(localStorage).characters[0].character.techEquipment.items.find(i=>i.itemId==='full-plate-bulwark');
   clickChoice('[data-inventory-action]',{inventoryAction:'equip',item:armour.instanceId});
   assert.match(nodes.get('panel').innerHTML,/Intercept up to 10 damage/);
+  assert.doesNotMatch(nodes.get('panel').innerHTML,/data-deftech-action|data-spend|equipment.fightingDefensively/);
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'9'}})}});
   clickChoice('[data-deftech-action]',{deftechAction:'spend',instance:armour.instanceId,powered:'brace'});
   nodes.get('save').onclick();
   assert.equal(readRoster(localStorage).characters[0].character.techEquipment.items.find(i=>i.instanceId===armour.instanceId).reservoir,3);
@@ -100,6 +103,35 @@ test('all tabs remain accessible on an incomplete draft and edited choices save'
 
 
 
+  const previous=JSON.stringify(readRoster(localStorage));
+  nodes.get('sheet-example').onclick();assert.match(nodes.get('panel').innerHTML,/CLASSIC CHARACTER SHEET/);assert.equal(JSON.stringify(readRoster(localStorage)),previous);
+  change('notes','A note from the Classic sheet.');nodes.get('save').onclick();
+  assert.equal(readRoster(localStorage).characters.length,2);assert.equal(readRoster(localStorage).characters[1].character.notes,'A note from the Classic sheet.');
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'9'}})}});
+  assert.match(nodes.get('panel').innerHTML,/data-spell-meta="sorcerer\|shield"/);
+  for(const fn of nodes.get('panel').listeners.change)fn({target:{dataset:{spellMeta:'sorcerer|shield',metamagic:'extend-spell'},checked:true}});
+  assert.match(nodes.get('panel').innerHTML,/14 minutes/);
+  const spellClick=(selector,dataset)=>{for(const fn of nodes.get('panel').listeners.click)fn({target:{closest:key=>key===selector?{dataset}:null}});};
+  spellClick('[data-spell-cast]',{spellCast:'sorcerer|shield'});
+  assert.equal(readRoster(localStorage).characters[1].character.spellUse.spent.sorcerer[2],1);
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'8'}})}});
+  assert.match(nodes.get('panel').innerHTML,/6 available \/ 7/);
+  const goodSet=localStorage.setItem;localStorage.setItem=()=>{throw Error('Quota exceeded');};
+  spellClick('[data-spell-cast]',{spellCast:'sorcerer|shield'});assert.match(nodes.get('message').textContent,/not applied.*Quota/);
+  localStorage.setItem=goodSet;assert.equal(readRoster(localStorage).characters[1].character.spellUse.spent.sorcerer[2],1);
+  spellClick('[data-spell-undo]',{});assert.equal(readRoster(localStorage).characters[1].character.spellUse.spent.sorcerer[2],0);
+  nodes.get('steps').onclick({target:{closest:()=>({dataset:{step:'6'}})}});
+  clickChoice('[data-inventory-action]',{inventoryAction:'picker'});
+  clickChoice('[data-choice-field]',{choiceField:'equipment',choiceId:'dagger'});
+  for(const fn of nodes.get('panel').listeners.change)fn({target:{dataset:{},checked:true,hasAttribute:key=>key==='data-enchanted-version'}});
+  assert.match(nodes.get('panel').innerHTML,/Special effect \(optional\)/);
+  clickChoice('[data-choice-field]',{choiceField:'equipmentEffect',choiceId:'keen'});
+  clickChoice('[data-inventory-action]',{inventoryAction:'add-selected'});nodes.get('save').onclick();
+  const bought=readRoster(localStorage).characters[1].character.craftedItems.at(-1);
+  assert.equal(bought.design.magicEffect,'keen');assert.equal(bought.design.effects[0].value,1);
+  clickChoice('[data-inventory-action]',{inventoryAction:'equip',item:bought.instanceId});
+  assert.match(nodes.get('panel').innerHTML,/17–20/);
+  nodes.get('save').onclick();assert.equal(readRoster(localStorage).characters[1].character.craftedItems.at(-1).equipped,true);
  }finally{globalThis.fetch=originalFetch;delete globalThis.document;delete globalThis.window;delete globalThis.localStorage;}
 });
 

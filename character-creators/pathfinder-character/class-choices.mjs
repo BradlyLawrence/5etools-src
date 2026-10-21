@@ -1,3 +1,5 @@
+import {renderPaladinSummary} from './paladin-ui.mjs';
+import {renderDeitySetup,renderDeitySummary,setDeityField,activeDomainKeys} from './deity-setup.mjs';
 import {renderBardSummary} from './bard-ui.mjs';
 import {rangerIssues} from './engine/ranger-archetypes.mjs';
 import {renderRangerSummary} from './ranger-ui.mjs';
@@ -40,6 +42,7 @@ export function classChoices(c,rules){
 }
 
 export function setClassChoice(c,rules,id,value){
+ if(activeDomainKeys.includes(id)&&c.deity?.domains){setDeityField(c,rules,'active.'+id,value);return;}
 
  const {classes,abilities}=calculate(c);
 
@@ -72,7 +75,7 @@ export function setClassChoice(c,rules,id,value){
 
  if(id==='deity-weapon'){
 
-  if(!classes.paladin||!rules.equipment.items.some(i=>i.id===value&&i.kind==='weapon'))throw Error('Choose a valid deity weapon.');
+  if(!(classes.paladin||classes.cleric||classes.inquisitor)||!rules.equipment.items.some(i=>i.id===value&&i.kind==='weapon'))throw Error('Choose a valid deity weapon.');
 
   c.deity={...c.deity,favoredWeaponId:value};return;
 
@@ -124,7 +127,7 @@ export function renderClassSheet(sheet,rules){
 
  let html='<h3>Class effects</h3>';
 
- html+=renderBardSummary(sheet.bard);
+ html+=renderBardSummary(sheet.bard);html+=renderPaladinSummary(sheet.paladin);
  html+=renderRangerSummary(sheet.ranger);
  if(sheet.rogue){const r=sheet.rogue;html+=`<p><strong>Sneak attack: ${esc(r.sneakDamage)}</strong> with the selected weapon, on eligible hits only. Extra precision dice are not multiplied on a critical hit and are separate from powered damage.</p><p>Rogue defenses: ${[r.evasion?'Evasion':null,r.uncannyDodge?'Uncanny dodge':null,r.improvedUncannyDodge?'Improved uncanny dodge':null,r.trapSense?'Trap sense +'+r.trapSense:null].filter(Boolean).join('; ')||'None yet'}.</p>`;
 
@@ -264,7 +267,7 @@ export function renderClassChoices(c,rules){
 
  if(r.classes.cavalier)html+='<p>Your order is saved. The Order of the Sword challenge interaction is calculated; other order abilities are reference-only.</p>';
 
- if(r.classes.paladin)select('Deity’s favoured weapon','deity-weapon',rules.equipment.items.filter(i=>i.kind==='weapon').map(i=>[i.id,i.name,i.description]),c.deity?.favoredWeaponId);
+ html+=renderDeitySetup(c,rules);
 
  if(r.classes.ironwright){select('Ironwright specialisation','ironwright-family',[['armour','Armour and shields','Improved powered abilities for all technological armour and shields.'],...rules.technology.families.filter(f=>!f.id.includes('armour')&&!f.id.includes('shield')).map(f=>[f.id,f.name??name(f.id),f.actions.map(a=>a.name+": "+a.description).join(" ")])],c.techEquipment?.specialization);html+='<p>The selected family gains its Ironwright powered-action benefits. Tech Armour Training reduces tech armour check penalties and increases maximum Dexterity by 1 at level 3, then by another 1 at levels 7, 11 and 15.</p>';}
 
@@ -287,6 +290,7 @@ function renderCoreChoices(c,r){
  let html='<p>Selected powers and spell lists appear below and on Review. Weapon training, favoured enemy and terrain bonuses, Travel, Protection, Forewarned, Enchanting Smile, bloodline class skills, draconic armour, energy resistances, Protective Ward and the listed familiar bonuses are calculated. Other powers and companion statistics remain rules references.</p>';
 
  for(const spec of dependentSpecs({...c,classes:r.classes,abilities:r.abilities})){
+ if(activeDomainKeys.includes(spec.id)){const selected=spec.options.find(x=>x.id===b[spec.id]);if(selected?.text)html+=`<details><summary>${esc(spec.label)}: ${esc(selected.name)} rules</summary><div style="white-space:pre-line">${esc(selected.text)}</div></details>`;continue;}
 
  if(spec.freeText){html+=`<label>${esc(spec.label)}<input data-field="classChoice.${esc(spec.id)}" value="${esc(b[spec.id]??'')}" maxlength="100" placeholder="Name a settlement"></label>`;continue;}
  const selected=spec.options.find(x=>x.id===b[spec.id]);
@@ -313,7 +317,7 @@ export function renderClassSelections(c){
 
  const r=calculate(c),b=c.builder.classOptions??{};
 
- return '<h3>Class selections</h3>'+dependentSpecs({...c,classes:r.classes,abilities:r.abilities}).map(spec=>{const chosen=spec.options.find(x=>x.id===b[spec.id]);return chosen?`<p><strong>${esc(spec.label)}:</strong> ${esc(chosen.name)}</p>${chosen.text?`<details><summary>Rules</summary><div style="white-space:pre-line">${esc(chosen.text.replace(/\bhe\b/g,'she').replace(/\bhis\b/g,'her').replace(/\bhim\b/g,'her'))}</div></details>`:''}`:'';}).join('');
+ return renderDeitySummary(c)+'<h3>Class selections</h3>'+dependentSpecs({...c,classes:r.classes,abilities:r.abilities}).map(spec=>{const chosen=spec.options?.find(x=>x.id===b[spec.id]);return chosen?`<p><strong>${esc(spec.label)}:</strong> ${esc(chosen.name)}</p>${chosen.text?`<details><summary>Rules</summary><div style="white-space:pre-line">${esc(chosen.text.replace(/\bhe\b/g,'she').replace(/\bhis\b/g,'her').replace(/\bhim\b/g,'her'))}</div></details>`:''}`:'';}).join('');
 
 }
 

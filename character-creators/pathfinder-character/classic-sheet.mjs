@@ -1,0 +1,34 @@
+import {calculate,ABILITIES} from './character.mjs';
+import {equipmentSheet} from './equipment.mjs';
+import {calculateSkills,skillName} from './skills.mjs';
+import {renderCombatSpells} from './combat-spells.mjs';
+import {renderClassSheet,renderClassSelections} from './class-choices.mjs';
+import {renderFeatReview} from './feats.mjs';
+const esc=v=>String(v??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const signed=n=>Number.isFinite(n)?(n>=0?'+':'')+n:'—';
+const title=s=>s.replace(/(^|[- ])\w/g,x=>x.toUpperCase()).replaceAll('-',' ');
+const block=(id,name,body)=>`<section class="sheet-block" id="sheet-${id}"><h3>${name}</h3>${body}</section>`;
+const box=(label,value)=>`<div class="sheet-stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`;
+export function renderClassicSheet(c,rules){
+ const r=calculate(c),s=equipmentSheet(c,rules),skills=calculateSkills(c,r),e=s.equipment;
+ const stat=id=>s.stats[id]?.total;
+ const name=id=>rules.equipment.items.find(x=>x.id===id)?.name??id;
+ const issues=[...r.issues,...skills.issues];
+ const skillRows=skills.rows.map(x=>`<tr><th>${esc(skillName(x.id))}${x.trained?' *':''}</th><td>${x.classSkill?'●':''}</td><td>${x.ranks}</td><td><strong>${signed(stat('skill.'+x.id)??x.total)}</strong>${x.trained&&!x.ranks?'<small>Untrained</small>':''}</td></tr>`).join('');
+ const inventory=[...Object.entries(c.carriedEquipment??{}).map(([id,qty])=>`<li>${esc(name(id))} × ${qty}</li>`),...(c.techEquipment?.items??[]).map(i=>{const m=rules.equipment.items.find(x=>x.id===i.itemId);return `<li>${esc(name(i.itemId))}<small>Reservoir ${i.reservoir} / ${m?m.tech.reservoirBase+m.tech.reservoirPerEnhancement*i.enhancement:'—'} · owned copy ${esc(i.instanceId)}</small></li>`;}),...(c.craftedItems??[]).map(i=>`<li>${esc(i.design.name)}${i.equipped?' · equipped':''}<small>${esc(i.design.description)}</small></li>`)];
+ const breakdown=['ac','attack','damage','initiative','save.fortitude','save.reflex','save.will','combatManeuver.check','combatManeuver.defense'].map(id=>{const x=s.stats[id];return x?`<p><b>${esc(title(id.replaceAll('.',' ')))}</b>: ${x.total} = base ${x.base}${x.breakdown?.length?' · '+x.breakdown.filter(b=>b.applied!==false).map(b=>esc(b.name??b.featId??b.bonusType)+' '+signed(b.value)).join(' · '):''}</p>`:'';}).join('');
+ return `<article class="classic-sheet"><header class="sheet-heading"><div><span class="sheet-eyebrow">PATHFINDER · CLASSIC CHARACTER SHEET</span><h2>${esc(c.name)}</h2><p>${esc(Object.entries(r.classes).map(([id,n])=>title(id)+' '+n).join(' / '))}</p><p>${esc(title(c.builder.raceId||'Race not selected'))} · ${esc(c.builder.identity.alignment||'Alignment not selected')}</p></div><div class="sheet-level"><strong>${r.level}</strong><span>LEVEL</span></div></header>
+ <nav class="sheet-jumps" aria-label="Sheet sections"><a href="#sheet-vitals">Statistics</a><a href="#sheet-skills">Skills</a><a href="#sheet-spells">Spells</a><a href="#sheet-features">Abilities</a><a href="#sheet-equipment">Equipment</a><a href="#sheet-notes">Notes</a></nav>
+ <div class="sheet-abilities">${ABILITIES.map(a=>box(a.toUpperCase(),`${s.effectiveAbilities[a]} (${signed(Math.floor((s.effectiveAbilities[a]-10)/2))})`)).join('')}</div>
+ <div class="sheet-columns"><div>
+ ${block('vitals','Vitals & defenses',`<div class="sheet-stats">${box('Maximum HP',s.hitPoints.total??'Incomplete')}${box('Armor class',stat('ac'))}${box('Touch AC',stat('ac.touch'))}${box('Flat-footed AC',stat('ac.flat-footed'))}${box('Initiative',signed(stat('initiative')))}${box('Speed',e.speedFt+' ft')}${box('Fortitude',signed(stat('save.fortitude')))}${box('Reflex',signed(stat('save.reflex')))}${box('Will',signed(stat('save.will')))}${box('Base attack',signed(r.bab))}${box('CMB',signed(stat('combatManeuver.check')))}${box('CMD',stat('combatManeuver.defense'))}</div><p class="sheet-hint">Calculated values include currently enabled effects. HP expenditure and general condition tracking are not yet available.</p><details><summary>Calculation breakdown</summary>${breakdown}</details>`)}
+ ${block('attacks','Equipped attack',`<h4>${esc(name(e.weaponId))}</h4><div class="sheet-stats">${box('Attack',signed(stat('attack')))}${box('Damage',e.damageDice?.join(' / ')+' '+signed(stat('damage'))+(e.elementalDamage??[]).map(d=>' + '+d.dice+' '+d.type+(d.requiresActivation?' (when activated)':'')).join(''))}${box('Critical',e.critical?.map(x=>`${x.threatMin===20?'20':x.threatMin+'–20'}/×${x.multiplier}`).join(' / '))}${box('Reach',e.reachFt+' ft')}</div><p>${esc(e.damageTypes?.join(', '))}${e.rangeIncrementFt?' · Range '+e.rangeIncrementFt+' ft':''} · ${e.proficient?'Proficient':'Nonproficiency penalty included'}</p>${e.traitRules?.map(t=>`<details><summary>${esc(t.name)}</summary><p>${esc(t.text)}${t.source?` <a href="${esc(t.source)}" target="_blank" rel="noopener">Full effect rules</a>`:''}</p></details>`).join('')??''}`)}
+ ${block('equipment','Equipment & possessions',`<p>Weapon: ${esc(name(e.weaponId))}<br>Off hand: ${esc(c.equipment?.offHand?name(c.equipment.offHand.itemId):'None')}<br>Armor: ${esc(c.equipment?.armorId?name(c.equipment.armorId):'None')}<br>Shield: ${esc(c.equipment?.shieldId?name(c.equipment.shieldId):'None')}</p><ul>${inventory.join('')||'<li>No additional possessions recorded.</li>'}</ul><button type="button" data-sheet-edit="6">Manage equipment</button>`)}
+ ${block('features','Feats & class abilities',`${renderClassSheet(s,rules)}${renderClassSelections(c)}${renderFeatReview(c,rules)}`)}
+ ${block('identity','Identity & background',`${Object.entries(c.builder.identity).filter(([,v])=>v).map(([k,v])=>`<p><b>${esc(title(k))}:</b> ${esc(v)}</p>`).join('')}<p>${esc(c.background?.story??'')}</p>`)}
+ ${block('notes','Character notes',`<label for="sheet-notes-input">Notes, reminders & table rulings<textarea id="sheet-notes-input" data-field="notes" rows="5" maxlength="20000">${esc(typeof c.notes==='string'?c.notes:'')}</textarea></label><p class="sheet-hint">Use Save Draft to keep your changes. Notes are included in your JSON backup.</p>`)}
+ <details class="sheet-review"><summary>Build review · ${issues.length} outstanding choices</summary><ul>${issues.map(x=>`<li>${esc(x)}</li>`).join('')||'<li>No outstanding choices in the basic build checks.</li>'}</ul><button type="button" data-sheet-edit="3">Edit character choices</button></details>
+ </div><aside class="sheet-sidebar">${block('skills','Skills',`<table><thead><tr><th>Skill</th><th><abbr title="Class skill">CS</abbr></th><th>Ranks</th><th>Total</th></tr></thead><tbody>${skillRows}</tbody></table><p class="sheet-hint">● Class skill · * Training required for normal use. Conditional bonuses appear with abilities.</p>`)}
+ ${block('spells','Spells & slots',`<p>Arcane spell failure from equipment: ${e.arcaneFailurePercent}%</p>${renderCombatSpells(c,rules,s)}`)}
+ </aside></div></article>`;
+}

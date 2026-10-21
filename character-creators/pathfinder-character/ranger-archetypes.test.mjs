@@ -18,7 +18,7 @@ test('ranger selector reserves future slots and merges progression independently
  const c=make(1,'guide','urban-ranger','skirmisher');validateArchetypes(c);
  assert.throws(()=>setArchetype(c,'trapper',true),/conflicts/);assert.throws(()=>setArchetype(c,'deep-walker',true),/conflicts/);
  setArchetype(c,'weapon-master',true);assert.deepEqual(c.builder.archetypes.fighter,['weapon-master']);
- const html=renderArchetypes(c);assert.match(html,/Ranger archetypes/);assert.match(html,/<\/details><h3>Ranger progression/);assert.match(html,/data-field="archetype.trapper"\s+disabled/);
+ const html=renderArchetypes(c);assert.match(html,/Ranger archetypes/);assert.match(html,/<\/details><details class="progression-section" data-class-progression="ranger"><summary>Ranger progression/);assert.match(html,/data-field="archetype.trapper"\s+disabled/);
  const p=rangerProgression(c);assert.equal(p.length,20);assert.ok(p[16].features.some(f=>f.id==='invisibility-trick'));
  assert.ok(!p.flatMap(r=>r.features).some(f=>['favored-enemy','favored-terrain','hunters-bond','spells','endurance'].includes(f.id)));
  assert.ok(p[19].features.some(f=>f.id==='master-hunter'));assert.ok(p[1].features.some(f=>f.id==='combat-style'));

@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {sheetExample} from './sheet-example.mjs';
+import {changeBuff} from './engine/buffs.mjs';
+import {equipmentSheet} from './equipment.mjs';
+import {renderCombatSheet} from './combat-spells.mjs';
+import {exportCharacter,parseCharacter,saveCharacter,readRoster} from './roster.mjs';
+const rules=JSON.parse(fs.readFileSync(new URL('./rules.json',import.meta.url)));
+test('added buffs toggle, stack correctly, persist and remove without touching other state',()=>{
+ let c=sheetExample(rules);const original=structuredClone(c),base=equipmentSheet(c,rules);
+ c=changeBuff(c,'add','bless');assert.equal(equipmentSheet(c,rules).stats.attack.total,base.stats.attack.total);c=changeBuff(c,'active','bless',true);assert.equal(equipmentSheet(c,rules).stats.attack.total,base.stats.attack.total+1);
+ c=changeBuff(changeBuff(c,'add','heroism'),'active','heroism',true);assert.equal(equipmentSheet(c,rules).stats.attack.total,base.stats.attack.total+2);
+ c=changeBuff(changeBuff(c,'add','inspire-courage'),'active','inspire-courage',true);c=changeBuff(c,'bonus','inspire-courage',2);assert.equal(equipmentSheet(c,rules).stats.attack.total,base.stats.attack.total+4);assert.equal(equipmentSheet(c,rules).stats.damage.total,base.stats.damage.total+2);
+ c=changeBuff(changeBuff(c,'add','haste'),'active','haste',true);let s=equipmentSheet(c,rules);assert.equal(s.stats.attack.total,base.stats.attack.total+5);assert.equal(s.stats.ac.total,base.stats.ac.total+1);assert.equal(s.equipment.speedFt,base.equipment.speedFt+30);
+ const map=new Map(),storage={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)};saveCharacter(storage,c,'test');c=parseCharacter(exportCharacter(readRoster(storage).characters[0].character));assert.equal(equipmentSheet(c,rules).stats.attack.total,s.stats.attack.total);
+ c=changeBuff(c,'remove','haste');assert.equal(equipmentSheet(c,rules).stats.ac.total,base.stats.ac.total);assert.deepEqual(c.techEquipment,original.techEquipment);assert.equal(changeBuff(c,'add','bless').buffs.length,c.buffs.length);
+ assert.match(renderCombatSheet(c,rules),/data-common-buff/);assert.match(renderCombatSheet(c,rules),/data-remove-buff="bless"/);assert.match(renderCombatSheet(c,rules),/Search other buffs/);
+ assert.throws(()=>changeBuff(c,'bonus','inspire-courage',5));const bad=structuredClone(c);bad.buffs[0].active='yes';assert.throws(()=>parseCharacter(JSON.stringify(bad)));
+});
