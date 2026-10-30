@@ -1,3 +1,6 @@
+import {renderScoundrel} from './scoundrel-ui.mjs';
+import {scoundrelSummary} from './engine/scoundrel.mjs';
+import {renderPrestigeSummary} from './justiciar-ui.mjs';
 import {renderPaladinSummary} from './paladin-ui.mjs';
 import {renderDeitySetup,renderDeitySummary,setDeityField,activeDomainKeys} from './deity-setup.mjs';
 import {renderBardSummary} from './bard-ui.mjs';
@@ -127,7 +130,7 @@ export function renderClassSheet(sheet,rules){
 
  let html='<h3>Class effects</h3>';
 
- html+=renderBardSummary(sheet.bard);html+=renderPaladinSummary(sheet.paladin);
+ html+=renderScoundrel(sheet.scoundrel);html+=renderPrestigeSummary(sheet.prestige,sheet.bloodline);for(const [cls,value] of Object.entries(sheet.equipment?.arcaneFailureByClass??{}))html+='<p>'+esc(cls)+' arcane spell failure with current armour and shield: '+value+'%.</p>';html+=renderBardSummary(sheet.bard);html+=renderPaladinSummary(sheet.paladin);
  html+=renderRangerSummary(sheet.ranger);
  if(sheet.rogue){const r=sheet.rogue;html+=`<p><strong>Sneak attack: ${esc(r.sneakDamage)}</strong> with the selected weapon, on eligible hits only. Extra precision dice are not multiplied on a critical hit and are separate from powered damage.</p><p>Rogue defenses: ${[r.evasion?'Evasion':null,r.uncannyDodge?'Uncanny dodge':null,r.improvedUncannyDodge?'Improved uncanny dodge':null,r.trapSense?'Trap sense +'+r.trapSense:null].filter(Boolean).join('; ')||'None yet'}.</p>`;
 
@@ -273,9 +276,9 @@ export function renderClassChoices(c,rules){
 
  if(r.classes.gunslinger){select('Primary firearm family','gunslinger-primary',FIREARM_FAMILIES.map(v=>[v,name(v)]),c.builder.gunslinger?.primary);if(r.classes.gunslinger>=7)select('Secondary firearm family','gunslinger-secondary',FIREARM_FAMILIES.filter(v=>v!==c.builder.gunslinger?.primary).map(v=>[v,name(v)]),c.builder.gunslinger?.secondary);const s=gunslingerSummary(c);if(s)html+=`<p>Grit maximum: ${s.gritMaximum}. Primary family: ${name(s.primary)}${s.secondary?'; secondary: '+name(s.secondary):''}. Family choices and grit are recorded; firearm attack and technique automation remains pending.</p>`;}
 
- html+=renderCoreChoices(c,r);
+ html+=renderCoreChoices(c,r);html+=renderScoundrel(scoundrelSummary({...c,classes:r.classes,abilities:r.abilities}));
 
- for(const id of Object.keys(r.classes).filter(id=>!['cleric','cavalier','paladin','ironwright','gunslinger','wizard','sorcerer','druid','ranger','inquisitor','fighter','rogue','barbarian','alchemist','bard'].includes(id)))html+=`<p>${name(id)}: use the class rules below for choices not yet implemented.</p>`;
+ for(const id of Object.keys(r.classes).filter(id=>!['scoundrel','cleric','cavalier','paladin','ironwright','gunslinger','wizard','sorcerer','druid','ranger','inquisitor','fighter','rogue','barbarian','alchemist','bard'].includes(id)))html+=`<p>${name(id)}: use the class rules below for choices not yet implemented.</p>`;
 
  return html;
 

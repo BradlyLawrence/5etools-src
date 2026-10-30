@@ -1,3 +1,5 @@
+import {selectedScoundrelTalents} from './scoundrel.mjs';
+import {ORDER_FEATS} from './justiciar.mjs';
 import {replacedFighterSlot,archetypeIds,priorStandStill} from './archetypes.mjs';
 import {selectedAbilities} from './selectable-abilities.mjs';
 import data from './feat-progression-data.mjs';
@@ -12,6 +14,7 @@ export function featSlots(c,baseOnly=false){
   if(level%2)slots.push({id:level===1?'starting':'level-'+level,name:`Level ${level} feat`,level});
   if(level===1&&b.raceId==='humans'&&!b.racialAlternates?.includes('eye-for-talent'))slots.push({id:'human',name:'Human bonus feat',level});
   const add=(label,extra={})=>slots.push({id:cls==='fighter'&&level===1?'fighter-starting':`${cls}-bonus-${n}`,name:`${label} (class level ${n})`,level,classId:cls,classLevel:n,...extra});
+  if(cls==='wyrmward-justiciar'&&[4,8].includes(n)&&!(n===4&&b.classOptions?.['wyrmward-justiciar-path']==='mounted'))add('Order Training',{allowed:ORDER_FEATS});
   if(cls==='fighter'&&(n===1||n%2===0)&&!replacedFighterSlot(c,'bonus-feat-'+n))add('Fighter combat feat',{combat:true,...(n===4&&archetypeIds(c).includes('siegebreaker')?{allowed:['step-up','disruptive'],waive:true}:{})});
   if(cls==='fighter'&&n===13&&archetypeIds(c).includes('brawler')&&priorStandStill(c))slots.push({id:'brawler-stand-still-replacement',name:'Brawler: replacement combat feat',level,classId:cls,classLevel:n,combat:true});
   if(cls==='fighter'&&[2,9,17].includes(n)&&archetypeIds(c).includes('drill-sergeant'))slots.push({id:`drill-sergeant-teamwork-${n}`,name:`Drill Sergeant teamwork feat (fighter level ${n})`,level,classId:cls,classLevel:n,category:'teamwork'});
@@ -26,6 +29,7 @@ export function featSlots(c,baseOnly=false){
   if(cls==='cavalier'&&[1,9,17].includes(n))slots.push({id:`cavalier-teamwork-${n}`,name:`Cavalier teamwork feat (class level ${n})`,level,classId:cls,classLevel:n,category:'teamwork'});
  });
  for(const a of selectedAbilities({...c,classes:counts},baseOnly))if(a.classId==='rogue'&&['combat-trick','weapon-training','feat'].includes(a.id)){let n=0;const level=a.slot.characterLevel??order.findIndex(id=>id==='rogue'&&++n===a.slot.level)+1;slots.push({id:a.slot.extra?'rogue-talent-feat-'+a.slot.id:'rogue-talent-feat-'+a.slot.level,name:'Rogue talent: '+a.name,level,...(a.id==='combat-trick'?{combat:true}:a.id==='weapon-training'?{allowed:['weapon-focus']}: {})});}
+ for(const t of selectedScoundrelTalents({...c,classes:counts}))if(['combat-trick','weapon-training'].includes(t.id)){let n=0;const level=order.findIndex(id=>id==='scoundrel'&&++n===t.level)+1;slots.push({id:'scoundrel-talent-feat-'+t.level,name:'Scoundrel: '+t.name,level,...(t.id==='combat-trick'?{combat:true}:{allowed:['weapon-focus']})});}
  return slots;
 }
 export function slotAllows(slot,def){

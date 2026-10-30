@@ -1,3 +1,6 @@
+import {scoundrelSpecs} from './scoundrel.mjs';
+import {prestigeSpecs} from './justiciar.mjs';
+import {bloodlineLevel} from './practiced.mjs';
 import {paladinSpecs,paladinBond,hasPaladin,paladinCovenant} from './paladin-archetypes.mjs';
 import {bardSpecs} from './bard-archetypes.mjs';
 import {rangerSpecs,rangerIssues,replacedRangerSlot} from './ranger-archetypes.mjs';
@@ -20,7 +23,7 @@ export function coreChoiceSpecs(classes){
  return specs;
 }
 export function dependentSpecs(c){
- const b=c.builder?.classOptions??{},specs=[...coreChoiceSpecs(c.classes).filter(s=>(s.id!=='ranger-bond'||!replacedRangerSlot(c,'hunters-bond'))&&(s.id!=='paladin-bond'||!['shining-knight','divine-defender','oath-of-charity'].some(id=>hasPaladin(c,id)))), ...paladinSpecs(c),...bardSpecs(c),...rangerSpecs(c),...martialSpecs(c),...selectableSpecs(c),...barbarianSpecs(c)],add=(id,label,options)=>specs.push({id,label,options});
+ const b=c.builder?.classOptions??{},specs=[...coreChoiceSpecs(c.classes).filter(s=>(s.id!=='ranger-bond'||!replacedRangerSlot(c,'hunters-bond'))&&(s.id!=='paladin-bond'||!['shining-knight','divine-defender','oath-of-charity'].some(id=>hasPaladin(c,id)))), ...scoundrelSpecs(c),...prestigeSpecs(c),...paladinSpecs(c),...bardSpecs(c),...rangerSpecs(c),...martialSpecs(c),...selectableSpecs(c),...barbarianSpecs(c)],add=(id,label,options)=>specs.push({id,label,options});
  if(c.classes.druid&&b['druid-bond']==='domain')add('druid-domain','Nature domain',data.domains.filter(x=>['air','animal','earth','fire','plant','water','weather'].includes(x.id)));
  for(const cls of ['druid','ranger'])if(c.classes[cls]>=(cls==='ranger'?4:1)&&b[cls+'-bond']==='companion'&&(cls!=='ranger'||!replacedRangerSlot(c,'hunters-bond')))add(cls+'-companion','Animal companion',data.companions.filter(x=>cls!=='ranger'||['badger-wolverine','bird-eagle-hawk-owl','camel','cat-small-cheetah-leopard','dog','horse','pony','snake-viper','wolf'].includes(x.id)));
  if(c.classes.cavalier)add('cavalier-mount','Mount',data.companions.filter(x=>['horse','pony'].includes(x.id)));
@@ -28,6 +31,7 @@ export function dependentSpecs(c){
  if(c.classes.wizard&&b['wizard-school']&&b['wizard-school']!=='universalist')for(const n of [1,2])add('wizard-opposition-'+n,'Opposition school '+n,data.schools.filter(x=>x.id!=='universalist'&&x.id!==b['wizard-school']));
  if(c.classes.wizard&&b['wizard-bond']==='object')add('wizard-object','Bonded object',['amulet','ring','staff','wand','weapon'].map(id=>({id,name:id})));
  if(c.classes.wizard&&b['wizard-bond']==='familiar')add('wizard-familiar','Familiar',['bat','cat','hawk','lizard','owl','rat','raven','snake','toad','weasel'].map(id=>({id,name:id})));
+ if(c.classes.sorcerer)add('bloodline-robe','Robe of Arcane Heritage',[{id:'not-worn',name:'Not worn'},{id:'worn',name:'Owned robe currently worn (body slot)'}]);
  if(c.classes.sorcerer&&b['sorcerer-bloodline']==='draconic')add('bloodline-dragon','Dragon ancestry',['black','blue','green','red','white','brass','bronze','copper','gold','silver'].map(id=>({id,name:id})));
  if(c.classes.sorcerer&&b['sorcerer-bloodline']==='arcane')add('bloodline-knowledge','Bloodline class skill',['arcana','dungeoneering','engineering','geography','history','local','nature','nobility','planes','religion'].map(x=>({id:'knowledge-'+x,name:'Knowledge ('+x+')'})));
  if(c.classes.wizard&&b['wizard-bond']==='familiar')add('familiar-distance','Familiar location',[{id:'near',name:'Within 1 mile'},{id:'away',name:'More than 1 mile away'}]);
@@ -58,7 +62,7 @@ export function optionEffects(c){
  if(wizard&&b['wizard-school']==='divination')add('initiative',Math.max(1,Math.floor(wizard/2)),'Forewarned');
  if(wizard&&b['wizard-school']==='enchantment')for(const skill of ['bluff','diplomacy','intimidate'])add('skill.'+skill,2+Math.floor(wizard/5),'Enchanting Smile','enhancement');
  if(wizard&&b['wizard-school']==='abjuration'&&b['protective-ward']==='on')add('ac',1+Math.floor(wizard/5),'Protective ward','deflection');
- const sorcerer=c.classes.sorcerer??0;
+ const sorcerer=c.classes.sorcerer?bloodlineLevel(c):0;
  if(sorcerer>=3&&b['sorcerer-bloodline']==='draconic')add('ac',sorcerer>=15?4:sorcerer>=9?2:1,'Dragon resistances','natural-armor');
  if(sorcerer>=15&&b['sorcerer-bloodline']==='elemental'&&b['bloodline-element']==='fire')add('speed.bonus',30,'Elemental movement');
  if(wizard&&b['wizard-bond']==='familiar'&&b['familiar-distance']==='near'){
@@ -84,7 +88,7 @@ export function optionDefenses(c){
  for(const [cls,domains] of selectedDomains(c))for(const domain of new Set(domains)){const level=c.classes[cls];if(energy[domain]&&level>=6)add(energy[domain],level>=20?'immune':level>=12?20:10,cls+' '+domain+' domain');}
  const wizard=c.classes.wizard??0;
  if(wizard&&b['wizard-school']==='abjuration'&&['acid','cold','electricity','fire','sonic'].includes(b['abjuration-energy']))add(b['abjuration-energy'],wizard>=20?'immune':wizard>=11?10:5,'Abjuration');
- const level=c.classes.sorcerer??0,bloodline=b['sorcerer-bloodline'];
+ const level=c.classes.sorcerer?bloodlineLevel(c):0,bloodline=b['sorcerer-bloodline'];
  if(level>=3){
   if(bloodline==='draconic')add({black:'acid',copper:'acid',green:'acid',blue:'electricity',bronze:'electricity',red:'fire',gold:'fire',brass:'fire',white:'cold',silver:'cold'}[b['bloodline-dragon']],level>=20?'immune':level>=9?10:5,'Draconic bloodline');
   if(bloodline==='elemental')add(energy[b['bloodline-element']],level>=20?'immune':level>=9?20:10,'Elemental bloodline');
@@ -98,7 +102,7 @@ export function optionDefenses(c){
 }
 export function optionIssues(c){
  const b=c.builder?.classOptions??{},issues=[...martialIssues(c),...rangerIssues(c)];
- for(const spec of dependentSpecs(c))if(spec.freeText?!String(b[spec.id]??'').trim():!spec.options.some(x=>x.id===b[spec.id]))issues.push('Choose '+spec.label.toLowerCase()+'.');
+ for(const spec of dependentSpecs(c).filter(s=>s.id!=='bloodline-robe'))if(spec.freeText?!String(b[spec.id]??'').trim():!spec.options.some(x=>x.id===b[spec.id]))issues.push('Choose '+spec.label.toLowerCase()+'.');
  if(c.classes.cleric&&b['cleric-domain-1']&&b['cleric-domain-1']===b['cleric-domain-2'])issues.push('Choose two different cleric domains.');
  if(c.classes.wizard&&b['wizard-school']!=='universalist'&&b['wizard-opposition-1']&&b['wizard-opposition-1']===b['wizard-opposition-2'])issues.push('Choose two different opposition schools.');
  return issues;

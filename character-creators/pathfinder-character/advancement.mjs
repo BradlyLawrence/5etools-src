@@ -1,5 +1,5 @@
-export const HIT_DICE={barbarian:12,fighter:10,paladin:10,ranger:10,cavalier:10,gunslinger:10,ironwright:10,bard:8,cleric:8,druid:8,monk:8,rogue:8,alchemist:8,inquisitor:8,wizard:6,sorcerer:6};
-export function favoredClasses(c){return [...new Set(c.builder.favoredClasses??[])].filter(Boolean).slice(0,c.builder.raceId==='half-elves'?2:1);}
+export const HIT_DICE={scoundrel:8,'wyrmward-justiciar':8,'covenant-theurge':8,barbarian:12,fighter:10,paladin:10,ranger:10,cavalier:10,gunslinger:10,ironwright:10,bard:8,cleric:8,druid:8,monk:8,rogue:8,alchemist:8,inquisitor:8,wizard:6,sorcerer:6};
+export function favoredClasses(c){return [...new Set(c.builder.favoredClasses??[])].filter(x=>x&&!['wyrmward-justiciar','covenant-theurge'].includes(x)).slice(0,c.builder.raceId==='half-elves'?2:1);}
 export function favoredBonus(c,index){return favoredClasses(c).includes(c.builder.classOrder[index])?c.builder.favoredRewards?.[index]??'': '';}
 export function hitPoints(c,abilities,featBonus=0){
  const con=Math.floor((abilities.con-10)/2),issues=[];

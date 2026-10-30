@@ -128,7 +128,7 @@ function renderPaladinArchetypes(c){
 // archetypes retain the calculated tables above, including replacements.
 export function renderArchetypes(c, classes = []) {
  let html = renderSupportedArchetypes(c);
- const supported = new Set(['fighter', 'barbarian', 'rogue', 'ranger', 'bard', 'paladin']);
+ const supported = new Set(['scoundrel', 'fighter', 'barbarian', 'rogue', 'ranger', 'bard', 'paladin']);
  for (const id of new Set(c.builder.classOrder)) {
   if (supported.has(id)) continue;
   const entry = classes.find(item => item.id === id);

@@ -1,7 +1,8 @@
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function renderPaladinSummary(p){
  if(!p)return '';
- let html='<h3>Paladin resources and oaths</h3><p>Smite Evil: '+p.smiteUses+'/day. '+(p.layOnHands?'Lay on Hands: '+p.layOnHands.dice+', '+p.layOnHands.uses+'/day.':'')+'</p>';
+ let html='<h3>Paladin resources and oaths</h3><p>'+(p.wizardry?'Smite Wizardry':'Smite Evil')+': '+p.smiteUses+'/day. '+(p.layOnHands?'Lay on Hands: '+p.layOnHands.dice+', '+p.layOnHands.uses+'/day.':'')+'</p>';
+ if(p.wizardry)html+='<p>Wizardry: effective paladin level '+p.wizardry.level+'; Will DC '+p.wizardry.dc+'; preparations up to level '+p.wizardry.maximumSpellLevel+'; up to '+p.wizardry.maximumBurns+' successful descending burns per round. No level-based damage; no oath spells or casting prerequisite.</p>';
  if(p.layOnHands&&p.layOnHands.selfMultiplier!==1)html+='<p>Charitable Hands: half healing on yourself, 150% on others; normal damage against undead. Round down.</p>';
  if(p.immunities.length)html+='<p>Retained personal immunities: '+esc(p.immunities.join(', '))+'. Aura-based immunities require consciousness.</p>';
  if(p.channel)html+='<p>Channel: '+p.channel.dice+'; '+(p.channel.uses!==null?p.channel.uses+'/day, separate pool':p.channel.layOnHandsCost+' Lay on Hands uses')+'.</p>';

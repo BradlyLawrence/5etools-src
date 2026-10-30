@@ -1,3 +1,4 @@
+import {smiteLevel,bloodlineLevel} from './practiced.mjs';
 import {hasPaladin,paladinSummary} from './paladin-archetypes.mjs';
 import {SPELL_SCHOOLS} from './spell-schools.mjs';
 import {SKILLS} from './skills.mjs';
@@ -106,22 +107,26 @@ export function evaluateAbilities(pkg,c,legacy,overrides={}){
   const activeFeats=new Set(legacy.feats.filter(f=>f.active).map(f=>f.featId));
   c={...c,activeFeatCounts:Object.fromEntries(legacy.feats.filter(f=>f.active).map(f=>[f.featId,f.count??1]))};
   const rules=[],effects=[],explanations=[],notes=[],resources={},choices=[],axes=[],actionCandidates=[];
-  for(const r of pkg.rules){
+  for(const original of pkg.rules){
+    const wizardry=original.id==='paladin.smite-evil'&&hasPaladin(c,'oath-against-wizardry');
+    const r=wizardry?{...original,name:'Smite Wizardry',variants:original.variants.slice(0,1).map(v=>({...v,label:'Against designated prepared arcane caster'})),effects:original.effects.filter(e=>!['damage.melee','damage.ranged'].includes(e.stat))}:original;
     const purchaseCount=r.acquisition.kind==='feat'?Math.max(1,...legacy.feats.filter(f=>f.active&&f.featId===r.acquisition.featId).map(f=>f.count??1)):1;
-    const owned=r.id==='paladin.smite-evil'&&hasPaladin(c,'oath-of-loyalty')?false:r.acquisition.kind==='class'?(c.classes[r.acquisition.classId]??0)>=r.acquisition.level:activeFeats.has(r.acquisition.featId);
+    const bloodlineRule=r.id.startsWith('bloodline.draconic-'),bloodLevel=bloodlineLevel(c);
+    const owned=r.id==='covenant-theurge.interdict'&&c.builder?.classOptions?.['covenant-theurge-path']==='mounted'?false:bloodlineRule?(c.builder?.classOptions?.['sorcerer-bloodline']==='draconic'&&bloodLevel>=r.acquisition.level):r.id==='paladin.smite-evil'&&hasPaladin(c,'oath-of-loyalty')?false:r.acquisition.kind==='class'?(c.classes[r.acquisition.classId]??0)>=r.acquisition.level:activeFeats.has(r.acquisition.featId);
     const focusedWeapon=!r.acquisition.weaponFeat||legacy.feats.some(f=>f.active&&f.featId===r.acquisition.weaponFeat&&f.weaponId===c.context.weapon.id);
     const weaponEligible=focusedWeapon&&(!r.acquisition.selectedWeapon||legacy.feats.some(f=>f.active&&f.featId===r.acquisition.featId&&f.weaponId===c.context.weapon.id));
     const eligible=owned&&weaponEligible&&expression(r.requires,c,state,conditions)===true,enabled=eligible&&(!r.toggle||state.toggles[r.id]===true);
     rules.push({id:r.id,name:r.name,owned,eligible,enabled,toggle:r.toggle,resourceId:r.resource?.id,manual:r.manual});if(!owned)continue;
     choices.push(...r.choices.map(ch=>({...ch,selected:state.choices[ch.id]??null})));
-    if(r.resource){const maximum=r.id==='paladin.smite-evil'&&hasPaladin(c,'hospitaler')?paladinSummary(c).smiteUses:purchaseCount*expression(r.resource.maximum,c,state,conditions);check(Number.isInteger(maximum)&&maximum>=0,'Invalid maximum');resources[r.resource.id]={maximum,spent:state.spent[r.resource.id]??0,remaining:Math.max(0,maximum-(state.spent[r.resource.id]??0)),recovery:r.resource.recovery,...(r.resource.unit?{unit:r.resource.unit}:{})};}
+    if(r.resource){const maximum=r.id==='bloodline.draconic-breath'?(bloodLevel>=20?3:bloodLevel>=17?2:1):r.id==='paladin.smite-evil'&&hasPaladin(c,'hospitaler')?paladinSummary(c).smiteUses:purchaseCount*expression(r.resource.maximum,c,state,conditions);check(Number.isInteger(maximum)&&maximum>=0,'Invalid maximum');resources[r.resource.id]={maximum,spent:state.spent[r.resource.id]??0,remaining:Math.max(0,maximum-(state.spent[r.resource.id]??0)),recovery:r.resource.recovery,...(r.resource.unit?{unit:r.resource.unit}:{})};}
     if(enabled&&r.variants.length)axes.push({ruleId:r.id,variants:r.variants});
     for(const e of r.effects){const applies=enabled&&expression(e.when,c,state,conditions)===true;
       explanations.push({sourceId:r.id,effectId:e.id,name:r.name,applied:applies,reason:!eligible?'Requirements not met':!enabled?'Toggle off':applies?'Applies':'Does not apply in this row'});
       if(!applies)continue;
       if(e.kind==='action'){actionCandidates.push({...e,sourceId:r.id,name:r.name,sourceUrl:r.sourceUrl});continue;}
       if(e.kind==='note'){notes.push({sourceId:r.id,description:e.description});continue;}
-      const value=purchaseCount*expression(e.amount,c,state,conditions);check(Number.isFinite(value),'Invalid amount');effects.push({kind:'modifier',featId:e.stackingKey,sourceId:r.id,effectId:e.id,name:r.name,target:e.stat,bonusType:e.bonusType,value,...(e.bonusType==='circumstance'?{circumstanceSource:e.stackingKey}:{})});
+      const effectCharacter=r.id==='paladin.smite-evil'?{...c,classes:{...c.classes,paladin:smiteLevel(c)}}:c;
+      const value=purchaseCount*expression(e.amount,effectCharacter,state,conditions);check(Number.isFinite(value),'Invalid amount');effects.push({kind:'modifier',featId:e.stackingKey,sourceId:r.id,effectId:e.id,name:r.name,target:e.stat,bonusType:e.bonusType,value,...(e.bonusType==='circumstance'?{circumstanceSource:e.stackingKey}:{})});
     }
   }
   const selectedActions=new Map();

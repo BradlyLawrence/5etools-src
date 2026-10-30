@@ -1,4 +1,6 @@
 export default {
+scoundrel:{"ranks": 8, "skills": ["acrobatics", "appraise", "bluff", "climb", "craft", "diplomacy", "disable-device", "disguise", "escape-artist", "intimidate", "knowledge-local", "knowledge-nobility", "linguistics", "perception", "perform", "profession", "sense-motive", "sleight-of-hand", "stealth", "swim", "tech-use", "use-magic-device"]},
+"wyrmward-justiciar":{"ranks": 4, "skills": ["diplomacy", "intimidate", "knowledge-arcana", "ride", "sense-motive", "spellcraft"]},"covenant-theurge":{"ranks": 4, "skills": ["diplomacy", "intimidate", "knowledge-arcana", "ride", "sense-motive", "spellcraft"]},
   "barbarian": {
     "ranks": 4,
     "skills": [

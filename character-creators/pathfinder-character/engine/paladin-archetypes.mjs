@@ -1,3 +1,5 @@
+import {wizardrySummary,smiteLevel} from './practiced.mjs';
+import {mountAdvancement} from './justiciar.mjs';
 import packs from './paladin-archetypes-data.mjs';
 import muralis from './muralis-data.mjs';
 export const paladinLevel=c=>c.classes?.paladin??c.builder?.classOrder?.filter(id=>id==='paladin').length??0;
@@ -40,12 +42,12 @@ export function paladinSummary(c){
  if(has('warrior-of-the-holy-light'))warnings.push('No paladin spellcasting or paladin caster level. Published oath spells do not restore slots or grant free castings. Other class casting remains separate; item activation must use an independently valid route.');
  if(has('oath-of-charity')&&!Array.from({length:6},(_,i)=>3+i*3).some(at=>at<=n&&!paladinSlotTaken(c,'mercy-'+at)))warnings.push('Charitable Mercy has no retained mercy selections to change.');
  const immunities=[...(n>=3&&!paladinSlotTaken(c,'aura-of-courage')?['fear']:[]),...(n>=3&&!paladinSlotTaken(c,'divine-health')?['disease']:[]),...(n>=8&&!paladinSlotTaken(c,'aura-of-resolve')?['charm']:[]),...(n>=17&&!paladinSlotTaken(c,'aura-of-righteousness')?['compulsion']:[])];
- return {covenant:paladinCovenant(c),level:n,dc:10+half+cha,immunities,fortification:has('oath-of-chastity')&&n>=8?50:0,smiteUses:smite,layOnHands:n>=2?{dice:half+'d6',uses:Math.max(0,half+cha+(has('warrior-of-the-holy-light')?Math.floor(n/4):0)),selfMultiplier:has('oath-of-charity')?.5:1,otherMultiplier:has('oath-of-charity')?1.5:1}:null,channel:paladinHasChannel(c)?{dice:(has('hospitaler')?Math.floor((n-2)/2):half)+'d6',uses:has('hospitaler')?Math.max(0,3+cha):null,layOnHandsCost:has('hospitaler')?0:2,undeadCost:has('oath-against-undeath')&&n>=11?1:null}:null,bond:paladinBond(c),warnings,
+ return {wizardry:wizardrySummary(c),smiteLevel:smiteLevel(c),covenant:paladinCovenant(c),level:n,dc:10+half+cha,immunities,fortification:has('oath-of-chastity')&&n>=8?50:0,smiteUses:smite,layOnHands:n>=2?{dice:half+'d6',uses:Math.max(0,half+cha+(has('warrior-of-the-holy-light')?Math.floor(n/4):0)),selfMultiplier:has('oath-of-charity')?.5:1,otherMultiplier:has('oath-of-charity')?1.5:1}:null,channel:paladinHasChannel(c)?{dice:(has('hospitaler')?Math.floor((n-2)/2):half)+'d6',uses:has('hospitaler')?Math.max(0,3+cha):null,layOnHandsCost:has('hospitaler')?0:2,undeadCost:has('oath-against-undeath')&&n>=11?1:null}:null,bond:paladinBond(c),warnings,
  intercession:has('oath-of-intercession')?{uses:1+Math.floor((n-1)/6),prevention:'1d6+'+n}:null,
  mercy:has('oath-of-mercy')&&n>=3?{dice:half+'d4',cost:2,radius:n>=15?30:n>=12?25:n>=9?20:n>=6?15:10,conditions:[...['shaken','sickened'],...(n>=6?['fatigued','staggered']:[]),...(n>=9?['frightened','nauseated']:[]),...(n>=12?['exhausted','stunned']:[]),...(n>=15?['panicked','fear-caused cowering']:[]),...(n>=18?['blinded','deafened']:[])],conditionLimit:1}:null,
  hospitality:has('oath-of-hospitality')&&n>=4?{portions:half,cost:2,shelfLifeHours:24,spells:['endure elements','remove fear',...(n>=10?["bull’s strength","bear’s endurance","cat’s grace"]:[]),...(n>=16?["owl’s wisdom","eagle’s splendor","fox’s cunning"]:[])],individualSelections:n>=16}:null,
  holyLight:has('warrior-of-the-holy-light')&&n>=4?{bonus:n>=20?2:1,radius:n>=20?60:30,shiningUses:n>=14?1+Math.floor((n-14)/3):0,shiningDice:half+'d6',neutralHealing:true}:null,
- mount:paladinBond(c)==='mount'&&c.builder?.classOptions?.['paladin-mount']==='muralis'?{name:'Muralis',effectiveDruidLevel:n,minimumIntelligence:6,summons:1+Math.floor((n-5)/4),celestial:n>=11,spellResistance:n>=15?n+11:0,traits:muralis.traits,level5Example:n===5?muralis.level5Example:null,carryingExample:n===5?muralis.loadExample:null}:null};
+ mount:paladinBond(c)==='mount'&&c.builder?.classOptions?.['paladin-mount']==='muralis'?{name:'Muralis',effectiveDruidLevel:n+mountAdvancement(c),minimumIntelligence:6,summons:1+Math.floor((n-5)/4),celestial:n>=11,spellResistance:n>=15?n+11:0,traits:muralis.traits,level5Example:n===5?muralis.level5Example:null,carryingExample:n===5?muralis.loadExample:null}:null};
 }
 export function paladinEffects(c,equipment,conditions={}){
  const n=paladinLevel(c),out=[];if(!n)return out;

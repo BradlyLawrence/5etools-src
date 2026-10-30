@@ -1,3 +1,4 @@
+import {retainsScoundrel} from './scoundrel.mjs';
 /** Campaign bow identities and save migration. No I/O or shared-state mutation. */
 export const BOW_IDS=['hunting-bow','war-bow','long-bow','steppe-bow'];
 export const LEGACY_BOW_IDS={'shortbow':'hunting-bow','shortbow-composite':'hunting-bow','longbow':'war-bow','longbow-composite':'war-bow'};
@@ -29,6 +30,6 @@ export function bowProfile(weapon,c){
  const rating=validateBowRating(owned?.design.bowStrengthRating??c.equipment?.bowStrengthRating??weapon.bow.strengthRating);
  const strengthModifier=Math.floor((c.abilities.str-10)/2);
  return {strengthRating:rating,strengthRequired:10+2*rating,strengthModifier,
-  attackPenalty:strengthModifier<rating?-2:0,strengthDamage:Math.min(strengthModifier,rating),
+  attackPenalty:strengthModifier+(retainsScoundrel(c,'practised-archer')?1:0)<rating?-2:0,strengthDamage:Math.min(strengthModifier,rating),
   drawWeightLb:weapon.bow.drawWeightLb,mountedUse:weapon.bow.mountedUse};
 }

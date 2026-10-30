@@ -1,3 +1,4 @@
+import {scoundrelEffects} from './engine/scoundrel.mjs';
 import {sizeAbilityScores} from './engine/size-effects.mjs';
 import {craftedAbilityScores} from './engine/magic-items.mjs';
 import {bardEffects,bardSummary,VERSATILE} from './engine/bard-archetypes.mjs';
@@ -42,7 +43,7 @@ export function calculateSkills(c,r){
   const classSkill=classSet.has(info.base)||!!bardSummary({...c,classes:r.classes})?.allClassSkills,ability=Math.floor((effective[info.ability]-10)/2),classBonus=classSkill&&ranks>0?3:0;
   const backgroundBonus=Math.max(0,...bg.effects.filter(e=>e.target==='skill.'+id).map(e=>e.value));
   const racialBonus=racialEffects(c).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0);
-  return {id,racialBonus,backgroundBonus,...info,isBackground:info.background,...allocation,ranks,classSkill,abilityBonus:ability,classBonus,total:ranks+ability+classBonus+backgroundBonus+racialBonus+bardEffects({...c,classes:r.classes,abilities:r.abilities}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)+rangerEffects({...c,classes:r.classes,abilities:r.abilities}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)+rogueEffects({...c,classes:r.classes}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)+optionEffects({...c,classes:r.classes}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)};
+  return {id,racialBonus,backgroundBonus,...info,isBackground:info.background,...allocation,ranks,classSkill,abilityBonus:ability,classBonus,total:ranks+ability+classBonus+backgroundBonus+racialBonus+scoundrelEffects({...c,classes:r.classes,abilities:r.abilities}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)+bardEffects({...c,classes:r.classes,abilities:r.abilities}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)+rangerEffects({...c,classes:r.classes,abilities:r.abilities}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)+rogueEffects({...c,classes:r.classes}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)+optionEffects({...c,classes:r.classes}).filter(e=>e.target==='skill.'+id).reduce((n,e)=>n+e.value,0)};
  }).filter(Boolean);
  const bard=bardSummary({...c,classes:r.classes,abilities:r.abilities});
  for(const row of rows){if(bard?.untrainedAll||r.classes.bard&&!bard.replaced.includes('bardic-knowledge')&&row.id.startsWith('knowledge-'))row.trained=false;for(const type of bard?.versatile??[])if(VERSATILE[type]?.includes(row.id)){const a=allocations['perform:'+type]??{normal:0,background:0},ranks=a.normal+a.background,bonus=ranks+Math.floor((effective.cha-10)/2)+(ranks?3:0);if(bonus>row.total){row.total=bonus;row.versatile=type;row.trained=false;}}}

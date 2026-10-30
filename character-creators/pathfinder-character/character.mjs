@@ -1,3 +1,4 @@
+import {prestigeIssues,castingLevels} from './engine/justiciar.mjs';
 import {hasPaladin} from './engine/paladin-archetypes.mjs';
 import {deityIssues} from './deity-setup.mjs';
 import {replacedRangerSlot} from './engine/ranger-archetypes.mjs';
@@ -32,8 +33,8 @@ export function assignArrayScore(c,ability,score){
 export const COST={7:-4,8:-2,9:-1,10:0,11:1,12:2,13:3,14:5,15:7,16:10,17:13,18:17};
 export const RACES={dwarves:{con:2,wis:2,cha:-2},elves:{dex:2,int:2,con:-2},gnomes:{con:2,cha:2,str:-2},halflings:{dex:2,cha:2,str:-2},'half-elves':{},'half-orcs':{},humans:{},dragonborn:{str:2,cha:2,dex:-2}};
 const FLEX=['humans','half-elves','half-orcs'];
-// Standard multiclassing: sum each class table’s rounded BAB and save bonuses.
-const CHASSIS={fighter:[1,['fortitude']],barbarian:[1,['fortitude']],ironwright:[1,['fortitude']],gunslinger:[1,['fortitude','reflex']],cavalier:[1,['fortitude']],paladin:[1,['fortitude','will']],ranger:[1,['fortitude','reflex']],rogue:[.75,['reflex']],bard:[.75,['reflex','will']],cleric:[.75,['fortitude','will']],druid:[.75,['fortitude','will']],monk:[.75,['fortitude','reflex','will']],alchemist:[.75,['fortitude','reflex']],inquisitor:[.75,['fortitude','will']],wizard:[.5,['will']],sorcerer:[.5,['will']]};
+// Standard multiclassing: sum each class tableâ€™s rounded BAB and save bonuses.
+const CHASSIS={scoundrel:[.75,['reflex','will']],'wyrmward-justiciar':[1,['will']],'covenant-theurge':[.75,['will']],fighter:[1,['fortitude']],barbarian:[1,['fortitude']],ironwright:[1,['fortitude']],gunslinger:[1,['fortitude','reflex']],cavalier:[1,['fortitude']],paladin:[1,['fortitude','will']],ranger:[1,['fortitude','reflex']],rogue:[.75,['reflex']],bard:[.75,['reflex','will']],cleric:[.75,['fortitude','will']],druid:[.75,['fortitude','will']],monk:[.75,['fortitude','reflex','will']],alchemist:[.75,['fortitude','reflex']],inquisitor:[.75,['fortitude','will']],wizard:[.5,['will']],sorcerer:[.5,['will']]};
 export function prepare(c){
  const out=migrateBowCharacter(c);
  if(!out.builder)out.builder={version:1,targetLevel:Math.max(1,Object.values(c.classes).reduce((a,b)=>a+b,0)),classOrder:Object.entries(c.classes).flatMap(([id,n])=>Array(n).fill(id)),orderConfirmed:Object.keys(c.classes).length<=1,raceId:'',flexAbility:'',method:'manual',budget:15,baseScores:{...Object.fromEntries(ABILITIES.map(a=>[a,10])),...c.abilities},increases:[],identity:{}};
@@ -54,7 +55,7 @@ export function calculate(c){
   return [save,total];
  }));
  const spent=ABILITIES.reduce((n,a)=>n+(COST[b.baseScores[a]]??NaN),0);
- const issues=[...deityIssues(c),...backgroundDetails(c.background,c).issues,...optionIssues({...c,classes,abilities})];
+ const issues=[...prestigeIssues({...c,classes,abilities}),...deityIssues(c),...backgroundDetails(c.background,c).issues,...optionIssues({...c,classes,abilities})];
  issues.push(...hitPoints(c,abilities).issues);
  if(['half-elves','gnomes'].includes(b.raceId)&&!replacedTrait(c,'adaptability')&&!b.racialSkill)issues.push('Choose your racial skill on the Race tab.');
  if(!b.favoredClasses?.[0])issues.push('Choose a favoured class on the Classes tab.');
@@ -66,14 +67,16 @@ export function calculate(c){
  if(level!==b.targetLevel)issues.push(`Assign ${b.targetLevel} class levels (${level} assigned).`);
  if(!b.orderConfirmed)issues.push('Confirm the order of your imported class levels.');
  if(b.classOrder.some(id=>id&&!CHASSIS[id]))issues.push('An imported class is not supported yet.');
- if(b.method==='point-buy'&&(!Number.isFinite(spent)||spent>b.budget))issues.push('Ability scores exceed the point-buy budget or its 7–18 limits.');
+ if(b.method==='point-buy'&&(!Number.isFinite(spent)||spent>b.budget))issues.push('Ability scores exceed the point-buy budget or its 7â€“18 limits.');
  if(b.method==='array'&&(!ARRAYS[b.arrayId]||JSON.stringify(Object.values(b.baseScores).sort((a,b)=>a-b))!==JSON.stringify([...ARRAYS[b.arrayId]].sort((a,b)=>a-b))))issues.push('Choose a fixed array and assign all six scores.');
  if(b.method==='point-buy'&&spent<b.budget)issues.push(`${b.budget-spent} point-buy points remain.`);
  if(b.increases.slice(0,Math.floor(level/4)).filter(Boolean).length<Math.floor(level/4))issues.push('Choose your ability increases for every four character levels.');
  return {classes,level,race,increases,abilities,bab,saves,spent,issues};
 }
-export function materialize(c){c=structuredClone(c);c.feats=c.feats.filter(f=>!f.racialGrant);if(c.builder.raceId==='half-elves'&&!replacedTrait(c,'adaptability')&&c.builder.racialSkill){c.feats.push({featId:'skill-focus',racialGrant:true});c.ruleState??={choices:{},spent:{},toggles:{},conditions:{}};c.ruleState.choices['skill-focus-skill']=c.builder.racialSkill;}const r=calculate(c);const skills=calculateSkills(c,r);return {...c,feats:c.feats.filter(f=>!f.creatorSlot||featSlots(c).some(slot=>slot.id===f.creatorSlot)),classes:r.classes,arcaneCasterLevel:Math.max(0,...['wizard','sorcerer','bard'].map(id=>r.classes[id]??0)),casterLevel:Math.max(0,...['wizard','sorcerer','bard','cleric','druid','inquisitor','alchemist'].map(id=>r.classes[id]??0),...['paladin','ranger'].map(id=>(id==='ranger'&&replacedRangerSlot({...c,classes:r.classes},'spells')||id==='paladin'&&hasPaladin({...c,classes:r.classes},'warrior-of-the-holy-light'))?0:Math.max(0,(r.classes[id]??0)-3))),abilities:r.abilities,bab:r.bab,baseSaves:r.saves,skillRanks:skills.skillRanks,classSkills:skills.classSkills};}
+export function materialize(c){c=structuredClone(c);c.feats=c.feats.filter(f=>!f.racialGrant);if(c.builder.raceId==='half-elves'&&!replacedTrait(c,'adaptability')&&c.builder.racialSkill){c.feats.push({featId:'skill-focus',racialGrant:true});c.ruleState??={choices:{},spent:{},toggles:{},conditions:{}};c.ruleState.choices['skill-focus-skill']=c.builder.racialSkill;}const r=calculate(c);const casting=castingLevels({...c,classes:r.classes});const skills=calculateSkills(c,r);return {...c,feats:c.feats.filter(f=>!f.creatorSlot||featSlots(c).some(slot=>slot.id===f.creatorSlot)),classes:r.classes,arcaneCasterLevel:Math.max(0,...['wizard','sorcerer','bard'].map(id=>casting[id]??0)),casterLevel:Math.max(0,...['wizard','sorcerer','bard','cleric','druid','inquisitor','alchemist'].map(id=>casting[id]??0),...['paladin','ranger'].map(id=>(id==='ranger'&&replacedRangerSlot({...c,classes:r.classes},'spells')||id==='paladin'&&hasPaladin({...c,classes:r.classes},'warrior-of-the-holy-light'))?0:Math.max(0,(casting[id]??0)-3))),abilities:r.abilities,bab:r.bab,baseSaves:r.saves,skillRanks:skills.skillRanks,classSkills:skills.classSkills};}
 export function validateBuilder(b){
+ const prestigeCounts=Object.fromEntries(['wyrmward-justiciar','covenant-theurge'].map(id=>[id,(b.classOrder??[]).filter(x=>x===id).length]));
+ if(Object.values(prestigeCounts).some(n=>n>10)||Object.values(prestigeCounts).every(n=>n>0))throw Error('Prestige classes are limited to ten levels and Justiciar/Theurge are mutually exclusive variants.');
  validateSpellcasting(b.spellcasting);
  validateArchetypes({builder:b});
  if(b.classOptions!==undefined&&(!b.classOptions||Array.isArray(b.classOptions)||typeof b.classOptions!=='object'||Object.values(b.classOptions).some(v=>typeof v!=='string')))throw Error('Invalid class options.');

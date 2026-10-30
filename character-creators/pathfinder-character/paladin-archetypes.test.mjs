@@ -50,8 +50,8 @@ test('Covenant persistence, removal and highest resistance including immunity',(
  setArchetype(loaded,covenantId,false);assert.equal(paladinCovenant(materialize(loaded)),null);assert.ok(!dependentSpecs(materialize(loaded)).some(s=>s.id==='paladin-covenant-energy'));
  c.builder.classOrder=['fighter'];assert.equal(paladinCovenant(materialize(c)),null);
 });
-test('all 20 selections: every pair uses exact replacement slots, including future slots and imports',()=>{
- assert.equal(PALADIN_ARCHETYPES.length,20);
+test('all 21 selections: every pair uses exact replacement slots, including future slots and imports',()=>{
+ assert.equal(PALADIN_ARCHETYPES.length,21);
  for(const a of PALADIN_ARCHETYPES)for(const b of PALADIN_ARCHETYPES.filter(x=>x.id>a.id)){
   const c=make(1,a.id),overlap=[...a.replacements,...a.alterations].some(x=>[...b.replacements,...b.alterations].includes(x));
   assert.equal(conflicts(c,b.id).length>0,overlap,a.id+' / '+b.id);

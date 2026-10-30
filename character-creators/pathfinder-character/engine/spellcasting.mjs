@@ -1,3 +1,5 @@
+import {castingLevels} from './justiciar.mjs';
+import {bloodlineLevel} from './practiced.mjs';
 import paladinExtraSpells from './paladin-spells-data.mjs';
 import {hasPaladin,paladinOathSpells} from './paladin-archetypes.mjs';
 import {craftedAbilityScores} from './magic-items.mjs';
@@ -23,7 +25,7 @@ export function validateSpellcasting(value){
 }
 export function spellcasting(c,r){
  const result=[],choices=c.builder?.classOptions??{},effective=craftedAbilityScores({...c,abilities:r.abilities}).abilities;
- for(const [cls,level] of Object.entries(r.classes)){
+ for(const [cls,level] of Object.entries(castingLevels({...c,classes:r.classes}))){
   if(cls==='paladin'&&hasPaladin(c,'warrior-of-the-holy-light'))continue;
   if(cls==='ranger'&&replacedRangerSlot(c,'spells'))continue;
   const def=data.classes[cls];if(!def||!level)continue;
@@ -31,9 +33,9 @@ export function spellcasting(c,r){
   const opposition=cls==='wizard'&&choices['wizard-school']!=='universalist'?[choices['wizard-opposition-1'],choices['wizard-opposition-2']].filter(Boolean):[];
   const domains=cls==='cleric'?[choices['cleric-domain-1'],choices['cleric-domain-2']]:cls==='druid'&&choices['druid-bond']==='domain'?[choices['druid-domain']]:[];
   const bloodline=cls==='sorcerer'?data.bonus.bloodlines[choices['sorcerer-bloodline']]??{}:{};
-  const auto=Object.entries(bloodline).filter(([n])=>+n<=level).map(([n,id])=>({id,level:(+n-1)/2}));
+  const auto=Object.entries(bloodline).filter(([n])=>+n<=(r.classes.sorcerer??0)).map(([n,id])=>({id,level:(+n-1)/2}));
   const arcaneBonus=cls==='bard'?bardBonusSpells({...c,classes:r.classes,abilities:r.abilities}):[];
-  if(cls==='sorcerer'&&choices['sorcerer-bloodline']==='arcane')for(const [index,at] of [9,13,17].entries())if(level>=at){const maximum=Math.max(...Object.entries(def.daily[at-1]).filter(([,v])=>v!==null).map(([n])=>+n)),options=data.spells.filter(s=>s.levels.sorcerer<=maximum),id=list(state,'arcane',0)[index];if(!options.some(s=>s.id===id))issues.push(`Choose the New Arcana spell gained at sorcerer level ${at}.`);else arcaneBonus.push({id,level:byId.get(id).levels.sorcerer});}
+  if(cls==='sorcerer'&&choices['sorcerer-bloodline']==='arcane')for(const [index,at] of [9,13,17].entries())if(bloodlineLevel(c)>=at){const maximum=Math.max(...Object.entries(def.daily[at-1]).filter(([,v])=>v!==null).map(([n])=>+n)),options=data.spells.filter(s=>s.levels.sorcerer<=maximum),id=list(state,'arcane',0)[index];if(!options.some(s=>s.id===id))issues.push(`Choose the New Arcana spell gained at sorcerer level ${at}.`);else arcaneBonus.push({id,level:byId.get(id).levels.sorcerer});}
   const levels=[...new Set([...Object.keys(table),...Object.keys(known)])].map(Number).sort((a,b)=>a-b);
   for(const n of levels){
    const base=table[n]??null,knownCount=known[n]??0;if(base===null&&!knownCount)continue;

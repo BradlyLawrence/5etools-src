@@ -1,3 +1,5 @@
+import {retainsScoundrel,scoundrelLevel,scoundrelArchetype} from './scoundrel.mjs';
+import {prestigeSummary} from './justiciar.mjs';
 import {archetypeIds} from './archetypes.mjs';
 import {sizeEffect,sizeWeaponDice} from './size-effects.mjs';
 import {barbarianEquipment,hasBarbarian} from './barbarian-archetypes.mjs';
@@ -22,6 +24,7 @@ export function prepareEquipment(rules,input,actionId=null){
  for(const item of [armor,shield].filter(Boolean))if(activeCrafted(c).some(i=>i.design.slot===item.kind)){if(!item.tech)item.defense.bonus+=craftedEnhancement(c,item.kind);item.defense.armorCheckPenalty=Math.min(0,item.defense.armorCheckPenalty+1);}
  for(const [item,key] of [[armor,'armorInstanceId'],[shield,'shieldInstanceId']])if(item?.tech){const owned=c.techEquipment?.items.find(i=>i.instanceId===c.techEquipment[key]);if(owned&&owned.itemId===item.id){item.defense.bonus+=owned.enhancement+(overloadActive(c,owned)&&(c.classes.ironwright??0)>=20?2:0);const max=item.durability.hitPoints+owned.enhancement*10;if((owned.damageTaken??0)>=max){item.defense.bonus=0;}else if((owned.damageTaken??0)>=max/2){item.defense.bonus=Math.floor(item.defense.bonus/2);item.defense.armorCheckPenalty*=2;}}if(item.kind==='armor'){const training=Math.max(0,...(rules.technology.ironwright.armourTraining??[]).filter(r=>(c.classes.ironwright??0)>=r.minimumLevel).map(r=>r.bonus));item.defense.armorCheckPenalty=Math.min(0,item.defense.armorCheckPenalty+training);if(item.defense.maxDexBonus!==null)item.defense.maxDexBonus+=training;item.ironwrightArmorTraining=training;}}
  if(armor){const training=fighterArmorTraining(c),extra=Math.max(0,training-(armor.ironwrightArmorTraining??0));armor.defense.armorCheckPenalty=Math.min(0,armor.defense.armorCheckPenalty+extra);if(armor.defense.maxDexBonus!==null)armor.defense.maxDexBonus+=extra;if((armor.category==='medium'&&(c.classes.fighter??0)>=3&&retainsFighter(c,'armor-training-1'))||(armor.category==='heavy'&&(c.classes.fighter??0)>=7&&retainsFighter(c,'armor-training-2')))armor.defense.speedByBaseFt={'20':20,'30':30,'40':40};}
+ if(weapon?.id==='vibro-dagger'&&retainsScoundrel(c,'tech-dagger-training')){weapon.damage.small=['1d4'];weapon.damage.medium=['1d6'];}
  const enchantment=activeCrafted(c).find(i=>i.design.slot==='weapon')?.design.magicEffect;
  if(weapon&&enchantment==='impact'){
   const increase={'1':'1d2','1d2':'1d3','1d3':'1d4','1d4':'1d6','1d6':'1d8','1d8':'2d6','1d10':'2d8','1d12':'3d6','2d4':'2d6','2d6':'3d6','2d8':'3d8','3d6':'4d6','3d8':'4d8','4d6':'6d6','4d8':'6d8','6d6':'8d6','6d8':'8d8'};
@@ -39,7 +42,7 @@ export function prepareEquipment(rules,input,actionId=null){
  const racialBow=c.builder?.raceId==='elves'&&['hunting-bow','war-bow'].includes(weapon?.id);
  const classBow=(weapon?.id==='hunting-bow'&&any(['bard','rogue']))||(['hunting-bow','war-bow'].includes(weapon?.id)&&any(['inquisitor']));
  const proficient=weapon&&(c.proficientWeapons.includes(weapon.id)||weapon.id==='unarmed-strike'||weapon.tech&&techProficient(c,weapon)||
-  racialBow||classBow||
+  racialBow||classBow||scoundrelLevel(c)>0&&(weapon.proficiency==='simple'||['hand-crossbow','rapier','sap','hunting-bow','sword-short'].includes(weapon.id)||scoundrelArchetype(c)?.id==='outlaw'&&['hunting-bow','war-bow','long-bow'].includes(weapon.id)||retainsScoundrel(c,'practical-technologist')&&weapon.proficiency==='tech-melee')||
   weapon.proficiency==='tech-ranged'&&(any(['gunslinger'])||hasBarbarian(c,'savage-technologist'))||
   weapon.proficiency==='simple'&&any(['barbarian','bard','cleric','fighter','paladin','ranger','rogue','sorcerer','gunslinger','alchemist','cavalier','inquisitor'])||
   weapon.proficiency==='martial'&&any(['barbarian','fighter','paladin','ranger','cavalier','gunslinger'])||
@@ -102,6 +105,7 @@ export function equipmentSummary(e,c,result,stats){
  if(critical&&e.tech&&techBroken(e.tech.item,e.tech.instance))for(const p of critical){p.threatMin=20;p.multiplier=2;}
  const powered=e.techAction?.benefits??{};if(critical)for(const p of critical){p.threatMin=Math.max(2,p.threatMin-(powered.threatRangeBonus??0));p.multiplier+=powered.criticalMultiplierBonus??0;}
  const reduction=stats['spell.armorFailureReduction'].total;
+ const arcaneFailureByClass={};for(const p of prestigeSummary(c)){const armor=e.armor,trained=armor&&(armor.tech?techProficient(c,armor):has('armor-proficiency-'+armor.category)),ignored=trained&&p.ignoreArmour&&['light','medium',...(p.ignoreArmour==='heavy'?['heavy']:[])].includes(armor.category);arcaneFailureByClass[p.arcane]=Math.max(0,(armor?.defense.arcaneFailurePercent??0)-(ignored?100:reduction+(trained?p.armourReduction:0)))+(e.shield?.defense.arcaneFailurePercent??0);}
  const modifications=activeCrafted(c).flatMap(i=>[...(i.design.adaptations??[]).map(id=>MINOR_ADAPTATIONS[id]),PURCHASED_MAGIC_EFFECTS[i.design.magicEffect]]).filter(Boolean);
  const energyResistance={};for(const a of modifications)if(a.resistance)energyResistance[a.element]=Math.max(energyResistance[a.element]??0,a.resistance);
  const elementalDamage=modifications.filter(a=>a.dice).map(a=>({type:a.element,dice:a.dice,multipliesOnCritical:false,...(a.requiresActivation?{requiresActivation:true}:{})}));
@@ -116,7 +120,7 @@ export function equipmentSummary(e,c,result,stats){
  return {phalanx:phalanxSummary(c,e),handling:e.weapon?.handling??null,bow:e.bow,inspectionBonus,gadgets,gadgetDarkvisionFt,handheldCraftToolBonus,impactCapacitorCapacity,unarmedLethal:modifications.some(a=>a.unarmedLethal),insulatedArmour:modifications.some(a=>a.insulated),environmentalSaveBonuses,conditionalStealth,somaticWhileWielding:modifications.some(a=>a.somaticWhileWielding),damageConcentrationDCBonus:highest('damageConcentrationDCBonus'),firearm:e.weapon?.firearm??null,damageReduction,fortificationPercent,drPenetration,fortificationReduction,bypassesMagicDR,energyResistance,elementalDamage,poweredBenefits:powered,extraDamageDice:powered.extraDice??null,brutal:powered.brutal??0,attackReachBonus:powered.attackReachBonus??0,weaponId:e.weapon?.id??null,size:sizeEffect(c).size,damageDice:sizeWeaponDice(c,e),damageTypes:e.weapon?.damage.types??[],critical,rangeIncrementFt:e.weapon?.rangeIncrementFt??null,
   reloadAction:e.weapon?.reload?(has('rapid-reload')?e.weapon.reload.rapidReloadAction??e.weapon.reload.action:e.weapon.reload.action):null,
   capacity:e.weapon?.reload?.capacity??null,proficient:e.proficient??null,
-  arcaneFailurePercent:Math.max(0,(e.armor?.defense.arcaneFailurePercent??0)-reduction)+(e.shield?.defense.arcaneFailurePercent??0),
+  arcaneFailureByClass,arcaneFailurePercent:Math.max(0,(e.armor?.defense.arcaneFailurePercent??0)-reduction)+(e.shield?.defense.arcaneFailurePercent??0),
   speedFt:(e.armor?.defense.speedByBaseFt[String(c.equipment.baseSpeed??30)]??(c.equipment.baseSpeed??30))+stats['speed.bonus'].total,
   reachFt:c.context.attackType==='ranged'?null:(sizeEffect(c).reach*(e.weapon?.id==='whip'?3:e.weapon?.traits.includes('reach')?2:1))+stats['reach.bonus'].total,
   traits:e.weapon?.traits??[],traitRules:[...new Set([...(e.weapon?.traits??[]).filter(id=>MINOR_ADAPTATIONS[id]).map(id=>MINOR_ADAPTATIONS[id]),...modifications.filter(a=>!a.resistance).map(a=>a.impactCapacitor?{...a,text:a.text+' Capacity: '+impactCapacitorCapacity+' damage.'}:a)])].concat(gadgets.map(g=>({name:g.name,text:g.description}))).filter(a=>!a.resistance&&(!a.damageReduction||a.damageReduction===damageReduction.amount)&&(!a.fortification||a.fortification===fortificationPercent)).concat(Object.entries(energyResistance).map(([element,value])=>({name:element[0].toUpperCase()+element.slice(1)+' resistance '+value,text:'Equipped resistance: prevent '+value+' '+element+' damage per hit or effect. Same-type resistance does not stack.'}))),descriptions:[e.weapon,e.armor,e.shield].filter(Boolean).map(i=>({name:i.name,text:i.description})),
